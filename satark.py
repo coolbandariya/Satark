@@ -1558,6 +1558,7 @@ st.markdown('<div class="footer">SATARK • Smart AI Threat Analysis & Risk Know
 # 🧰 CORE PYTHON / SYSTEM
 import os
 import re
+import random
 import json
 import base64
 import hashlib
@@ -4720,206 +4721,220 @@ elif st.session_state.page == "Challenge":
         unsafe_allow_html=True
     )
 
+    CHALLENGE_QUESTIONS = [
 
-    questions = [
+        {"cat": "Phishing", "q":
+            "“URGENT: Your bank account will be blocked today. "
+            "Verify immediately at this link.” "
+            "What is the strongest warning sign?",
+         "options": ["Urgency + account threat", "A normal greeting", "A long message", "A company logo"],
+         "answer": 0,
+         "why": "Attackers often create panic so you act before verifying. Urgency plus an account threat is a classic social-engineering pattern."},
 
-        {
-            "q":
-                "“URGENT: Your bank account will be blocked today. "
-                "Verify immediately at this link.” "
-                "What is the strongest warning sign?",
+        {"cat": "Lottery / Prize", "q":
+            "A message says you won ₹50,000 and asks for a small ‘processing fee’. "
+            "What should you suspect first?",
+         "options": ["Reward/payment scam", "Normal banking", "Software update", "School notice"],
+         "answer": 0,
+         "why": "Unexpected prizes combined with an upfront payment request are a common advance-fee fraud pattern."},
 
-            "options": [
-                "Urgency + account threat",
-                "A normal greeting",
-                "A long message",
-                "A company logo"
-            ],
+        {"cat": "Phishing", "q":
+            "A login link says it is from a familiar service, but the domain is misspelled. "
+            "What is the key clue?",
+         "options": ["Brand impersonation", "Good website design", "HTTPS alone", "A short message"],
+         "answer": 0,
+         "why": "Look at the actual domain, not just the logo or page appearance. Look-alike domains are frequently used for credential theft."},
 
-            "answer": 0,
+        {"cat": "OTP Fraud", "q":
+            "Someone asks for your OTP because they claim to be ‘support’. "
+            "What is the safest response?",
+         "options": ["Share it quickly", "Never share the OTP; verify independently", "Send a screenshot", "Ask for their password"],
+         "answer": 1,
+         "why": "Legitimate services never need you to disclose a one-time password to an unsolicited caller or message sender."},
 
-            "why":
-                "Attackers often create panic so you act before "
-                "verifying. Urgency plus an account threat is a "
-                "classic social-engineering pattern."
-        },
+        {"cat": "Investment Scam", "q":
+            "A WhatsApp ‘VIP signals’ group promises guaranteed 20% weekly returns on stock trading. "
+            "What should raise the biggest red flag?",
+         "options": ["Guaranteed high returns with no risk", "The group has many members", "It uses financial jargon", "It has a professional-looking logo"],
+         "answer": 0,
+         "why": "No legitimate investment can guarantee high, risk-free returns. This is a hallmark of Ponzi-style investment fraud."},
 
+        {"cat": "Job Scam", "q":
+            "A ‘recruiter’ offers a work-from-home job but asks you to pay a refundable "
+            "‘registration fee’ before onboarding. What's the safest move?",
+         "options": ["Pay it since it's refundable", "Decline — legitimate employers don't charge candidates", "Ask a friend to pay it for you", "Pay half the amount"],
+         "answer": 1,
+         "why": "Genuine employers pay you, they don't charge you to get hired. Upfront 'registration' or 'training' fees are a classic job-scam pattern."},
 
-        {
-            "q":
-                "A message says you won ₹50,000 and asks for a "
-                "small ‘processing fee’. What should you suspect first?",
+        {"cat": "Delivery Scam", "q":
+            "You get an SMS about a ‘failed delivery’ with a link asking for a small redelivery "
+            "fee and your card details. What should you do?",
+         "options": ["Enter card details to fix it fast", "Ignore the link and check directly with the courier's official app/site", "Reply STOP to the SMS", "Forward it to friends to warn them, then click it"],
+         "answer": 1,
+         "why": "Fake delivery-fee texts are used to harvest card details. Always verify via the courier's official channel, never the link in the SMS."},
 
-            "options": [
-                "Reward/payment scam",
-                "Normal banking",
-                "Software update",
-                "School notice"
-            ],
+        {"cat": "Impersonation", "q":
+            "A caller claims to be from your bank's fraud department and asks you to install a "
+            "‘remote access’ app to ‘secure your account’. What is happening?",
+         "options": ["Normal security procedure", "A social-engineering attempt to gain control of your device", "A software update", "A courtesy call"],
+         "answer": 1,
+         "why": "Banks never ask you to install remote-access apps. This is a well-known tactic to take over a victim's device and drain accounts."},
 
-            "answer": 0,
+        {"cat": "QR Code Scam", "q":
+            "A parking app QR code claims you'll get a ₹10 refund if you scan and enter your UPI PIN. "
+            "What's wrong here?",
+         "options": ["Nothing, refunds use QR codes", "You never need to enter a PIN to *receive* money — only to *send* it", "QR codes are always safe", "It's a normal cashback offer"],
+         "answer": 1,
+         "why": "Entering your UPI PIN authorizes a payment *out* of your account. Any 'scan to receive money' request that asks for a PIN is a scam."},
 
-            "why":
-                "Unexpected prizes combined with a payment request "
-                "are a common fraud pattern."
-        },
+        {"cat": "Romance Scam", "q":
+            "An online partner you've never met in person urgently asks for money for "
+            "a medical emergency abroad. What should you do?",
+         "options": ["Send money immediately to help", "Be cautious — this is a common romance-scam pattern; verify independently before sending anything", "Ask them to marry you first", "Share your bank password to help faster"],
+         "answer": 1,
+         "why": "Urgent money requests from someone you've only met online, especially involving emergencies abroad, are a well-documented romance-scam pattern."},
 
+        {"cat": "Tech Support Scam", "q":
+            "A pop-up claims your computer is infected and shows a toll-free number to call "
+            "‘Microsoft support’. What's the best response?",
+         "options": ["Call the number immediately", "Close the pop-up and do not call; verify with the OS vendor directly if concerned", "Give the caller remote access", "Pay online to 'renew protection'"],
+         "answer": 1,
+         "why": "Fake virus pop-ups with support numbers are a classic tech-support scam designed to get remote access or payment for fake services."},
 
-        {
-            "q":
-                "A login link says it is from a familiar service, "
-                "but the domain is misspelled. What is the key clue?",
+        {"cat": "Malware", "q":
+            "A message asks you to install an APK file outside the Play Store to ‘track your parcel’. "
+            "What is the risk?",
+         "options": ["No risk, it's just an app", "It could be malware that steals data or intercepts OTPs", "It will make delivery faster", "It's required by all couriers"],
+         "answer": 1,
+         "why": "Sideloaded APKs from unofficial links are a common way to install malware that can read SMS/OTPs and steal banking credentials."},
 
-            "options": [
-                "Brand impersonation",
-                "Good website design",
-                "HTTPS alone",
-                "A short message"
-            ],
+        {"cat": "Deepfake / Fake Endorsement", "q":
+            "A video shows a well-known public figure ‘endorsing’ a crypto investment app, "
+            "but the audio looks slightly out of sync. What should you do?",
+         "options": ["Invest immediately, they seem trustworthy", "Treat it as unverified and check official sources before believing or acting on it", "Share it to everyone right away", "Assume it's real because it looks professional"],
+         "answer": 1,
+         "why": "Deepfake endorsements are increasingly realistic. Professional appearance is not evidence of authenticity — verify through the person's or company's official channels."},
 
-            "answer": 0,
+        {"cat": "Phishing", "q":
+            "An email asks you to ‘reconfirm your KYC’ within 30 minutes or your account will "
+            "be frozen, linking to a domain that isn't your bank's official one. What matters most?",
+         "options": ["The 30-minute deadline is helpful", "The mismatched domain, regardless of how convincing the email looks", "The email has your bank's logo", "The email is well written"],
+         "answer": 1,
+         "why": "A convincing look means nothing if the underlying domain doesn't match the real organization. Always check the actual link/domain, not just branding."},
 
-            "why":
-                "Look at the actual domain, not just the logo or "
-                "page appearance. Impersonation domains are frequently "
-                "used for credential theft."
-        },
+        {"cat": "Social Engineering", "q":
+            "Someone calls pretending to be from ‘Head Office IT’ and asks for your login password "
+            "to ‘fix an urgent issue’. What should you do?",
+         "options": ["Give the password since it's IT", "Refuse and verify through official internal channels — IT never needs your password", "Give a fake password", "Ask them to email you instead"],
+         "answer": 1,
+         "why": "No legitimate IT department needs your actual password to fix anything. This is a classic pretexting/social-engineering attack."},
 
+        {"cat": "Marketplace Scam", "q":
+            "You're selling an item online. A ‘buyer’ says they've already sent payment and asks "
+            "you to scan a QR code to ‘receive’ it. What's actually happening?",
+         "options": ["You will receive money after scanning", "Scanning a QR / entering a PIN never receives money — this will actually charge you", "It's a normal receipt confirmation", "It's required by the marketplace"],
+         "answer": 1,
+         "why": "This is the classic 'fake buyer' UPI scam — scanning a QR code or entering a PIN always sends money, never receives it."},
 
-        {
-            "q":
-                "Someone asks for your OTP because they claim to "
-                "be ‘support’. What is the safest response?",
+        {"cat": "Investment Scam", "q":
+            "An ad promises to ‘double your money in 7 days’ through a new unregistered "
+            "trading platform. What should you check first?",
+         "options": ["Whether it's registered with the relevant financial regulator (e.g. SEBI in India)", "How nice the app's design is", "How many people have joined", "How fast withdrawals are advertised"],
+         "answer": 0,
+         "why": "Verifying regulatory registration is the single most reliable check before trusting any investment platform with your money."},
 
-            "options": [
-                "Share it quickly",
-                "Never share the OTP; verify independently",
-                "Send a screenshot",
-                "Ask for their password"
-            ],
+        {"cat": "Impersonation", "q":
+            "A message claims to be from a courier company asking you to pay customs duty via "
+            "a personal UPI ID (not the official company account). What's suspicious?",
+         "options": ["Nothing, customs duty is normal", "Payment requested to a personal ID instead of an official channel", "The message is in English", "It mentions a tracking number"],
+         "answer": 1,
+         "why": "Legitimate customs/courier fees are never collected via a random personal UPI ID — that's a strong sign of impersonation fraud."},
 
-            "answer": 1,
+        {"cat": "Fake Information", "q":
+            "A viral post claims a celebrity died, sourced only from an unverified account with "
+            "no other news coverage. What's the safest approach?",
+         "options": ["Share it immediately to inform others", "Wait for confirmation from established, verifiable news sources before believing or sharing", "Believe it because it has many likes", "Assume it's true if it 'looks official'"],
+         "answer": 1,
+         "why": "Engagement metrics and appearance don't verify truth. Cross-check breaking claims against established, verifiable sources before spreading them."},
 
-            "why":
-                "Legitimate services should not require you to disclose "
-                "one-time passwords to an unsolicited caller or message "
-                "sender."
-        }
+        {"cat": "Suspicious Links", "q":
+            "A shortened link (like bit.ly/xyz123) is sent to you claiming to be a bank's password "
+            "reset page. What should you do before clicking?",
+         "options": ["Click it right away to reset quickly", "Avoid it — go directly to the bank's known official website or app instead", "Forward it to the bank", "Click it only if it has 'https'"],
+         "answer": 1,
+         "why": "Shortened links hide the real destination. HTTPS just means the connection is encrypted, not that the site is legitimate. Always navigate directly to official sites."},
 
     ]
 
+    rng_seed_key = "challenge_question_order"
+    if rng_seed_key not in st.session_state:
+        order = list(range(len(CHALLENGE_QUESTIONS)))
+        random.shuffle(order)
+        st.session_state[rng_seed_key] = order
 
-    q = questions[
-        st.session_state.challenge_index
-        % len(questions)
-    ]
+    question_order = st.session_state[rng_seed_key]
+    total_q = len(question_order)
+    current_pos = st.session_state.challenge_index % total_q
+    q = CHALLENGE_QUESTIONS[question_order[current_pos]]
 
+    st.markdown('<div class="challenge-card">', unsafe_allow_html=True)
 
     st.markdown(
-        '<div class="challenge-card">',
+        f'<div class="badge">Question {current_pos + 1} / {total_q}</div>'
+        f'<span class="badge" style="margin-left:8px">{html.escape(q["cat"])}</span>'
+        f'<div class="challenge-q" style="margin-top:14px">{html.escape(q["q"])}</div>',
         unsafe_allow_html=True
     )
-
-
-    st.markdown(
-        f'''
-        <div class="badge">
-            Question
-            {(st.session_state.challenge_index % len(questions)) + 1}
-            / {len(questions)}
-        </div>
-
-        <div class="challenge-q"
-             style="margin-top:14px">
-            {q["q"]}
-        </div>
-        ''',
-        unsafe_allow_html=True
-    )
-
 
     cols = st.columns(2)
 
-
-    for idx, opt in enumerate(
-        q["options"]
-    ):
-
+    for idx, opt in enumerate(q["options"]):
         with cols[idx % 2]:
-
             if st.button(
                 opt,
-                key=(
-                    f"challenge_opt_"
-                    f"{st.session_state.challenge_index}_"
-                    f"{idx}"
-                ),
+                key=f"challenge_opt_{st.session_state.challenge_index}_{idx}",
                 use_container_width=True
             ):
-
                 if not st.session_state.challenge_answered:
-
                     if idx == q["answer"]:
-
                         st.session_state.challenge_score += 1
-
-                        st.success(
-                            "Correct! 🎉"
-                        )
-
+                        st.success("Correct! 🎉")
                     else:
-
-                        st.warning(
-                            "Not quite. Here's the pattern to remember."
-                        )
-
+                        st.warning("Not quite. Here's the pattern to remember.")
                     st.session_state.challenge_answered = True
-
                     st.rerun()
-
 
     if st.session_state.challenge_answered:
 
         st.markdown(
-            f'''
-            <div class="challenge-answer">
-                <strong>Why:</strong> {q["why"]}
-            </div>
-            ''',
+            f'<div class="challenge-answer"><strong>Why:</strong> {html.escape(q["why"])}</div>',
             unsafe_allow_html=True
         )
 
+        st.write(f"Score: **{st.session_state.challenge_score}/{current_pos + 1}**")
 
-        st.write(
-            f"Score: **"
-            f"{st.session_state.challenge_score}/"
-            f"{(st.session_state.challenge_index % len(questions)) + 1}"
-            f"**"
-        )
+        if current_pos + 1 >= total_q:
+            st.info(f"🏁 You've completed all {total_q} questions this round! Final score: **{st.session_state.challenge_score}/{total_q}**")
+            if st.button("Play again (new shuffle)", key="challenge_replay", type="primary"):
+                order = list(range(len(CHALLENGE_QUESTIONS)))
+                random.shuffle(order)
+                st.session_state[rng_seed_key] = order
+                st.session_state.challenge_index = 0
+                st.session_state.challenge_score = 0
+                st.session_state.challenge_answered = False
+                st.rerun()
+        else:
+            if st.button("Next challenge", key="next_challenge", type="primary"):
+                st.session_state.challenge_index += 1
+                st.session_state.challenge_answered = False
+                st.rerun()
 
+    st.markdown('</div>', unsafe_allow_html=True)
 
-        if st.button(
-            "Next challenge",
-            key="next_challenge",
-            type="primary"
-        ):
-
-            st.session_state.challenge_index += 1
-            st.session_state.challenge_answered = False
-            st.rerun()
-
-
-    st.markdown(
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-
-    if st.button(
-        "Reset challenge score",
-        key="reset_challenge"
-    ):
-
+    if st.button("Reset challenge score", key="reset_challenge"):
+        order = list(range(len(CHALLENGE_QUESTIONS)))
+        random.shuffle(order)
+        st.session_state[rng_seed_key] = order
         st.session_state.challenge_index = 0
         st.session_state.challenge_score = 0
         st.session_state.challenge_answered = False
