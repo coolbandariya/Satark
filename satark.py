@@ -1554,7 +1554,6 @@ st.markdown('<div class="footer">SATARK • Smart AI Threat Analysis & Risk Know
 
 
 
-
 # 🧰 CORE PYTHON / SYSTEM
 import os
 import re
@@ -1566,6 +1565,17 @@ import socket
 import ipaddress
 import html
 from datetime import datetime
+from zoneinfo import ZoneInfo
+
+# SATARK always displays timestamps in India Standard Time, regardless
+# of what timezone the server the app happens to be running on is set
+# to (e.g. most cloud hosts default to UTC, which made History/PDF
+# timestamps look "wrong" — several hours off from local time).
+IST = ZoneInfo("Asia/Kolkata")
+
+
+def now_ist():
+    return datetime.now(IST)
 
 # 🌐 WEB / URL HANDLING
 from html.parser import HTMLParser
@@ -3732,7 +3742,7 @@ def make_pdf_report(result, mode):
     story.append(Paragraph("SATARK", title))
     story.append(Paragraph("Smart AI Threat Analysis & Risk Knowledge", subtitle))
     conf_cell_style = ParagraphStyle("SATARKConfCell", parent=body, textColor=confidence_color, fontName="Helvetica-Bold")
-    meta=[[Paragraph("Scanner", body), Paragraph(pdf_escape(mode), body), Paragraph("Generated", body), Paragraph(datetime.now().strftime('%d %b %Y, %I:%M %p'), body)],
+    meta=[[Paragraph("Scanner", body), Paragraph(pdf_escape(mode), body), Paragraph("Generated", body), Paragraph(now_ist().strftime('%d %b %Y, %I:%M %p') + ' IST', body)],
           [Paragraph("Threat level", body), Paragraph(pdf_escape(label), body), Paragraph("Risk score", body), Paragraph(f"{score}/100", body)],
           [Paragraph("Pattern", body), Paragraph(pdf_escape(result.get('scam_pattern','Needs review')), body), Paragraph("AI confidence", body), Paragraph(f"{confidence_value:.2f}%", conf_cell_style)]]
     meta_table=Table(meta,colWidths=[25*mm,60*mm,30*mm,60*mm],hAlign='LEFT')
@@ -3814,7 +3824,7 @@ def make_pdf_report(result, mode):
 def add_history(result, mode):
     if "history" not in st.session_state: st.session_state.history=[]
     entry = {
-        "time": datetime.now().strftime("%d %b %Y, %I:%M %p"),
+        "time": now_ist().strftime("%d %b %Y, %I:%M %p") + " IST",
         "mode": mode,
         "score": clamp_score(result.get("risk_score",50)),
         "category": result.get("threat_category","Needs review"),
