@@ -20,6 +20,8 @@ jobs:
           python-version: "3.11"
       - name: Install dependencies
         run: python -m pip install --upgrade pip && python -m pip install -r requirements.txt
+      - name: Check dependency consistency
+        run: python -m pip check
       - name: Compile Python source
         run: python -m py_compile satark.py reports.py satark_utils.py url_security.py tests/test_satark_utils.py
       - name: Run unit tests
