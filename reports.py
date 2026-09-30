@@ -1,6 +1,7 @@
 """PDF report rendering for SATARK."""
 
 import html
+import math
 from io import BytesIO
 
 from reportlab.lib import colors
@@ -93,7 +94,13 @@ def make_pdf_report(result, mode):
     centered = ParagraphStyle("SATARKCentered", parent=body, alignment=TA_CENTER, fontSize=8, textColor=muted)
 
     score=clamp_score(result.get("risk_score",50)); label,_=risk_label(score,result.get("threat_category",""))
-    confidence_value = float(result.get('confidence',70.0))
+    try:
+        confidence_value = float(result.get("confidence", 70.0))
+        if not math.isfinite(confidence_value):
+            confidence_value = 0.0
+    except (TypeError, ValueError, OverflowError):
+        confidence_value = 0.0
+    confidence_value = max(0.0, min(100.0, confidence_value))
     confidence_color = green if confidence_value >= 85 else (amber if confidence_value >= 50 else red)
     story=[]
     story.append(Paragraph("SATARK", title))
@@ -148,8 +155,15 @@ def make_pdf_report(result, mode):
 
     story.append(Paragraph("Official Verification Sources", h2))
     source_data=[[Paragraph('<b>Source</b>',body),Paragraph('<b>Purpose</b>',body),Paragraph('<b>Official Website</b>',body)]]
-    for item in result.get('verification_sources',OFFICIAL_VERIFICATION_SOURCES):
-        website=_safe_text(item.get('website'))
+    sources = result.get("verification_sources", OFFICIAL_VERIFICATION_SOURCES)
+    if not isinstance(sources, list):
+        sources = OFFICIAL_VERIFICATION_SOURCES
+    for item in sources:
+        if not isinstance(item, dict):
+            continue
+        website = _safe_text(item.get("website"))
+        if not website.startswith(("https://", "http://")):
+            website = ""
         source_data.append([Paragraph(pdf_escape(item.get('source')),body),Paragraph(pdf_escape(item.get('purpose')),body),Paragraph(f'<link href="{html.escape(website,quote=True)}" color="#4d3dcc"><u>{pdf_escape(website)}</u></link>',body)])
     stbl=Table(source_data,colWidths=[42*mm,75*mm,58*mm],repeatRows=1)
     stbl.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,0),colors.HexColor('#eeeaff')),('GRID',(0,0),(-1,-1),0.5,line),('VALIGN',(0,0),(-1,-1),'TOP'),('LEFTPADDING',(0,0),(-1,-1),7),('RIGHTPADDING',(0,0),(-1,-1),7),('TOPPADDING',(0,0),(-1,-1),6),('BOTTOMPADDING',(0,0),(-1,-1),6)]))
