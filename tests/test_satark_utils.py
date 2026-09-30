@@ -52,6 +52,19 @@ class TextNormalizationTests(unittest.TestCase):
         pdf = make_pdf_report(result, "Text")
         self.assertTrue(pdf.startswith(b"%PDF"))
 
+
+    def test_pdf_report_handles_malformed_nested_data(self):
+        result = {
+            "risk_score": 42,
+            "confidence": 60,
+            "key_indicators": "single indicator",
+            "recommendations": 17,
+            "threat_analysis": ["not", "a", "mapping"],
+            "verification_sources": [None, "bad source", {"source": "Example", "purpose": "Verify", "website": "javascript:alert(1)"}],
+        }
+        pdf = make_pdf_report(result, "Text")
+        self.assertTrue(pdf.startswith(b"%PDF"))
+
     def test_pdf_report_generation(self):
         result = {
             "risk_score": 42,
