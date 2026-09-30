@@ -913,12 +913,14 @@ Not detected, Low, Medium, High.
             return normalize_result_consistency(result)
 
         except Exception as exc:
-            errors.append(f"{model}: {exc}")
+            # Keep provider diagnostics out of user-facing exceptions. SDK errors
+            # can include request metadata; retain only a bounded type label.
+            errors.append(f"{model}: {type(exc).__name__}")
             # Move on to the next candidate model instead of giving up
             # immediately — this applies to text, image and video requests now.
             continue
 
-    detail = "\n".join(errors[-4:])
+    detail = "Provider requests failed for the configured models. Check the server logs and provider status for diagnostics."
     kind = "image/QR/video" if image_data_urls else "text"
     rate_limited = any("rate_limit_exceeded" in e or "Request too large" in e for e in errors)
 
@@ -2347,7 +2349,7 @@ with st.sidebar:
                 if st.session_state.text_model and st.session_state.vision_model: st.success("AI connected • text + vision available")
                 elif st.session_state.text_model: st.warning("AI connected • text available, no vision model exposed to this key")
                 else: st.error("API key is accepted but no supported SATARK text model was found.")
-            except Exception as exc: st.error(f"Could not check Groq: {exc}")
+            except Exception as exc: st.error(f"Could not check Groq ({type(exc).__name__}). Verify the key, network, and provider status.")
     st.markdown('<div class="side-label">Personalization</div>',unsafe_allow_html=True)
     role=st.selectbox("👤 Who are you?",["Student","Teacher","Working professional","Parent / Guardian","Senior user","Security learner"],index=0)
     st.markdown('<div class="privacy"><strong>🔒 Privacy first</strong><br>SATARK keeps history only in this Streamlit session. Submitted content is not intentionally saved to disk by this app. Content is sent to Groq only when you analyze it. Avoid passwords, private keys and secrets.</div>',unsafe_allow_html=True)
@@ -3046,7 +3048,8 @@ elif st.session_state.page == "Analyze":
         except (HTTPError, URLError) as exc:
 
             st.error(
-                f"⚠️ Could not fetch that URL safely: {exc}"
+                f"⚠️ Could not fetch that URL safely ({type(exc).__name__}). "
+                "Check that the URL is reachable and publicly accessible."
             )
 
 
