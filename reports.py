@@ -70,6 +70,8 @@ def pdf_escape(text):
 
 def make_pdf_report(result, mode):
     """Create a polished, readable PDF version of the complete SATARK report."""
+    if not isinstance(result, dict):
+        result = {}
     buffer = BytesIO()
     doc = SimpleDocTemplate(
         buffer, pagesize=A4, rightMargin=15*mm, leftMargin=15*mm,
