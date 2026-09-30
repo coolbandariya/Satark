@@ -93,3 +93,19 @@ class TextNormalizationTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class VisibleTextParserEdgeCaseTests(unittest.TestCase):
+    def test_nested_markup_inside_script_remains_hidden(self):
+        parser = VisibleTextParser()
+        parser.feed("<script>secret <span>still secret</span></script><p>Visible</p>")
+        self.assertEqual(parser.text(), "Visible")
+
+    def test_unclosed_script_fails_closed_for_following_text(self):
+        parser = VisibleTextParser()
+        parser.feed("<p>Visible</p><script>secret<p>hidden</p>")
+        self.assertEqual(parser.text(), "Visible")
+
+    def test_invalid_port_is_rejected(self):
+        self.assertFalse(is_public_url("https://example.com:99999"))
+        self.assertFalse(is_public_url("https://example.com:not-a-port"))
