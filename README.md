@@ -43,7 +43,7 @@ Feature availability depends on installed optional dependencies and provider acc
 - **PDF reports:** ReportLab
 - **Optional video processing:** OpenCV
 
-The interface styling is now separated from the application entry point. The remaining application logic is still largely in `satark.py`; extracting its analysis, provider, reporting, and learning functions into independently tested modules is the next maintainability step. This is intentionally called out rather than presenting the app as already fully modular.
+The presentation layer and PDF report generation are separated from the Streamlit entry point. The analysis, provider, and learning workflows remain in `satark.py` and are listed as future extraction work; this keeps the current UI behavior intact while reducing the entry point's responsibilities.
 
 ## Quick start
 
@@ -99,7 +99,8 @@ You can also enter the key in the app's sidebar. Never commit API keys, tokens, 
 ├── docs/
 │   ├── ANALYSIS_LIMITATIONS.md
 │   └── ...                    # Project and safety documentation
-├── satark.py                  # Streamlit entry point and current app logic
+├── satark.py                  # Streamlit entry point and application workflows
+├── reports.py                 # PDF report generation
 ├── styles.css                 # Application presentation
 ├── requirements.txt
 ├── README.md
@@ -128,6 +129,7 @@ Then launch the app and manually verify the affected workflow. The current CI ch
 ## Roadmap
 
 - [x] Move the large embedded style block into a dedicated CSS file.
+- [x] Extract PDF report generation into `reports.py`.
 - [ ] Split analysis and result normalization into focused Python modules.
 - [ ] Separate provider/model integration from UI code.
 - [ ] Move PDF report generation into a reporting module.
