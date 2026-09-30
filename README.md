@@ -43,7 +43,7 @@ Feature availability depends on installed optional dependencies and provider acc
 - **PDF reports:** ReportLab
 - **Optional video processing:** OpenCV
 
-The presentation layer and PDF report generation are separated from the Streamlit entry point. The analysis, provider, and learning workflows remain in `satark.py` and are listed as future extraction work; this keeps the current UI behavior intact while reducing the entry point's responsibilities.
+The presentation layer, PDF report rendering, and shared text-normalization helpers are separated from the Streamlit entry point. Analysis, provider/model integration, and interactive learning workflows remain in `satark.py`; these are coupled to Streamlit session state and are not yet independently packaged.
 
 ## Quick start
 
@@ -99,8 +99,11 @@ You can also enter the key in the app's sidebar. Never commit API keys, tokens, 
 ├── docs/
 │   ├── ANALYSIS_LIMITATIONS.md
 │   └── ...                    # Project and safety documentation
-├── satark.py                  # Streamlit entry point and application workflows
+├── satark.py                  # Streamlit entry point and UI workflows
+├── satark_utils.py            # Side-effect-free text/result helpers
 ├── reports.py                 # PDF report generation
+├── tests/
+│   └── test_satark_utils.py   # Unit tests for normalization helpers
 ├── styles.css                 # Application presentation
 ├── requirements.txt
 ├── README.md
@@ -109,13 +112,14 @@ You can also enter the key in the app's sidebar. Never commit API keys, tokens, 
 
 ## Development checks
 
-Run the same syntax check used by CI:
+Run the checks used by CI:
 
 ```bash
-python -m py_compile satark.py
+python -m py_compile satark.py reports.py satark_utils.py tests/test_satark_utils.py
+python -m unittest discover -s tests -v
 ```
 
-Then launch the app and manually verify the affected workflow. The current CI check validates Python syntax; it does not exercise Streamlit interactions, external API behavior, model quality, or PDF output.
+Then launch the app and manually verify the affected workflow. CI does not exercise Streamlit interactions, external API behavior, model quality, or PDF rendering end to end.
 
 ## Responsible use and privacy
 
@@ -130,11 +134,11 @@ Then launch the app and manually verify the affected workflow. The current CI ch
 
 - [x] Move the large embedded style block into a dedicated CSS file.
 - [x] Extract PDF report generation into `reports.py`.
-- [ ] Split analysis and result normalization into focused Python modules.
-- [ ] Separate provider/model integration from UI code.
-- [ ] Move PDF report generation into a reporting module.
+- [x] Extract shared text/result normalization helpers into `satark_utils.py`.
+- [x] Extract PDF report generation into `reports.py`.
+- [x] Add unit tests for normalization helpers.
+- [ ] Separate analysis and provider/model integration from Streamlit UI.
 - [ ] Extract Scam Challenge and Academy content into learning modules.
-- [ ] Add unit tests for pure validation and normalization functions.
 - [ ] Add Streamlit workflow tests and PDF regression checks.
 
 ## Contributing
