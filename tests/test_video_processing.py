@@ -2,6 +2,7 @@
 
 import unittest
 from io import BytesIO
+from unittest.mock import patch
 
 from PIL import Image
 
@@ -30,7 +31,8 @@ class VideoProcessingTests(unittest.TestCase):
     def test_audio_transcription_gracefully_handles_missing_cv2(self):
         upload = BytesIO(b"not a video")
         upload.name = "sample.mp4"
-        self.assertEqual(transcribe_video_audio(upload, object()), "")
+        with patch.dict("sys.modules", {"cv2": None}):
+            self.assertEqual(transcribe_video_audio(upload, object()), "")
 
 
 if __name__ == "__main__":
