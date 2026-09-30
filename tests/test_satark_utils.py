@@ -42,6 +42,16 @@ class TextNormalizationTests(unittest.TestCase):
         self.assertEqual(normalize_check_value(10), "Low")
         self.assertEqual(normalize_check_value(""), "Needs review")
 
+    def test_pdf_report_handles_malformed_confidence(self):
+        result = {"risk_score": 42, "confidence": "not-a-number", "threat_analysis": {}}
+        pdf = make_pdf_report(result, "Text")
+        self.assertTrue(pdf.startswith(b"%PDF"))
+
+    def test_pdf_report_handles_non_finite_confidence(self):
+        result = {"risk_score": 42, "confidence": float("nan"), "threat_analysis": {}}
+        pdf = make_pdf_report(result, "Text")
+        self.assertTrue(pdf.startswith(b"%PDF"))
+
     def test_pdf_report_generation(self):
         result = {
             "risk_score": 42,
