@@ -4,6 +4,8 @@ import html
 from io import BytesIO
 
 from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER
+from satark_utils import OFFICIAL_VERIFICATION_SOURCES
 
 from datetime import datetime
 from zoneinfo import ZoneInfo
