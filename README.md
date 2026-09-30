@@ -133,8 +133,8 @@ Then launch the app and manually verify the affected workflow. CI does not exerc
 ## Roadmap
 
 - [x] Move the large embedded style block into a dedicated CSS file.
-- [x] Extract PDF report generation into `reports.py`.
 - [x] Extract shared text/result normalization helpers into `satark_utils.py`.
+- [x] Isolate public URL validation and fetching in `url_security.py`.
 - [x] Extract PDF report generation into `reports.py`.
 - [x] Add unit tests for normalization helpers.
 - [ ] Separate analysis and provider/model integration from Streamlit UI.
