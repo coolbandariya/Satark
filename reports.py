@@ -4,6 +4,49 @@ import html
 from io import BytesIO
 
 from reportlab.lib import colors
+
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
+IST = ZoneInfo("Asia/Kolkata")
+THREAT_CHECKS = [
+    "Scam Indicators", "Phishing Signs", "Deepfake Risk", "Fake Information",
+    "Suspicious Links", "Impersonation", "Malware Indicators", "Social Engineering",
+]
+
+
+def now_ist():
+    return datetime.now(IST)
+
+
+def clamp_score(value):
+    try:
+        return max(0, min(100, int(float(value))))
+    except (TypeError, ValueError, OverflowError):
+        return 50
+
+
+def risk_label(score, category=""):
+    score = clamp_score(score)
+    if _safe_text(category).lower() == "scam":
+        return "SCAM", "critical"
+    if score < 35:
+        return "SAFE", "safe"
+    if score < 70:
+        return "CAUTION", "caution"
+    return "CRITICAL THREAT", "critical"
+
+
+def build_final_conclusion(result):
+    existing = _safe_text(result.get("final_conclusion", ""))
+    if existing:
+        return existing
+    label, _ = risk_label(result.get("risk_score", 50), result.get("threat_category", ""))
+    summary = _safe_text(result.get("summary", ""))
+    verdict = _safe_text(result.get("verdict", "Manual review recommended."))
+    if summary:
+        return f"SATARK assessed this item as {label.lower()} based on the evidence identified during analysis. {summary} {verdict} Verify the source independently before taking any high-impact action."
+    return f"SATARK assessed this item as {label.lower()}. {verdict} Verify the source independently before taking any high-impact action."
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
