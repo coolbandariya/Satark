@@ -412,21 +412,34 @@ class VisibleTextParser(HTMLParser):
 
 
 def is_public_url(url):
-    parsed = urlparse(safe_text(url))
-    if parsed.scheme not in {"http", "https"} or not parsed.hostname:
-        return False
-    host = parsed.hostname.lower()
-    if host in {"localhost", "localhost.localdomain"}:
-        return False
+    """Allow only HTTP(S) URLs whose resolved addresses are all globally routable.
+
+    Fail closed on DNS errors and malformed URLs. This is a defense-in-depth
+    check; deployments should additionally enforce outbound network policy.
+    """
     try:
-        addresses = socket.getaddrinfo(host, None)
+        parsed = urlparse(safe_text(url))
+        if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+            return False
+        if parsed.username is not None or parsed.password is not None:
+            return False
+        host = parsed.hostname.rstrip(".").lower()
+        if host in {"localhost", "localhost.localdomain"} or host.endswith(".localhost"):
+            return False
+        # Avoid ambiguous/non-standard ports and schemes in this fetcher.
+        if parsed.port is not None and not (1 <= parsed.port <= 65535):
+            return False
+        addresses = socket.getaddrinfo(host, parsed.port or (443 if parsed.scheme == "https" else 80),
+                                       type=socket.SOCK_STREAM)
+        if not addresses:
+            return False
         for item in addresses:
             ip = ipaddress.ip_address(item[4][0])
-            if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_multicast or ip.is_reserved:
+            if not ip.is_global:
                 return False
-    except (socket.gaierror, ValueError, OSError):
         return True
-    return True
+    except (socket.gaierror, ValueError, OSError):
+        return False
 
 
 class SafeRedirectHandler(HTTPRedirectHandler):
