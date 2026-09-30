@@ -43,6 +43,13 @@ def extract_video_frames(uploaded_file, max_frames=MAX_VIDEO_FRAMES):
             "`pip install opencv-python-headless --break-system-packages` and restart the app."
         ) from exc
 
+    try:
+        max_frames = int(max_frames)
+    except (TypeError, ValueError, OverflowError) as exc:
+        raise ValueError("max_frames must be a positive integer.") from exc
+    if max_frames < 1:
+        raise ValueError("max_frames must be a positive integer.")
+
     warnings = []
     try:
         uploaded_file.seek(0)
@@ -95,8 +102,12 @@ def extract_video_frames(uploaded_file, max_frames=MAX_VIDEO_FRAMES):
             if not frames:
                 raise ValueError("SATARK could not extract readable frames from this video.")
 
-        capture.release()
     finally:
+        try:
+            if "capture" in locals():
+                capture.release()
+        except Exception:
+            pass
         try:
             os.unlink(tmp_path)
         except Exception:
