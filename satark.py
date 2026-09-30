@@ -850,6 +850,7 @@ Not detected, Low, Medium, High.
         candidates = discovered_first + undiscovered_fallbacks
 
     errors = []
+    rate_limited = False
 
     for model in candidates:
         try:
@@ -913,8 +914,10 @@ Not detected, Low, Medium, High.
             return normalize_result_consistency(result)
 
         except Exception as exc:
-            # Keep provider diagnostics out of user-facing exceptions. SDK errors
-            # can include request metadata; retain only a bounded type label.
+            # Classify rate limits before discarding provider details. SDK errors
+            # can include request metadata, so never return their raw text to users.
+            error_text = str(exc).lower()
+            rate_limited = rate_limited or "rate_limit_exceeded" in error_text or "request too large" in error_text
             errors.append(f"{model}: {type(exc).__name__}")
             # Move on to the next candidate model instead of giving up
             # immediately — this applies to text, image and video requests now.
@@ -922,7 +925,6 @@ Not detected, Low, Medium, High.
 
     detail = "Provider requests failed for the configured models. Check the server logs and provider status for diagnostics."
     kind = "image/QR/video" if image_data_urls else "text"
-    rate_limited = any("rate_limit_exceeded" in e or "Request too large" in e for e in errors)
 
     if image_data_urls:
         hint = (
