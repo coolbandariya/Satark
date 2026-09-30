@@ -1,6 +1,8 @@
 """Scam Challenge game content, state helpers, and Streamlit rendering."""
 import html
 import random
+import math
+import time
 
 import streamlit as st
 
