@@ -11,18 +11,22 @@ class VisibleTextParser(HTMLParser):
     def __init__(self):
         super().__init__()
         self.parts = []
-        self.skip_depth = 0
+        self._skip_tags = []
+        self._ignored_tags = {"script", "style", "noscript", "svg"}
 
     def handle_starttag(self, tag, attrs):
-        if tag.lower() in {"script", "style", "noscript", "svg"}:
-            self.skip_depth += 1
+        tag = tag.lower()
+        if self._skip_tags:
+            self._skip_tags.append(tag)
+        elif tag in self._ignored_tags:
+            self._skip_tags.append(tag)
 
     def handle_endtag(self, tag):
-        if tag.lower() in {"script", "style", "noscript", "svg"} and self.skip_depth:
-            self.skip_depth -= 1
+        if self._skip_tags and tag.lower() == self._skip_tags[0]:
+            self._skip_tags.clear()
 
     def handle_data(self, data):
-        if not self.skip_depth and data.strip():
+        if not self._skip_tags and data.strip():
             self.parts.append(data.strip())
 
     def text(self):
