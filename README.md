@@ -101,6 +101,7 @@ You can also enter the key in the app's sidebar. Never commit API keys, tokens, 
 │   └── ...                    # Project and safety documentation
 ├── satark.py                  # Streamlit entry point and UI workflows
 ├── satark_utils.py            # Side-effect-free text/result helpers
+├── url_security.py            # URL validation and bounded public-page fetching
 ├── reports.py                 # PDF report generation
 ├── tests/
 │   └── test_satark_utils.py   # Unit tests for normalization helpers
@@ -112,10 +113,11 @@ You can also enter the key in the app's sidebar. Never commit API keys, tokens, 
 
 ## Development checks
 
-Run the checks used by CI:
+Run the checks used by CI (after installing `requirements.txt`):
 
 ```bash
-python -m py_compile satark.py reports.py satark_utils.py tests/test_satark_utils.py
+python -m pip check
+python -m py_compile satark.py reports.py satark_utils.py url_security.py tests/test_satark_utils.py
 python -m unittest discover -s tests -v
 ```
 
