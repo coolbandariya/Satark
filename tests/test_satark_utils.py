@@ -65,6 +65,11 @@ class TextNormalizationTests(unittest.TestCase):
         pdf = make_pdf_report(result, "Text")
         self.assertTrue(pdf.startswith(b"%PDF"))
 
+    def test_pdf_report_handles_invalid_top_level_payload(self):
+        pdf = make_pdf_report(["not", "a", "mapping"], "Text")
+        self.assertTrue(pdf.startswith(b"%PDF"))
+        self.assertGreater(len(pdf), 500)
+
     def test_pdf_report_generation(self):
         result = {
             "risk_score": 42,
