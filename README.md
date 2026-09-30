@@ -3,51 +3,91 @@
 # SATARK
 ### Smart AI Threat Analysis & Risk Knowledge
 
-**A security-awareness workspace for examining suspicious content, understanding evidence, and learning safer online habits.**
+**Understand suspicious content. Recognize digital threats. Build safer online habits.**
+
+SATARK is an AI-assisted security-awareness application for exploring suspicious messages, links, images, QR codes, PDFs, and supported videos. It combines guided analysis with practical learning features.
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
-![Streamlit](https://img.shields.io/badge/UI-Streamlit-FF4B4B?logo=streamlit&logoColor=white)
-![Groq](https://img.shields.io/badge/AI-Groq-111827)
-![Status](https://img.shields.io/badge/status-prototype-8b5cf6)
+![Streamlit](https://img.shields.io/badge/Interface-Streamlit-FF4B4B?logo=streamlit&logoColor=white)
+![AI](https://img.shields.io/badge/AI-Groq-111827)
+![Project status](https://img.shields.io/badge/status-prototype-8b5cf6)
 
 </div>
 
 ---
 
-> **Safety note:** SATARK is an assistive analysis and education tool. It is not an antivirus, forensic platform, or guarantee that content is safe. Model-generated scores are not calibrated probabilities. Verify consequential findings independently.
+> **Important:** SATARK is a learning and triage aid—not an antivirus, forensic tool, or proof that content is safe. AI-generated scores are not calibrated probabilities. A suspicious item may be missed, and a legitimate item may be flagged. Independently verify consequential findings.
 
-## Overview
+## Contents
 
-SATARK helps users inspect suspicious messages, URLs, images, QR codes, PDFs, and supported videos. It presents an AI-assisted assessment alongside indicators and suggested next steps. Learning features include Scam Challenge, SATARK Academy, and Classroom Mode.
+- [What SATARK does](#what-satark-does)
+- [Features](#features)
+- [How it works](#how-it-works)
+- [Technology](#technology)
+- [Run locally](#run-locally)
+- [Configure Groq](#configure-groq)
+- [Project structure](#project-structure)
+- [Tests and checks](#tests-and-checks)
+- [Security, privacy, and limitations](#security-privacy-and-limitations)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+
+## What SATARK does
+
+SATARK provides a single workspace to examine potentially risky digital content and learn about common online scams. Depending on the selected workflow and available dependencies, it can analyze text, URLs, images/QR codes, PDFs, and videos. Results may include a threat category, risk score, confidence value, indicators, and suggested next steps.
+
+The app also includes interactive learning experiences such as **Scam Challenge**, **SATARK Academy**, and **Classroom Mode**.
 
 ## Features
 
-| Area | Capabilities |
+| Feature | Description |
 | --- | --- |
-| Content analysis | Text, URL, image/QR, PDF, and supported video workflows |
-| Model handling | Groq model discovery and fallback selection |
-| Results | Threat category, risk score, confidence, indicators, and recommended actions |
-| Reports | Downloadable PDF report |
-| Session history | Temporary in-session results and exports |
-| Learning | Scam Challenge, Academy lessons, and classroom summaries |
+| Text analysis | Review suspicious messages and other text for scam indicators. |
+| URL analysis | Validate and retrieve eligible public-page text for analysis. |
+| Image and QR analysis | Submit supported images and QR-code content for review. |
+| PDF analysis | Extract text from supported PDF documents and analyze it. |
+| Video analysis | Extract representative frames; optionally transcribe audio when the workflow and provider support it. |
+| AI-assisted results | Present a model-generated assessment, indicators, and suggested actions. |
+| PDF export | Download a report of an analysis. |
+| Session history | Revisit results held in the current app session. |
+| Learning | Practice scam recognition and explore security-awareness content. |
 
-Feature availability depends on installed optional dependencies and provider access.
+Some workflows depend on external provider access or optional packages. A completed analysis does not mean that a file was executed in a sandbox or exhaustively scanned.
+
+## How it works
+
+1. **Choose a workflow** and provide the content you want to examine.
+2. **Prepare the input.** Depending on the workflow, SATARK may extract text, inspect image content, or sample video frames.
+3. **Request an AI assessment.** Supported analysis is sent to the configured Groq service.
+4. **Review the result.** Treat the output as a clue for further investigation, not a definitive security verdict.
+5. **Learn and report.** Use the learning sections or export a PDF when useful.
+
+Do not submit passwords, one-time codes, private keys, or unnecessary personal information.
 
 ## Technology
 
-- **Application logic:** Python
-- **Interface:** Streamlit
-- **Presentation:** Dedicated CSS in `styles.css`
-- **AI provider:** Groq API
-- **Documents and images:** pypdf, Pillow
-- **PDF reports:** ReportLab
-- **Optional video processing:** OpenCV
+- **Python** — application logic
+- **Streamlit** — interactive web interface and session state
+- **CSS** — application styling
+- **Groq** — AI model API and supported audio transcription
+- **pypdf** — PDF text extraction
+- **Pillow** — image handling and conversion
+- **ReportLab** — PDF report generation
+- **OpenCV** — video frame extraction
 
-The presentation layer, PDF report rendering, and shared text-normalization helpers are separated from the Streamlit entry point. Analysis, provider/model integration, and interactive learning workflows remain in `satark.py`; these are coupled to Streamlit session state and are not yet independently packaged.
+The repository separates several responsibilities into modules. The main Streamlit entry point still contains substantial analysis and UI orchestration, so the application is not yet fully decoupled.
 
-## Quick start
+## Run locally
 
-Requires Python 3.10+ and a compatible dependency set.
+### Requirements
+
+- Python 3.10 or newer
+- A Groq API key for AI-powered workflows
+- Dependencies listed in `requirements.txt`
+
+### Install
+
+Clone the repository and enter its directory:
 
 ```bash
 git clone https://github.com/coolbandariya/Satark.git
@@ -55,94 +95,115 @@ cd Satark
 python -m venv .venv
 ```
 
-Activate the environment:
+Activate the environment.
 
+**Windows PowerShell**
 ```powershell
-# Windows PowerShell
 .venv\Scripts\Activate.ps1
 ```
 
+**macOS / Linux**
 ```bash
-# macOS / Linux
 source .venv/bin/activate
 ```
 
-Install and run:
+Install dependencies and start Streamlit:
 
 ```bash
+python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 streamlit run satark.py
 ```
 
-## Configuration
+Streamlit will print a local address in the terminal. Open it in your browser.
 
-Set your Groq API key in the environment:
+## Configure Groq
 
-```bash
-# macOS / Linux
-export GROQ_API_KEY="your-key"
-```
+Set `GROQ_API_KEY` in your environment before starting the app.
 
+**Windows PowerShell**
 ```powershell
-# Windows PowerShell
 $env:GROQ_API_KEY="your-key"
+streamlit run satark.py
 ```
 
-You can also enter the key in the app's sidebar. Never commit API keys, tokens, or local environment files.
+**macOS / Linux**
+```bash
+export GROQ_API_KEY="your-key"
+streamlit run satark.py
+```
 
-## Repository layout
+If the app offers a sidebar key field, it can also be used for local experimentation. Never commit API keys or place them in public source files. For deployments, use the hosting provider's secret manager.
+
+## Project structure
 
 ```text
 .
 ├── .github/
-│   └── workflows/ci.yml       # Python syntax and repository checks
+│   └── workflows/
+│       └── ci.yml               # Automated validation workflow
 ├── docs/
-│   ├── ANALYSIS_LIMITATIONS.md
-│   └── ...                    # Project and safety documentation
-├── satark.py                  # Streamlit entry point and UI workflows
-├── satark_utils.py            # Side-effect-free text/result helpers
-├── url_security.py            # URL validation and bounded public-page fetching
-├── reports.py                 # PDF report generation
+│   └── ANALYSIS_LIMITATIONS.md  # Interpretation and safe-use guidance
 ├── tests/
-│   └── test_satark_utils.py   # Unit tests for normalization helpers
-├── styles.css                 # Application presentation
-├── requirements.txt
+│   ├── test_satark_utils.py     # Shared helper tests
+│   └── test_video_processing.py # Video helper tests
+├── satark.py                    # Streamlit entry point and app workflows
+├── scam_challenge.py             # Scam Challenge game and rendering
+├── video_processing.py           # Video frame and audio helpers
+├── reports.py                    # PDF report generation
+├── satark_utils.py               # Shared text/result helpers
+├── url_security.py               # URL validation and public-page fetching
+├── styles.css                    # Application styles
+├── requirements.txt              # Python dependencies
 ├── README.md
-└── SECURITY.md
+└── SECURITY.md                   # Security policy and deployment checklist
 ```
 
-## Development checks
+## Tests and checks
 
-Run the checks used by CI (after installing `requirements.txt`):
+Install the project dependencies, then run:
 
 ```bash
 python -m pip check
-python -m py_compile satark.py reports.py satark_utils.py url_security.py tests/test_satark_utils.py
+python -m compileall -q satark.py scam_challenge.py video_processing.py reports.py satark_utils.py url_security.py tests
 python -m unittest discover -s tests -v
 ```
 
-Then launch the app and manually verify the affected workflow. CI does not exercise Streamlit interactions, external API behavior, model quality, or PDF rendering end to end.
+These checks cover dependency consistency, Python compilation, and the repository's unit tests. They do **not** replace manual testing of Streamlit interactions, live Groq requests, deployment configuration, or end-to-end file processing.
 
-## Responsible use and privacy
+Check the GitHub Actions workflow for the status of automated validation before relying on a change. A passing unit-test run alone does not establish production readiness.
 
-- Do not submit passwords, OTPs, private keys, or unnecessary personal information.
-- Do not open suspicious links or execute attachments merely to validate a result.
-- A model can produce false positives and false negatives; treat results as triage guidance.
-- Review the provider's data-handling terms before sending private content to an external AI service.
-- Session history is intended to be temporary; do not treat it as secure evidence storage.
-- See [docs/ANALYSIS_LIMITATIONS.md](docs/ANALYSIS_LIMITATIONS.md) and [SECURITY.md](SECURITY.md).
+## Security, privacy, and limitations
+
+- **Treat results as advisory.** AI can make mistakes, and attackers can adapt their content.
+- **Do not interact with suspicious content** just to confirm a result. Avoid opening suspicious links or executing attachments.
+- **Minimize sensitive input.** Do not submit passwords, OTPs, private keys, or data you do not need analyzed.
+- **Understand external processing.** Content submitted for AI analysis may be sent to the configured provider. Review the provider's data-handling terms before using sensitive material.
+- **Do not treat session history as evidence storage.** It is not a secure, durable case-management system.
+- **Use deployment safeguards.** Restrict access where appropriate, keep secrets out of source control, set upload/request limits, and apply network egress controls.
+
+See [Analysis limitations](docs/ANALYSIS_LIMITATIONS.md) and the [Security policy](SECURITY.md) for additional guidance.
 
 ## Roadmap
 
-- [x] Move the large embedded style block into a dedicated CSS file.
-- [x] Extract shared text/result normalization helpers into `satark_utils.py`.
-- [x] Isolate public URL validation and fetching in `url_security.py`.
-- [x] Extract PDF report generation into `reports.py`.
-- [x] Add unit tests for normalization helpers.
-- [ ] Separate analysis and provider/model integration from Streamlit UI.
-- [ ] Extract Scam Challenge and Academy content into learning modules.
-- [ ] Add Streamlit workflow tests and PDF regression checks.
+- [x] Move application styling into a dedicated CSS file.
+- [x] Extract shared text/result helpers.
+- [x] Isolate URL validation and public-page fetching.
+- [x] Extract PDF report generation.
+- [x] Extract Scam Challenge into its own module.
+- [x] Extract video processing helpers.
+- [x] Add unit tests for shared helpers and video processing.
+- [ ] Further separate analysis/provider logic from Streamlit UI.
+- [ ] Add broader workflow and end-to-end tests.
+- [ ] Resolve and verify the current CI failure.
+- [ ] Complete a deployment-specific security and runtime review.
 
 ## Contributing
 
-Keep changes focused, avoid committing secrets or real sensitive content, and include the verification steps used. For security issues, follow the private reporting guidance in [SECURITY.md](SECURITY.md).
+Focused improvements and bug fixes are welcome. Please:
+
+1. Keep changes small and explain their purpose.
+2. Add or update tests for behavior changes.
+3. Run the checks above and report what was actually verified.
+4. Never commit credentials, tokens, or real sensitive user content.
+5. Report security vulnerabilities privately using the process in [SECURITY.md](SECURITY.md), rather than opening a public issue.
