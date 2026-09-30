@@ -48,7 +48,7 @@ def extract_video_frames(uploaded_file, max_frames=MAX_VIDEO_FRAMES):
         uploaded_file.seek(0)
     except Exception:
         pass
-    data = uploaded_file.read()
+    data = uploaded_file.read(MAX_VIDEO_BYTES + 1)
     if len(data) > MAX_VIDEO_BYTES:
         raise ValueError("This video is larger than the 200 MB limit SATARK can safely process in-session.")
     if not data:
@@ -146,7 +146,9 @@ def transcribe_video_audio(uploaded_file, client):
 
     try:
         uploaded_file.seek(0)
-        data = uploaded_file.read()
+        data = uploaded_file.read(MAX_VIDEO_BYTES + 1)
+        if len(data) > MAX_VIDEO_BYTES:
+            return ""
     except Exception:
         return ""
 
