@@ -100,13 +100,10 @@ st.set_page_config(
 # ----------------------------- CSS ----------------------------
 
 st.markdown(
-    """{# CSS is maintained separately so presentation changes do not bloat the app. #}
-<style>
-{Path(__file__).with_name("styles.css").read_text(encoding="utf-8")}
-</style>
-""",
+    "<style>" + Path(__file__).with_name("styles.css").read_text(encoding="utf-8") + "</style>",
     unsafe_allow_html=True,
 )
+
 # --------------------------- Helpers --------------------------
 
 def clamp_score(value):
