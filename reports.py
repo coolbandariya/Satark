@@ -123,22 +123,35 @@ def make_pdf_report(result, mode):
     story.append(Paragraph(pdf_escape(result.get('summary','No summary was returned.')), body))
 
     story.append(Paragraph("Evidence Detected", h2))
-    evidence=result.get('key_indicators',[]) or ['No specific indicators were returned.']
-    story.append(Paragraph('<br/>'.join('• '+pdf_escape(x) for x in evidence), body))
+    evidence = result.get("key_indicators", [])
+    if not isinstance(evidence, (list, tuple)):
+        evidence = [evidence] if evidence else []
+    evidence = [_safe_text(item) for item in evidence if item is not None and _safe_text(item)]
+    if not evidence:
+        evidence = ["No specific indicators were returned."]
+    story.append(Paragraph("<br/>".join("• " + pdf_escape(x) for x in evidence), body))
 
     story.append(Paragraph("What To Do Now", h2))
-    recs=result.get('recommendations',[]) or ['Review the content manually before acting.']
-    story.append(Paragraph('<br/>'.join('• '+pdf_escape(x) for x in recs), body))
+    recs = result.get("recommendations", [])
+    if not isinstance(recs, (list, tuple)):
+        recs = [recs] if recs else []
+    recs = [_safe_text(item) for item in recs if item is not None and _safe_text(item)]
+    if not recs:
+        recs = ["Review the content manually before acting."]
+    story.append(Paragraph("<br/>".join("• " + pdf_escape(x) for x in recs), body))
 
     story.append(Paragraph("Threat Analysis", h2))
+    threat_analysis = result.get("threat_analysis", {})
+    if not isinstance(threat_analysis, dict):
+        threat_analysis = {}
     threat_data=[[Paragraph('<b>Security Check</b>',body),Paragraph('<b>Result</b>',body)]]
     for check in THREAT_CHECKS:
-        value=_safe_text(result.get('threat_analysis',{}).get(check,'Needs review'),'Needs review')
+        value=_safe_text(threat_analysis.get(check,'Needs review'),'Needs review')
         threat_data.append([Paragraph(pdf_escape(check),body),Paragraph(pdf_escape(value),body)])
     tt=Table(threat_data,colWidths=[95*mm,80*mm],repeatRows=1)
     ts=[('BACKGROUND',(0,0),(-1,0),colors.HexColor('#eeeaff')),('TEXTCOLOR',(0,0),(-1,0),dark),('GRID',(0,0),(-1,-1),0.5,line),('VALIGN',(0,0),(-1,-1),'TOP'),('LEFTPADDING',(0,0),(-1,-1),7),('RIGHTPADDING',(0,0),(-1,-1),7),('TOPPADDING',(0,0),(-1,-1),6),('BOTTOMPADDING',(0,0),(-1,-1),6)]
     for row_idx in range(1,len(threat_data)):
-        value=_safe_text(result.get('threat_analysis',{}).get(THREAT_CHECKS[row_idx-1],''))
+        value=_safe_text(threat_analysis.get(THREAT_CHECKS[row_idx-1],''))
         cls=check_class(value)
         text_color=green if cls=='check-detected' else red if cls=='check-clear' else amber
         ts.append(('TEXTCOLOR',(1,row_idx),(1,row_idx),text_color))
