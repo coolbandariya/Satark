@@ -20,5 +20,5 @@ jobs:
           python-version: "3.11"
       - name: Compile Python source
         run: python -m py_compile satark.py
-      - name: Validate requirements file
-        run: python -c "from pathlib import Path; p=Path('requirements.txt'); assert p.is_file() and p.stat().st_size > 0"
+      - name: Validate required project assets
+        run: python -c "from pathlib import Path; files=[Path('requirements.txt'),Path('styles.css')]; missing=[str(p) for p in files if not p.is_file() or p.stat().st_size == 0]; assert not missing, f'Missing or empty files: {missing}'"
