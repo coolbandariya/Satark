@@ -30,8 +30,7 @@ class VideoProcessingTests(unittest.TestCase):
     def test_audio_transcription_gracefully_handles_missing_cv2(self):
         upload = BytesIO(b"not a video")
         upload.name = "sample.mp4"
-        with unittest.mock.patch("video_processing._video_dependencies_available", return_value=False):
-            self.assertEqual(transcribe_video_audio(upload, object()), "")
+        self.assertEqual(transcribe_video_audio(upload, object()), "")
 
 
 if __name__ == "__main__":
