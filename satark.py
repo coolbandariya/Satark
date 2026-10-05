@@ -49,6 +49,7 @@ from ui.results import render_threat_analysis, render_verification_sources
 from ui.navigation import render_sidebar
 from ui.demo import get_demo_result
 from ui.learning import render_academy, render_classroom
+from ui.history import render_history
 
 
 # ============================================================
@@ -1741,105 +1742,7 @@ elif st.session_state.page == "Analyze":
 
 elif st.session_state.page == "History":
 
-    st.markdown(
-        '<div class="section-title">🕘 Scan History</div>'
-        '<div class="section-copy">'
-        'Temporary session history. Original submitted content is not '
-        'stored here; only analysis results and metadata are retained.'
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-    if st.session_state.history:
-
-        if st.button(
-            "Clear session history",
-            key="clear_history"
-        ):
-
-            st.session_state.history = []
-            st.session_state.result = None
-            st.rerun()
-
-
-        for i, entry in enumerate(
-            st.session_state.history
-        ):
-
-            score = entry["score"]
-
-            label, css = risk_label(
-                score,
-                entry.get("category", "")
-            )
-
-
-            with st.expander(
-                f"{entry['mode']} • "
-                f"{entry['category']} • "
-                f"{score}/100 • "
-                f"{entry['time']}"
-            ):
-
-                st.markdown(
-                    f'<span class="badge">{label}</span> '
-                    f'<span class="badge">'
-                    f'{html.escape(entry["category"])}'
-                    f'</span>',
-                    unsafe_allow_html=True
-                )
-
-                st.write(
-                    entry["verdict"]
-                )
-
-
-                c1, c2 = st.columns(2)
-
-
-                with c1:
-
-                    if st.button(
-                        "Open result",
-                        key=f"history_open_{i}"
-                    ):
-
-                        st.session_state.result = (
-                            entry["result"]
-                        )
-
-                        st.session_state.mode = (
-                            entry["mode"]
-                        )
-
-                        st.session_state.page = (
-                            "Analyze"
-                        )
-
-                        st.rerun()
-
-
-                with c2:
-
-                    st.download_button(
-                        "📄 Export PDF",
-                        make_pdf_report(
-                            entry["result"],
-                            entry["mode"]
-                        ),
-                        file_name=(
-                            f"SATARK_report_{i+1}.pdf"
-                        ),
-                        mime="application/pdf",
-                        key=f"history_dl_{i}"
-                    )
-
-    else:
-
-        st.info(
-            "No analyses yet. Run a check "
-            "and the result will appear here for this session."
-        )
+    render_history(st.session_state.history, make_pdf_report, risk_label)
 
 
 # ==============================================================
