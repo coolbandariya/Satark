@@ -79,7 +79,7 @@ Do not submit passwords, one-time codes, private keys, or unnecessary personal i
 - **OpenCV** — video frame extraction
 - **FFmpeg** — optional audio-track extraction for video transcription
 
-The repository separates several responsibilities into modules. The main Streamlit entry point still contains substantial analysis and UI orchestration, so the application is not yet fully decoupled.
+The repository separates UI, provider, security, media, reporting, and learning responsibilities into focused modules. `satark.py` remains the orchestration entry point, while the largest user-facing surfaces now live under `ui/`.
 
 ## Run locally
 
@@ -151,8 +151,16 @@ If the app offers a sidebar key field, it can also be used for local experimenta
 ├── tests/
 │   ├── test_ai_provider.py      # Provider/model-selection tests
 │   ├── test_satark_utils.py     # Shared helper tests
+│   ├── test_ui_contracts.py     # UI, accessibility, copy, and modularity contracts
 │   └── test_video_processing.py # Video helper tests
-├── satark.py                    # Streamlit entry point and app workflows
+├── ui/
+│   ├── home.py                  # Home experience and demo entry point
+│   ├── navigation.py            # Sidebar navigation and provider controls
+│   ├── results.py               # Threat/result presentation
+│   ├── history.py               # Session history UI
+│   ├── learning.py              # Academy and Classroom
+│   └── demo.py                  # Offline sample result
+├── satark.py                    # Streamlit entry point and analysis orchestration
 ├── ai_provider.py               # Groq client and model-selection helpers
 ├── scam_challenge.py             # Scam Challenge game and rendering
 ├── video_processing.py           # Video frame and audio helpers
@@ -200,8 +208,12 @@ See [Analysis limitations](docs/ANALYSIS_LIMITATIONS.md) and the [Security polic
 - [x] Extract video processing helpers.
 - [x] Add unit tests for shared helpers and video processing.
 - [x] Extract Groq client and model-selection helpers from the Streamlit entry point.
-- [ ] Add broader workflow and end-to-end tests.
-- [x] Pin runtime dependencies and add automated CI validation.\n- [x] Keep CI green on the current `main` baseline.
+- [x] Add modular UI surfaces for home, navigation, results, history, and learning.
+- [x] Add an offline sample result so first-time users can understand the product before configuring AI.
+- [x] Add UI copy, accessibility, responsive, and modularity regression contracts.
+- [ ] Add broader workflow and end-to-end browser tests.
+- [x] Pin runtime dependencies and add automated CI validation.
+- [ ] Complete a deployment-specific security and runtime review.
 - [ ] Complete a deployment-specific security and runtime review.
 
 ## Contributing
