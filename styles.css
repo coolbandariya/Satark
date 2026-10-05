@@ -71,6 +71,16 @@ a{
     font-weight:650!important;
 }
 
+[data-testid="stSidebar"] [data-testid="stButton"]>button{
+    justify-content:flex-start;
+    text-align:left;
+    min-height:44px;
+}
+
+[data-testid="stSidebar"] .privacy{
+    margin-top:.25rem;
+}
+
 [data-testid="stSidebar"] input::placeholder{
     color:#8f8f98!important;
 }
@@ -98,6 +108,7 @@ a{
     color:var(--muted);
     font-size:.78rem;
     line-height:1.45;
+    max-width:210px;
 }
 
 .side-label{
@@ -264,7 +275,7 @@ a{
 /* BUTTONS */
 
 div[data-testid="stButton"]>button{
-    min-height:46px;
+    min-height:48px;
     border-radius:13px;
     border:1px solid var(--line);
     background:rgba(255,255,255,.045);
@@ -872,7 +883,21 @@ textarea:focus,
     }
 
     .hero p{
-        font-size:.8rem;
+        font-size:.82rem;
+    }
+
+    .hero-note{
+        max-width:100%;
+        justify-content:center;
+        text-align:center;
+    }
+
+    .home-grid{
+        grid-template-columns:1fr;
+    }
+
+    .home-card{
+        min-height:150px;
     }
 
     .scanner{
@@ -956,7 +981,7 @@ textarea:focus,
 }
 
 .hero h1{
-    font-size:clamp(2.15rem,5vw,4.65rem);
+    font-size:clamp(2rem,5vw,4.35rem);
     letter-spacing:-.055em;
     line-height:.98;
     margin:1.35rem 0 1rem;
@@ -978,6 +1003,20 @@ textarea:focus,
     max-width:700px;
     font-size:clamp(.9rem,1.5vw,1.02rem);
     color:#c7c5bf;
+}
+
+.hero-note{
+    position:relative;
+    display:inline-flex;
+    margin-top:1rem;
+    padding:.45rem .75rem;
+    border:1px solid rgba(214,179,106,.18);
+    border-radius:999px;
+    color:#a9a69d;
+    background:rgba(214,179,106,.045);
+    font-size:.68rem;
+    font-weight:700;
+    letter-spacing:.03em;
 }
 
 .hero p strong{
@@ -1009,6 +1048,7 @@ textarea:focus,
 .home-grid{
     display:grid;
     grid-template-columns:repeat(3,minmax(0,1fr));
+    align-items:stretch;
     gap:.85rem;
     max-width:1120px;
     margin:1rem auto 1.35rem;
@@ -1044,14 +1084,14 @@ textarea:focus,
 .home-card-copy{
     margin-top:.45rem;
     color:#aaa8a2;
-    font-size:.78rem;
-    line-height:1.55;
+    font-size:.8rem;
+    line-height:1.6;
 }
 
 .home-trust{
     max-width:1120px;
     margin:1rem auto 1.4rem;
-    padding:.85rem 1rem;
+    padding:.9rem 1rem;
     display:flex;
     justify-content:center;
     gap:1.6rem;
@@ -1061,7 +1101,7 @@ textarea:focus,
 }
 
 .home-trust span{
-    color:#aaa8a1;
+    color:#b9b6ae;
     font-size:.72rem;
     letter-spacing:.07em;
 }
@@ -1082,8 +1122,8 @@ textarea:focus,
 }
 
 .scanner{
-    min-height:142px;
-    padding:1.1rem .8rem;
+    min-height:154px;
+    padding:1.15rem .8rem;
     border-radius:17px;
     background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.018));
     border-color:rgba(255,255,255,.09);
