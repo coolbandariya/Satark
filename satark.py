@@ -939,7 +939,7 @@ sc_init_state()  # Scam Challenge v2 session-state defaults
 api_key = render_sidebar(get_client, discover_models, choose_model, TEXT_MODEL_PREFERENCES, VISION_MODEL_PREFERENCES)
 
 # ---------------------------- Hero -----------------------------
-st.markdown('<section class="hero"><div class="pill">AI SECURITY • EXPLAIN • LEARN • PROTECT</div><h1><span class="hero-primary">Not sure if it’s safe?</span><br><span class="hero-secondary">Let <span class="hero-brand">SATARK</span> investigate.</span></h1><p><strong>Paste a message, check a link, or upload an image, PDF, or video.</strong><br>SATARK highlights evidence, explains uncertainty, and gives you the safest next step.</p></section>',unsafe_allow_html=True)
+st.markdown('<section class="hero"><div class="pill">AI SECURITY • EXPLAIN • LEARN • PROTECT</div><h1><span class="hero-primary">Not sure if it’s safe?</span><br><span class="hero-secondary">Let <span class="hero-brand">SATARK</span> investigate.</span></h1><p><strong>Paste a message, check a link, or upload an image, PDF, or video.</strong><br>SATARK highlights evidence, explains uncertainty, and gives you the safest next step.</p><div class="hero-note">Advisory only · Verify important findings independently</div></section>',unsafe_allow_html=True)
 
 # --------------------------- Pages -----------------------------
 # --------------------------- Pages -----------------------------
@@ -962,25 +962,25 @@ if st.session_state.page == "Home":
         '<div class="home-grid">'
         '<div class="home-card"><div class="home-card-index">01 / CHECK</div>'
         '<div class="home-card-title">Messages & links</div>'
-        '<div class="home-card-copy">Inspect suspicious text, URLs, phishing patterns and social-engineering pressure.</div></div>'
+        '<div class="home-card-copy">Inspect messages, URLs, phishing patterns, impersonation and social-engineering pressure.</div></div>'
         '<div class="home-card"><div class="home-card-index">02 / SEE</div>'
         '<div class="home-card-title">Images & documents</div>'
-        '<div class="home-card-copy">Review screenshots, QR-related images and text-based PDFs for visible warning signs.</div></div>'
+        '<div class="home-card-copy">Review screenshots, QR images and text-based PDFs for visible warning signs.</div></div>'
         '<div class="home-card"><div class="home-card-index">03 / LEARN</div>'
         '<div class="home-card-title">Understand the result</div>'
-        '<div class="home-card-copy">See evidence, confidence, recommendations and the reasoning behind the assessment.</div></div>'
+        '<div class="home-card-copy">See evidence, confidence, recommendations and clear next steps—not just a score.</div></div>'
         '</div>',
         unsafe_allow_html=True,
     )
 
     st.markdown(
         '<div class="home-trust">'
-        '<span><strong>TEXT</strong> analysis</span>'
-        '<span><strong>URL</strong> safety checks</span>'
-        '<span><strong>IMAGE</strong> vision</span>'
-        '<span><strong>PDF</strong> extraction</span>'
-        '<span><strong>VIDEO</strong> frame + audio</span>'
-        '<span><strong>SESSION</strong> history only</span>'
+        '<span><strong>TEXT</strong> messages</span>'
+        '<span><strong>URL</strong> links</span>'
+        '<span><strong>IMAGE</strong> screenshots</span>'
+        '<span><strong>PDF</strong> documents</span>'
+        '<span><strong>VIDEO</strong> frames + audio</span>'
+        '<span><strong>SESSION</strong> temporary history</span>'
         '</div>',
         unsafe_allow_html=True,
     )
@@ -1743,7 +1743,7 @@ elif st.session_state.page == "History":
     st.markdown(
         '<div class="section-title">🕘 Scan History</div>'
         '<div class="section-copy">'
-        'Session-only history. Original submitted content is not '
+        'Temporary session history. Original submitted content is not '
         'stored here; only analysis results and metadata are retained.'
         '</div>',
         unsafe_allow_html=True
@@ -1836,8 +1836,8 @@ elif st.session_state.page == "History":
     else:
 
         st.info(
-            "No scans yet. Analyze something suspicious "
-            "and it will appear here for this session."
+            "No analyses yet. Run a check "
+            "and the result will appear here for this session."
         )
 
 
@@ -1863,8 +1863,8 @@ elif st.session_state.page == "Academy":
     st.markdown(
         '<div class="section-title">🎓 SATARK Academy</div>'
         '<div class="section-copy">'
-        'Learn the patterns behind the scams instead of relying '
-        'on AI forever.'
+        'Learn the patterns behind common scams so you can spot them before you need an AI check.'
+        ''
         '</div>',
         unsafe_allow_html=True
     )
@@ -1958,7 +1958,7 @@ elif st.session_state.page == "Classroom":
     st.markdown(
         '<div class="section-title">👨‍🏫 Classroom Mode</div>'
         '<div class="section-copy">'
-        'A simple teacher-facing view for using SATARK '
+        'A lightweight view for using SATARK '
         'as a cyber-safety learning tool.'
         '</div>',
         unsafe_allow_html=True
@@ -1993,7 +1993,7 @@ elif st.session_state.page == "Classroom":
             f'''
             <div class="metric">
                 <div class="metric-label">
-                    Scans this session
+                    Analyses this session
                 </div>
                 <div class="metric-value">
                     {total}
@@ -2010,7 +2010,7 @@ elif st.session_state.page == "Classroom":
             f'''
             <div class="metric">
                 <div class="metric-label">
-                    Average risk
+                    Average risk score
                 </div>
                 <div class="metric-value">
                     {avg}/100
@@ -2076,7 +2076,7 @@ elif st.session_state.page == "Classroom":
         ):
 
             st.write(
-                f"• **{k}** — {v} scan(s)"
+                f"• **{k}** — {v} analysis(es)"
             )
 
     else:
