@@ -22,8 +22,9 @@ class UIContractTests(unittest.TestCase):
     def test_scanner_copy_matches_current_seven_modes(self):
         self.assertIn("Seven scanners cover text, links, images, documents, QR codes and video.", APP)
         self.assertNotIn("original six SATARK modes", APP)
+        self.assertIn('f"Select {name}"', APP)
         for label in ("Text", "URL", "Image", "PDF", "QR", "Video"):
-            self.assertIn(f'Select {label}', APP)
+            self.assertIn(f'("{label}"', APP)
 
     def test_privacy_boundary_is_explicit(self):
         self.assertIn("Privacy boundary", APP)
