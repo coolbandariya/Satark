@@ -513,7 +513,7 @@ TEXT_MODEL_PREFERENCES = [
     "openai/gpt-oss-20b",
 ]
 # Vision model fallback chain. Previously this was a single hardcoded model
-# (qwen/qwen3.6-27b), which meant image/QR analysis broke entirely the moment
+# (qwen/qwen3.8-27b), which meant image/QR analysis broke entirely the moment
 # that one model became unavailable or the API key lost access to it.
 # analyze_with_groq now tries each of these in order and only reports failure
 # once every candidate has been exhausted.
