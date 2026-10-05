@@ -36,11 +36,10 @@ class VideoProcessingTests(unittest.TestCase):
     def test_empty_frames_return_empty_list(self):
         self.assertEqual(pil_frames_to_data_urls([]), [])
 
-    def test_audio_transcription_gracefully_handles_missing_cv2(self):
+    def test_audio_transcription_gracefully_handles_missing_client(self):
         upload = BytesIO(b"not a video")
         upload.name = "sample.mp4"
-        with patch.dict("sys.modules", {"cv2": None}):
-            self.assertEqual(transcribe_video_audio(upload, object()), "")
+        self.assertEqual(transcribe_video_audio(upload, None), "")
 
     def test_audio_transcription_gracefully_handles_missing_ffmpeg(self):
         upload = BytesIO(b"not a video")
