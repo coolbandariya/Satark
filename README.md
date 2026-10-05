@@ -149,6 +149,7 @@ If the app offers a sidebar key field, it can also be used for local experimenta
 │   ├── test_satark_utils.py     # Shared helper tests
 │   └── test_video_processing.py # Video helper tests
 ├── satark.py                    # Streamlit entry point and app workflows
+├── ai_provider.py               # Groq client and model-selection helpers
 ├── scam_challenge.py             # Scam Challenge game and rendering
 ├── video_processing.py           # Video frame and audio helpers
 ├── reports.py                    # PDF report generation
@@ -194,7 +195,7 @@ See [Analysis limitations](docs/ANALYSIS_LIMITATIONS.md) and the [Security polic
 - [x] Extract Scam Challenge into its own module.
 - [x] Extract video processing helpers.
 - [x] Add unit tests for shared helpers and video processing.
-- [ ] Further separate analysis/provider logic from Streamlit UI.
+- [x] Extract Groq client and model-selection helpers from the Streamlit entry point.
 - [ ] Add broader workflow and end-to-end tests.
 - [x] Pin runtime dependencies and add automated CI validation.
 - [ ] Complete a deployment-specific security and runtime review.
