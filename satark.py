@@ -1264,7 +1264,7 @@ elif st.session_state.page == "Analyze":
             accept_multiple_files=False,
             max_upload_size=200,
             help=(
-                "SATARK extracts a handful of representative 
+                "SATARK extracts a handful of representative "
                 "frames and, when possible, transcribes the audio. "
                 "Max 200 MB."
             ),
