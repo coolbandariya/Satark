@@ -47,6 +47,7 @@ from reports import make_pdf_report
 from satark_utils import safe_text, clean_json_text, normalize_check_value, check_class
 from ui.results import render_threat_analysis, render_verification_sources
 from ui.navigation import render_sidebar
+from ui.demo import get_demo_result
 
 
 # ============================================================
@@ -928,7 +929,7 @@ def init_state():
         "mode":"Text","result":None,"history":[],"page":"Home",
         "challenge_index":0,"challenge_score":0,"challenge_answered":False,
         "available_models":set(),"text_model":None,"vision_model":None,
-        "last_input_fingerprint":"","analysis_request_id":"",
+        "last_input_fingerprint":"","analysis_request_id":"","demo_mode":False,
     }
     for k,v in defaults.items():
         if k not in st.session_state: st.session_state[k]=v
@@ -995,6 +996,17 @@ if st.session_state.page == "Home":
         st.session_state.page = "Analyze"
         st.session_state.scroll_to_scanners = True
         st.rerun()
+    if st.button(
+        "See a sample result",
+        use_container_width=True,
+        key="demo_result"
+    ):
+        st.session_state.result = get_demo_result()
+        st.session_state.mode = "Text"
+        st.session_state.demo_mode = True
+        st.session_state.page = "Analyze"
+        st.rerun()
+
 
     st.markdown('</div>', unsafe_allow_html=True)
 
