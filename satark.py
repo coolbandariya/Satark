@@ -1,5 +1,3 @@
-api_key = render_sidebar(get_client, discover_models, choose_model, TEXT_MODEL_PREFERENCES, VISION_MODEL_PREFERENCES)
-
 # 🧰 CORE PYTHON / SYSTEM
 import os
 from pathlib import Path
@@ -852,6 +850,8 @@ def init_state():
         if k not in st.session_state: st.session_state[k]=v
 init_state()
 sc_init_state()  # Scam Challenge v2 session-state defaults
+
+api_key = render_sidebar(get_client, discover_models, choose_model, TEXT_MODEL_PREFERENCES, VISION_MODEL_PREFERENCES)
 
 # ---------------------------- Hero -----------------------------
 st.markdown('<section class="hero"><div class="pill">AI SECURITY • EXPLAIN • LEARN • PROTECT</div><h1><span class="hero-primary">Not sure if it’s safe?</span><br><span class="hero-secondary">Let <span class="hero-brand">SATARK</span> investigate.</span></h1><p><strong>Paste a message, check a link, or upload an image, PDF, or video.</strong><br>SATARK highlights evidence, explains uncertainty, and gives you the safest next step.</p></section>',unsafe_allow_html=True)
