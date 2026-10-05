@@ -149,6 +149,7 @@ If the app offers a sidebar key field, it can also be used for local experimenta
 ├── docs/
 │   └── ANALYSIS_LIMITATIONS.md  # Interpretation and safe-use guidance
 ├── tests/
+│   ├── test_ai_provider.py      # Provider/model-selection tests
 │   ├── test_satark_utils.py     # Shared helper tests
 │   └── test_video_processing.py # Video helper tests
 ├── satark.py                    # Streamlit entry point and app workflows
