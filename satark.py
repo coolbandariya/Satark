@@ -45,6 +45,7 @@ from reportlab.platypus import (
 )
 from reports import make_pdf_report
 from satark_utils import safe_text, clean_json_text, normalize_check_value, check_class
+from ui.results import render_threat_analysis, render_verification_sources
 
 
 # ============================================================
@@ -745,44 +746,6 @@ Not detected, Low, Medium, High.
 
 
 # ---------------------- UI/result helpers ----------------------
-def render_threat_analysis(result):
-    rows = []
-    for check in THREAT_CHECKS:
-        value = safe_text(result.get("threat_analysis", {}).get(check, "Needs review"), "Needs review")
-        cls = check_class(value)
-        icon = "✖" if cls == "check-clear" else "✓" if cls == "check-detected" else "•"
-        rows.append(f'<tr><td>{html.escape(check)}</td><td class="{cls}">{icon} {html.escape(value)}</td></tr>')
-    table = (
-        '<table class="report-table"><caption class="sr-only">Security checks and their current results</caption><thead><tr><th scope="col">Security Check</th><th scope="col">Result</th></tr></thead>'
-        '<tbody>' + ''.join(rows) + '</tbody></table>'
-    )
-    legend = (
-        '<div class="status-legend">'
-        '<div class="status-legend-title">How to read the results</div>'
-        '<span class="status-item"><span class="status-detected">✓ Detected</span> — sufficient evidence that the indicator is present.</span>'
-        '<span class="status-item"><span class="status-review">• Needs review</span> — evidence is ambiguous or insufficient; verify it manually.</span>'
-        '<span class="status-item"><span class="status-clear">✖ Not detected</span> — no meaningful evidence of that indicator was found.</span>'
-        '</div>'
-    )
-    st.markdown(f'<section class="report-section"><h3>🔎 Threat signals</h3>{table}{legend}</section>', unsafe_allow_html=True)
-
-
-def render_verification_sources(result):
-    rows=[]
-    for item in result.get("verification_sources", OFFICIAL_VERIFICATION_SOURCES):
-        source=html.escape(safe_text(item.get("source")))
-        purpose=html.escape(safe_text(item.get("purpose")))
-        website=safe_text(item.get("website"))
-        safe_href=html.escape(website, quote=True)
-        safe_label=html.escape(website)
-        rows.append(f'<tr><td>{source}</td><td>{purpose}</td><td><a class="source-link" href="{safe_href}" target="_blank">{safe_label}</a></td></tr>')
-    table=(
-        '<table class="report-table"><caption class="sr-only">Official sources for independently verifying high-impact findings</caption><thead><tr><th scope="col">Source</th><th scope="col">Purpose</th><th scope="col">Official Website</th></tr></thead>'
-        '<tbody>'+''.join(rows)+'</tbody></table>'
-    )
-    st.markdown(f'<section class="report-section"><h3>📚 Verify independently</h3>{table}</section>', unsafe_allow_html=True)
-
-
 def confidence_css_class(confidence):
     """Color-code the confidence metric so low-confidence results are visually
     distinct instead of looking identical to high-confidence ones."""
@@ -839,8 +802,8 @@ def render_result(result):
         st.markdown('</div>',unsafe_allow_html=True)
     st.markdown('</div>',unsafe_allow_html=True)
 
-    render_threat_analysis(result)
-    render_verification_sources(result)
+    render_threat_analysis(result, THREAT_CHECKS)
+    render_verification_sources(result, OFFICIAL_VERIFICATION_SOURCES)
 
     conclusion = html.escape(build_final_conclusion(result))
     st.markdown(f'<section class="report-section"><h3>💡 Bottom line</h3><div class="conclusion-card">{conclusion}</div></section>', unsafe_allow_html=True)
