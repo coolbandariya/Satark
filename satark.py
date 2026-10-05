@@ -8,8 +8,6 @@ import math
 import json
 import base64
 import hashlib
-import socket
-import ipaddress
 import html
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -25,15 +23,11 @@ def now_ist():
     return datetime.now(IST)
 
 # 🌐 WEB / URL HANDLING
-from html.parser import HTMLParser
-from urllib.parse import urlparse
-from urllib.request import Request, urlopen, HTTPRedirectHandler, build_opener
 from urllib.error import HTTPError, URLError
 
 # 🤖 AI / WEB APP
 import streamlit as st
 import streamlit.components.v1 as components
-from groq import Groq
 
 # 📄 FILE & IMAGE PROCESSING
 from pypdf import PdfReader
