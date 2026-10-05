@@ -753,7 +753,7 @@ def render_threat_analysis(result):
         icon = "✖" if cls == "check-clear" else "✓" if cls == "check-detected" else "•"
         rows.append(f'<tr><td>{html.escape(check)}</td><td class="{cls}">{icon} {html.escape(value)}</td></tr>')
     table = (
-        '<table class="report-table"><thead><tr><th>Security Check</th><th>Result</th></tr></thead>'
+        '<table class="report-table"><caption class="sr-only">Security checks and their current results</caption><thead><tr><th scope="col">Security Check</th><th scope="col">Result</th></tr></thead>'
         '<tbody>' + ''.join(rows) + '</tbody></table>'
     )
     legend = (
@@ -777,7 +777,7 @@ def render_verification_sources(result):
         safe_label=html.escape(website)
         rows.append(f'<tr><td>{source}</td><td>{purpose}</td><td><a class="source-link" href="{safe_href}" target="_blank">{safe_label}</a></td></tr>')
     table=(
-        '<table class="report-table"><thead><tr><th>Source</th><th>Purpose</th><th>Official Website</th></tr></thead>'
+        '<table class="report-table"><caption class="sr-only">Official sources for independently verifying high-impact findings</caption><thead><tr><th scope="col">Source</th><th scope="col">Purpose</th><th scope="col">Official Website</th></tr></thead>'
         '<tbody>'+''.join(rows)+'</tbody></table>'
     )
     st.markdown(f'<section class="report-section"><h3>📚 Official Verification Sources</h3>{table}</section>', unsafe_allow_html=True)
