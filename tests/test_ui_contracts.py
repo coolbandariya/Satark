@@ -23,9 +23,9 @@ class UIContractTests(unittest.TestCase):
         self.assertLess(len(APP), 65000)
 
     def test_home_copy_has_clear_user_facing_value_proposition(self):
-        self.assertIn("Clear answers for suspicious content.", HOME)
-        self.assertIn("Start checking", HOME)
-        self.assertIn("See a sample result", HOME)
+        self.assertIn("Pause. Investigate. Then act.", HOME)
+        self.assertIn("Start an investigation", HOME)
+        self.assertIn("Explore a sample result", HOME)
 
     def test_navigation_uses_plain_language_and_privacy_boundary(self):
         self.assertIn('"Analyze","🔎 Analyze"', NAV)
@@ -59,6 +59,9 @@ class UIContractTests(unittest.TestCase):
         self.assertIn(".hero-note", CSS)
         self.assertIn(".home-actions", CSS)
         self.assertIn("prefers-reduced-motion:reduce", CSS)
+        self.assertIn("--accent:#ff6a00", CSS)
+        self.assertNotIn("--violet", CSS)
+        self.assertNotIn("#a99cff", CSS)
 
     def test_learning_and_history_are_modular(self):
         self.assertIn("render_academy", LEARNING)
