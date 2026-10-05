@@ -1207,6 +1207,9 @@ elif st.session_state.page == "Analyze":
     # ==========================================================
     # SECURITY ANALYSIS INPUT
     # ==========================================================
+    if st.session_state.get("demo_mode"):
+        st.info("🧪 Sample result · this is an offline example. Run a real analysis to replace it.")
+
 
     st.markdown(
         f'<div class="section-title">🔎 Analyze {mode.lower()}</div>'
@@ -1415,6 +1418,8 @@ elif st.session_state.page == "Analyze":
     # ==========================================================
 
     if analyze_clicked:
+
+        st.session_state.demo_mode = False
 
         if not safe_text(api_key):
 
