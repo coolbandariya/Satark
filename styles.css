@@ -1372,3 +1372,54 @@ div[data-testid="stButton"]>button:hover{
         min-height:112px;
     }
 }
+
+/* FINAL PRODUCT POLISH */
+.hero-note{
+    position:relative;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    margin-top:1rem;
+    padding:.45rem .8rem;
+    border:1px solid var(--accent-line);
+    border-radius:999px;
+    color:var(--muted-strong);
+    background:var(--accent-wash);
+    font-size:.68rem;
+    font-weight:750;
+    letter-spacing:.02em;
+}
+.home-actions{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    gap:.7rem;
+    max-width:720px;
+    margin:1rem auto 0;
+}
+.home-actions div[data-testid="stButton"]>button{
+    min-height:52px;
+}
+.home-actions div[data-testid="stButton"]:last-child>button{
+    background:rgba(255,255,255,.035);
+}
+.metric-value-small{
+    overflow-wrap:anywhere;
+}
+@media(max-width:640px){
+    .home-actions{
+        grid-template-columns:1fr;
+    }
+    .hero-note{
+        width:100%;
+        max-width:100%;
+        text-align:center;
+    }
+}
+@media(prefers-reduced-motion:reduce){
+    *,*::before,*::after{
+        scroll-behavior:auto!important;
+        animation-duration:.001ms!important;
+        animation-iteration-count:1!important;
+        transition-duration:.001ms!important;
+    }
+}
