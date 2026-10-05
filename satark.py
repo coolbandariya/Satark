@@ -53,7 +53,7 @@ from satark_utils import safe_text, clean_json_text, normalize_check_value, chec
 #
 # Keeps the original SATARK analysis flow, while adding:
 # - automatic Groq model discovery
-# - resilient vision-model selection (now with fallback chain)
+# - resilient model selection based on provider discovery
 # - improved result presentation
 # - session history + report export
 # - Scam Challenge
