@@ -52,7 +52,7 @@ The app also includes interactive learning experiences such as **Scam Challenge*
 | Session history | Revisit results held in the current app session. |
 | Learning | Practice scam recognition and explore security-awareness content. |
 
-Some workflows depend on external provider access or optional packages. A completed analysis does not mean that a file was executed in a sandbox or exhaustively scanned.
+Some workflows depend on external provider access or optional system tools. Video frame analysis uses OpenCV; video audio transcription additionally requires FFmpeg to be installed on the host. A completed analysis does not mean that a file was executed in a sandbox or exhaustively scanned.
 
 ## How it works
 
@@ -74,6 +74,7 @@ Do not submit passwords, one-time codes, private keys, or unnecessary personal i
 - **Pillow** — image handling and conversion
 - **ReportLab** — PDF report generation
 - **OpenCV** — video frame extraction
+- **FFmpeg** — optional audio-track extraction for video transcription
 
 The repository separates several responsibilities into modules. The main Streamlit entry point still contains substantial analysis and UI orchestration, so the application is not yet fully decoupled.
 
