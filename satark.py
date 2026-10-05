@@ -391,7 +391,23 @@ def normalize_result(data, raw="", model_used=""):
 
 from url_security import VisibleTextParser, is_public_url, fetch_url_text
 
+MAX_PDF_BYTES = 25 * 1024 * 1024
+MAX_IMAGE_BYTES = 10 * 1024 * 1024
+
+def _uploaded_size(uploaded_file):
+    try:
+        return int(getattr(uploaded_file, "size"))
+    except (TypeError, ValueError):
+        pass
+    try:
+        return len(uploaded_file.getvalue())
+    except Exception:
+        return None
+
 def extract_pdf_text(uploaded_file):
+    size = _uploaded_size(uploaded_file)
+    if size is not None and size > MAX_PDF_BYTES:
+        raise ValueError("This PDF is larger than SATARK's 25 MB processing limit.")
     reader = PdfReader(uploaded_file)
     pages = []
     for page in reader.pages[:30]:
@@ -414,6 +430,9 @@ def image_to_data_url(uploaded_file):
     budget for vision models — full-resolution uploads were previously
     large enough on their own to trip the TPM rate limit."""
     from io import BytesIO
+    size = _uploaded_size(uploaded_file)
+    if size is not None and size > MAX_IMAGE_BYTES:
+        raise ValueError("This image is larger than SATARK's 10 MB processing limit.")
     try:
         uploaded_file.seek(0)
     except Exception:
@@ -490,8 +509,6 @@ def get_client(api_key):
 
 # ---------------------- Model discovery ------------------------
 TEXT_MODEL_PREFERENCES = [
-    "llama-3.3-70b-versatile",
-    "llama-3.1-8b-instant",
     "openai/gpt-oss-120b",
     "openai/gpt-oss-20b",
 ]
@@ -501,14 +518,14 @@ TEXT_MODEL_PREFERENCES = [
 # analyze_with_groq now tries each of these in order and only reports failure
 # once every candidate has been exhausted.
 VISION_MODEL_PREFERENCES = [
-    "qwen/qwen3.6-27b",
+    "qwen/qwen3.8-27b",
 ]
 
 # Some vision models cap how many images can be sent in one request (e.g. Qwen
 # allows only 3). Keyed by model id; models not listed here use the default
 # cap applied in analyze_with_groq.
 VISION_MODEL_IMAGE_LIMITS = {
-    "qwen/qwen3.6-27b": 3,
+    "qwen/qwen3.8-27b": 3,
 }
 
 
