@@ -11,6 +11,7 @@ SATARK is an AI-assisted security-awareness application for exploring suspicious
 ![Streamlit](https://img.shields.io/badge/Interface-Streamlit-FF4B4B?logo=streamlit&logoColor=white)
 ![AI](https://img.shields.io/badge/AI-Groq-111827)
 ![Project status](https://img.shields.io/badge/status-prototype-8b5cf6)
+![CI](https://github.com/coolbandariya/Satark/actions/workflows/ci.yml/badge.svg)
 
 </div>
 
@@ -70,6 +71,8 @@ Do not submit passwords, one-time codes, private keys, or unnecessary personal i
 - **Streamlit** — interactive web interface and session state
 - **CSS** — application styling
 - **Groq** — AI model API and supported audio transcription
+  - Text workflows prefer `openai/gpt-oss-120b`, with `openai/gpt-oss-20b` as fallback when available.
+  - Vision workflows use `qwen/qwen3.8-27b`, subject to the API key's available models.
 - **pypdf** — PDF text extraction
 - **Pillow** — image handling and conversion
 - **ReportLab** — PDF report generation
@@ -167,13 +170,13 @@ Install the project dependencies, then run:
 
 ```bash
 python -m pip check
-python -m compileall -q satark.py scam_challenge.py video_processing.py reports.py satark_utils.py url_security.py tests
+python -m compileall -q satark.py ai_provider.py scam_challenge.py video_processing.py reports.py satark_utils.py url_security.py tests
 python -m unittest discover -s tests -v
 ```
 
-These checks cover dependency consistency, Python compilation, and the repository's unit tests. They do **not** replace manual testing of Streamlit interactions, live Groq requests, deployment configuration, or end-to-end file processing.
+These checks cover dependency consistency, Python compilation, helper/model-selection tests, URL/PDF safety cases, and video-processing tests. They do **not** replace manual testing of Streamlit interactions, live Groq requests, deployment configuration, or end-to-end file processing.
 
-Check the GitHub Actions workflow for the status of automated validation before relying on a change. A passing unit-test run alone does not establish production readiness.
+GitHub Actions also validates the same core checks on pushes and pull requests, including dependency installation, `pip check`, compilation, unit tests, stylesheet integrity, and required-file checks. A passing unit-test run alone does not establish production readiness.
 
 ## Security, privacy, and limitations
 
@@ -197,7 +200,7 @@ See [Analysis limitations](docs/ANALYSIS_LIMITATIONS.md) and the [Security polic
 - [x] Add unit tests for shared helpers and video processing.
 - [x] Extract Groq client and model-selection helpers from the Streamlit entry point.
 - [ ] Add broader workflow and end-to-end tests.
-- [x] Pin runtime dependencies and add automated CI validation.
+- [x] Pin runtime dependencies and add automated CI validation.\n- [x] Keep CI green on the current `main` baseline.
 - [ ] Complete a deployment-specific security and runtime review.
 
 ## Contributing
