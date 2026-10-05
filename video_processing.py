@@ -37,6 +37,13 @@ def extract_video_frames(uploaded_file, max_frames=MAX_VIDEO_FRAMES):
     import tempfile
 
     try:
+        max_frames = int(max_frames)
+    except (TypeError, ValueError, OverflowError) as exc:
+        raise ValueError("max_frames must be a positive integer.") from exc
+    if max_frames < 1:
+        raise ValueError("max_frames must be a positive integer.")
+
+    try:
         import cv2
     except Exception as exc:
         raise RuntimeError(
@@ -44,13 +51,6 @@ def extract_video_frames(uploaded_file, max_frames=MAX_VIDEO_FRAMES):
             "which is not installed in this environment. Run "
             "`pip install opencv-python-headless --break-system-packages` and restart the app."
         ) from exc
-
-    try:
-        max_frames = int(max_frames)
-    except (TypeError, ValueError, OverflowError) as exc:
-        raise ValueError("max_frames must be a positive integer.") from exc
-    if max_frames < 1:
-        raise ValueError("max_frames must be a positive integer.")
 
     warnings = []
     try:
