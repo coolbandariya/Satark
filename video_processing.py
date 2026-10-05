@@ -201,7 +201,7 @@ def transcribe_video_audio(uploaded_file, client):
             )
         text = transcript if isinstance(transcript, str) else safe_text(getattr(transcript, "text", ""))
         return text.strip()[:3000]
-    except (OSError, subprocess.SubprocessError, Exception):
+    except Exception:
         return ""
     finally:
         for path in (video_path, audio_path):
