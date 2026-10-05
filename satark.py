@@ -48,7 +48,7 @@ from satark_utils import safe_text, clean_json_text, normalize_check_value, chec
 
 
 # ============================================================
-# SATARK — Smart AI Threat Analysis & Risk Knowledge
+# SATARK — Smart threat analysis · clear decisions
 # Streamlit entry point; feature modules are kept separate where practical
 #
 # Keeps the original SATARK analysis flow, while adding:
@@ -889,13 +889,13 @@ sc_init_state()  # Scam Challenge v2 session-state defaults
 
 # --------------------------- Sidebar ---------------------------
 with st.sidebar:
-    st.markdown('<div class="brand"><div class="brand-logo">SATARK <span class="brand-dot">◦</span></div><div class="brand-tag">Smart AI Threat Analysis & Risk Knowledge</div></div>',unsafe_allow_html=True)
-    st.markdown('<div class="side-label">Navigate</div>',unsafe_allow_html=True)
-    for page,label in [("Home","🏠 Home"),("Analyze","🔎 Check something"),("History","🕘 History"),("Challenge","🎯 Scam Challenge"),("Academy","🎓 SATARK Academy"),("Classroom","👨‍🏫 Classroom Mode")]:
+    st.markdown('<div class="brand"><div class="brand-logo">SATARK <span class="brand-dot">◦</span></div><div class="brand-tag">Smart threat analysis · clear decisions</div></div>',unsafe_allow_html=True)
+    st.markdown('<div class="side-label">Workspace</div>',unsafe_allow_html=True)
+    for page,label in [("Home","🏠 Overview"),("Analyze","🔎 Analyze"),("History","🕘 History"),("Challenge","🎯 Scam Challenge"),("Academy","🎓 Academy"),("Classroom","👨‍🏫 Classroom")]:
         if st.button(label,key=f"nav_{page}",use_container_width=True): st.session_state.page=page; st.rerun()
-    st.markdown('<div class="side-label">API configuration</div>',unsafe_allow_html=True)
+    st.markdown('<div class="side-label">AI connection</div>',unsafe_allow_html=True)
     env_key=os.getenv("GROQ_API_KEY","")
-    api_key=st.text_input("🔑 Groq API Key",value=env_key,type="password",placeholder="Paste your Groq API key",help="Kept in the Streamlit session; not intentionally written to disk by SATARK.")
+    api_key=st.text_input("🔑 Groq API key",value=env_key,type="password",placeholder="Paste your Groq API key",help="Kept in the Streamlit session; not intentionally written to disk by SATARK.")
     if api_key:
         if st.button("Check AI connection",key="check_ai",use_container_width=True):
             try:
@@ -907,12 +907,12 @@ with st.sidebar:
                 elif st.session_state.text_model: st.warning("AI connected • text available, no vision model exposed to this key")
                 else: st.error("API key is accepted but no supported SATARK text model was found.")
             except Exception as exc: st.error(f"Could not check Groq ({type(exc).__name__}). Verify the key, network, and provider status.")
-    st.markdown('<div class="side-label">Personalization</div>',unsafe_allow_html=True)
-    role=st.selectbox("👤 Who are you?",["Student","Teacher","Working professional","Parent / Guardian","Senior user","Security learner"],index=0)
-    st.markdown('<div class="privacy"><strong>🔒 Privacy first</strong><br>SATARK keeps history only in this Streamlit session. Submitted content is not intentionally saved to disk by this app. Content is sent to Groq only when you analyze it. Avoid passwords, private keys and secrets.</div>',unsafe_allow_html=True)
+    st.markdown('<div class="side-label">Audience</div>',unsafe_allow_html=True)
+    role=st.selectbox("👤 Your context",["Student","Teacher","Working professional","Parent / Guardian","Senior user","Security learner"],index=0)
+    st.markdown('<div class="privacy"><strong>🔒 Privacy boundary</strong><br>History stays in this browser session. Submitted content is not intentionally written to disk by SATARK. Content is sent to Groq only when you start an analysis. Never submit passwords, OTPs, private keys, or other secrets.</div>',unsafe_allow_html=True)
 
 # ---------------------------- Hero -----------------------------
-st.markdown('<section class="hero"><div class="pill">AI SECURITY • EXPLAIN • LEARN • PROTECT</div><h1><span class="hero-primary">Think it’s a scam?</span><br><span class="hero-secondary">Let <span class="hero-brand">SATARK</span> check it.</span></h1><p><strong>Paste a message, inspect a link, upload a screenshot, video, or analyze a PDF.</strong><br>SATARK explains the risk in simple language and shows the evidence behind its assessment.</p></section>',unsafe_allow_html=True)
+st.markdown('<section class="hero"><div class="pill">AI SECURITY • EXPLAIN • LEARN • PROTECT</div><h1><span class="hero-primary">Not sure if it’s safe?</span><br><span class="hero-secondary">Let <span class="hero-brand">SATARK</span> investigate.</span></h1><p><strong>Paste a message, check a link, or upload an image, PDF, or video.</strong><br>SATARK highlights evidence, explains uncertainty, and gives you the safest next step.</p></section>',unsafe_allow_html=True)
 
 # --------------------------- Pages -----------------------------
 # --------------------------- Pages -----------------------------
@@ -921,7 +921,7 @@ if st.session_state.page == "Home":
 
     st.markdown(
         '<div class="home-intro">'
-        '<div class="home-intro-title">Security analysis without the noise.</div>'
+        '<div class="home-intro-title">Clear answers for suspicious content.</div>'
         '<div class="home-intro-copy">'
         'Start with what you received, not with a complicated security dashboard. '
         'SATARK turns suspicious content into clear evidence, practical next steps, '
@@ -961,7 +961,7 @@ if st.session_state.page == "Home":
     st.markdown('<div class="analyze">', unsafe_allow_html=True)
 
     if st.button(
-        "Start a security check  →",
+        "Start checking  →",
         use_container_width=True,
         type="primary",
         key="goto_analyze"
@@ -1022,9 +1022,9 @@ elif st.session_state.page == "Analyze":
     # ==========================================================
 
     st.markdown(
-        '<div class="section-title">What do you want to check?</div>'
+        '<div class="section-title">Choose what you want SATARK to inspect</div>'
         '<div class="section-copy">'
-        'Choose a scanner. Your original six SATARK modes remain available, plus Video.'
+        'Choose a scanner. Seven scanners cover text, links, images, documents, QR codes and video.'
         '</div>',
         unsafe_allow_html=True
     )
@@ -1064,7 +1064,7 @@ elif st.session_state.page == "Analyze":
                 )
 
                 if st.button(
-                    f"Use {name}",
+                    f"Select {name}",
                     key=f"scanner_{name}",
                     use_container_width=True
                 ):
@@ -1171,8 +1171,8 @@ elif st.session_state.page == "Analyze":
     # ==========================================================
 
     st.markdown(
-        f'<div class="section-title">🔎 Security Analysis</div>'
-        f'<div class="section-copy">Selected: <strong>{mode}</strong></div>',
+        f'<div class="section-title">🔎 Analyze {mode.lower()}</div>'
+        f'<div class="section-copy">Selected scanner: <strong>{mode}</strong> · Results are advisory; verify important findings independently.</div>',
         unsafe_allow_html=True
     )
 
@@ -1189,7 +1189,7 @@ elif st.session_state.page == "Analyze":
     if mode == "Text":
 
         content = st.text_area(
-            "Enter content",
+            "Message or content",
             height=230,
             placeholder=(
                 "Paste any message, post, SMS, "
@@ -1206,8 +1206,8 @@ elif st.session_state.page == "Analyze":
     elif mode == "URL":
 
         content = st.text_input(
-            "Website URL",
-            placeholder="https://example.com",
+            "Website or link",
+            placeholder="https://example.com/path",
             key="url_input"
         )
 
@@ -1219,7 +1219,7 @@ elif st.session_state.page == "Analyze":
     elif mode == "PDF":
 
         uploaded = st.file_uploader(
-            "Upload PDF",
+            "Upload a PDF document",
             type=["pdf"],
             max_upload_size=25,
             help="Best results come from text-based PDFs. Maximum size: 25 MB.",
@@ -1281,7 +1281,7 @@ elif st.session_state.page == "Analyze":
     else:
 
         uploaded = st.file_uploader(
-            "Upload image",
+            "Upload image(s)",
             type=[
                 "png",
                 "jpg",
@@ -1360,7 +1360,7 @@ elif st.session_state.page == "Analyze":
     )
 
     analyze_clicked = st.button(
-        "🔍 Analyze with SATARK",
+        "🔍 Run SATARK analysis",
         use_container_width=True,
         type="primary",
         key="analyze_button"
@@ -1381,7 +1381,7 @@ elif st.session_state.page == "Analyze":
         if not safe_text(api_key):
 
             st.error(
-                "🔑 Enter your Groq API key in the sidebar first."
+                "🔑 Add your Groq API key in the sidebar before running an analysis."
             )
 
             st.stop()
@@ -1633,7 +1633,7 @@ elif st.session_state.page == "Analyze":
             st.session_state.page = "Analyze"
 
             st.success(
-                "SATARK analysis complete."
+                "Analysis complete · review the evidence below."
             )
 
 
@@ -1996,7 +1996,7 @@ elif st.session_state.page == "Classroom":
 
 
     st.markdown(
-        "### Suggested classroom flow"
+        "### A simple classroom flow"
     )
 
 
@@ -2010,7 +2010,7 @@ elif st.session_state.page == "Classroom":
 
 
     st.markdown(
-        "### Common patterns in this session"
+        "### Patterns seen in this session"
     )
 
 
@@ -2039,7 +2039,7 @@ elif st.session_state.page == "Classroom":
     else:
 
         st.info(
-            "Run a few example scans to populate "
+            "Run a few example analyses to populate "
             "classroom statistics."
         )
 
@@ -2050,7 +2050,7 @@ elif st.session_state.page == "Classroom":
 
 st.markdown(
     '<div class="footer">'
-    'SATARK • Smart AI Threat Analysis & Risk Knowledge<br>'
+    'SATARK • Smart threat analysis · clear decisions<br>'
     'AI analysis is advisory. Always verify high-impact security '
     'decisions independently.<br>'
     'Session history is temporary and does not intentionally '
