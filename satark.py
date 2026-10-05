@@ -1,3 +1,5 @@
+api_key = render_sidebar(get_client, discover_models, choose_model, TEXT_MODEL_PREFERENCES, VISION_MODEL_PREFERENCES)
+
 # 🧰 CORE PYTHON / SYSTEM
 import os
 from pathlib import Path
@@ -46,6 +48,7 @@ from reportlab.platypus import (
 from reports import make_pdf_report
 from satark_utils import safe_text, clean_json_text, normalize_check_value, check_class
 from ui.results import render_threat_analysis, render_verification_sources
+from ui.navigation import render_sidebar
 
 
 # ============================================================
@@ -849,30 +852,6 @@ def init_state():
         if k not in st.session_state: st.session_state[k]=v
 init_state()
 sc_init_state()  # Scam Challenge v2 session-state defaults
-
-# --------------------------- Sidebar ---------------------------
-with st.sidebar:
-    st.markdown('<div class="brand"><div class="brand-logo">SATARK <span class="brand-dot">◦</span></div><div class="brand-tag">Smart threat analysis · clear decisions</div></div>',unsafe_allow_html=True)
-    st.markdown('<div class="side-label">Workspace</div>',unsafe_allow_html=True)
-    for page,label in [("Home","🏠 Overview"),("Analyze","🔎 Analyze"),("History","🕘 History"),("Challenge","🎯 Scam Challenge"),("Academy","🎓 Academy"),("Classroom","👨‍🏫 Classroom")]:
-        if st.button(label,key=f"nav_{page}",use_container_width=True): st.session_state.page=page; st.rerun()
-    st.markdown('<div class="side-label">AI connection</div>',unsafe_allow_html=True)
-    env_key=os.getenv("GROQ_API_KEY","")
-    api_key=st.text_input("🔑 Groq API key",value=env_key,type="password",placeholder="Paste your Groq API key",help="Kept in the Streamlit session; not intentionally written to disk by SATARK.")
-    if api_key:
-        if st.button("Check AI connection",key="check_ai",use_container_width=True):
-            try:
-                client=get_client(api_key); available=discover_models(client)
-                st.session_state.available_models=available
-                st.session_state.text_model=choose_model(available,TEXT_MODEL_PREFERENCES)
-                st.session_state.vision_model=choose_model(available,VISION_MODEL_PREFERENCES)
-                if st.session_state.text_model and st.session_state.vision_model: st.success("AI connected • text + vision available")
-                elif st.session_state.text_model: st.warning("AI connected • text available, no vision model exposed to this key")
-                else: st.error("API key is accepted but no supported SATARK text model was found.")
-            except Exception as exc: st.error(f"Could not check Groq ({type(exc).__name__}). Verify the key, network, and provider status.")
-    st.markdown('<div class="side-label">Audience</div>',unsafe_allow_html=True)
-    role=st.selectbox("👤 Your context",["Student","Teacher","Working professional","Parent / Guardian","Senior user","Security learner"],index=0)
-    st.markdown('<div class="privacy"><strong>🔒 Privacy boundary</strong><br>History stays in this browser session. Submitted content is not intentionally written to disk by SATARK. Content is sent to Groq only when you start an analysis. Never submit passwords, OTPs, private keys, or other secrets.</div>',unsafe_allow_html=True)
 
 # ---------------------------- Hero -----------------------------
 st.markdown('<section class="hero"><div class="pill">AI SECURITY • EXPLAIN • LEARN • PROTECT</div><h1><span class="hero-primary">Not sure if it’s safe?</span><br><span class="hero-secondary">Let <span class="hero-brand">SATARK</span> investigate.</span></h1><p><strong>Paste a message, check a link, or upload an image, PDF, or video.</strong><br>SATARK highlights evidence, explains uncertainty, and gives you the safest next step.</p></section>',unsafe_allow_html=True)
