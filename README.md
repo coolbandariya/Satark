@@ -196,7 +196,7 @@ See [Analysis limitations](docs/ANALYSIS_LIMITATIONS.md) and the [Security polic
 - [x] Add unit tests for shared helpers and video processing.
 - [ ] Further separate analysis/provider logic from Streamlit UI.
 - [ ] Add broader workflow and end-to-end tests.
-- [ ] Resolve and verify the current CI failure.
+- [x] Pin runtime dependencies and add automated CI validation.
 - [ ] Complete a deployment-specific security and runtime review.
 
 ## Contributing
