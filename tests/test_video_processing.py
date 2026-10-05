@@ -9,6 +9,7 @@ from PIL import Image
 from video_processing import (
     MAX_VIDEO_BYTES,
     MAX_VIDEO_FRAMES,
+    extract_video_frames,
     pil_frames_to_data_urls,
     transcribe_video_audio,
 )
@@ -18,6 +19,13 @@ class VideoProcessingTests(unittest.TestCase):
     def test_video_limits_are_positive(self):
         self.assertGreater(MAX_VIDEO_FRAMES, 0)
         self.assertGreater(MAX_VIDEO_BYTES, 0)
+
+    def test_invalid_max_frames_is_rejected_before_opencv_loading(self):
+        upload = BytesIO(b"not a video")
+        upload.name = "sample.mp4"
+        with patch.dict("sys.modules", {"cv2": None}):
+            with self.assertRaises(ValueError):
+                extract_video_frames(upload, max_frames=0)
 
     def test_frames_are_encoded_as_jpeg_data_urls(self):
         image = Image.new("RGB", (32, 24), "white")
