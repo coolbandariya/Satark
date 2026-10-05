@@ -712,12 +712,12 @@ textarea:focus,
 }
 
 .check-detected{
-    color:#4dff88;
+    color:#ff6b6b;
     font-weight:850;
 }
 
 .check-clear{
-    color:#ff526b;
+    color:#4dff88;
     font-weight:850;
 }
 
@@ -755,7 +755,7 @@ textarea:focus,
 }
 
 .status-detected{
-    color:#4dff88;
+    color:#ff6b6b;
     font-weight:850;
 }
 
@@ -765,7 +765,7 @@ textarea:focus,
 }
 
 .status-clear{
-    color:#ff526b;
+    color:#4dff88;
     font-weight:850;
 }
 
