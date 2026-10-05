@@ -2,7 +2,7 @@
 
 import unittest
 from io import BytesIO
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 
 from PIL import Image
 
@@ -33,6 +33,20 @@ class VideoProcessingTests(unittest.TestCase):
         upload.name = "sample.mp4"
         with patch.dict("sys.modules", {"cv2": None}):
             self.assertEqual(transcribe_video_audio(upload, object()), "")
+
+    def test_audio_transcription_gracefully_handles_missing_ffmpeg(self):
+        upload = BytesIO(b"not a video")
+        upload.name = "sample.mp4"
+        with patch("video_processing.shutil.which", return_value=None):
+            self.assertEqual(transcribe_video_audio(upload, Mock()), "")
+
+    def test_audio_transcription_gracefully_handles_ffmpeg_failure(self):
+        upload = BytesIO(b"not a video")
+        upload.name = "sample.mp4"
+        failed = Mock(returncode=1)
+        with patch("video_processing.shutil.which", return_value="/usr/bin/ffmpeg"), \
+             patch("video_processing.subprocess.run", return_value=failed):
+            self.assertEqual(transcribe_video_audio(upload, Mock()), "")
 
 
 if __name__ == "__main__":
