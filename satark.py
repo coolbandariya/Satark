@@ -919,10 +919,49 @@ st.markdown('<section class="hero"><div class="pill">AI SECURITY • EXPLAIN •
 
 if st.session_state.page == "Home":
 
+    st.markdown(
+        '<div class="home-intro">'
+        '<div class="home-intro-title">Security analysis without the noise.</div>'
+        '<div class="home-intro-copy">'
+        'Start with what you received, not with a complicated security dashboard. '
+        'SATARK turns suspicious content into clear evidence, practical next steps, '
+        'and a result you can understand.'
+        '</div>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        '<div class="home-grid">'
+        '<div class="home-card"><div class="home-card-index">01 / CHECK</div>'
+        '<div class="home-card-title">Messages & links</div>'
+        '<div class="home-card-copy">Inspect suspicious text, URLs, phishing patterns and social-engineering pressure.</div></div>'
+        '<div class="home-card"><div class="home-card-index">02 / SEE</div>'
+        '<div class="home-card-title">Images & documents</div>'
+        '<div class="home-card-copy">Review screenshots, QR-related images and text-based PDFs for visible warning signs.</div></div>'
+        '<div class="home-card"><div class="home-card-index">03 / LEARN</div>'
+        '<div class="home-card-title">Understand the result</div>'
+        '<div class="home-card-copy">See evidence, confidence, recommendations and the reasoning behind the assessment.</div></div>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        '<div class="home-trust">'
+        '<span><strong>TEXT</strong> analysis</span>'
+        '<span><strong>URL</strong> safety checks</span>'
+        '<span><strong>IMAGE</strong> vision</span>'
+        '<span><strong>PDF</strong> extraction</span>'
+        '<span><strong>VIDEO</strong> frame + audio</span>'
+        '<span><strong>SESSION</strong> history only</span>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+
     st.markdown('<div class="analyze">', unsafe_allow_html=True)
 
     if st.button(
-        "Let SATARK Check It",
+        "Start a security check  →",
         use_container_width=True,
         type="primary",
         key="goto_analyze"
