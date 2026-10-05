@@ -421,6 +421,102 @@ textarea:focus,
 
 /* RESULT */
 
+.result-hero{
+    margin:18px 0 12px;
+    padding:20px;
+    border:1px solid var(--line);
+    border-radius:17px;
+    background:rgba(255,255,255,.035);
+}
+.result-hero.result-critical{
+    border-color:rgba(255,69,58,.32);
+    background:linear-gradient(135deg,rgba(255,69,58,.10),rgba(255,255,255,.025));
+}
+.result-hero.result-caution{
+    border-color:rgba(255,179,64,.30);
+    background:linear-gradient(135deg,rgba(255,179,64,.08),rgba(255,255,255,.025));
+}
+.result-hero.result-safe{
+    border-color:rgba(48,209,88,.28);
+    background:linear-gradient(135deg,rgba(48,209,88,.08),rgba(255,255,255,.025));
+}
+.result-hero-label,
+.result-section-kicker{
+    color:#9f9fa8;
+    font-size:.66rem;
+    font-weight:850;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+}
+.result-hero-value{
+    margin-top:5px;
+    font-family:Sora;
+    font-size:clamp(1.8rem,4vw,2.7rem);
+    font-weight:850;
+    letter-spacing:-.04em;
+}
+.result-hero-copy{
+    margin-top:6px;
+    color:#e5e5ea;
+    line-height:1.6;
+}
+.result-section{
+    margin-top:22px;
+}
+.result-section h3{
+    margin:.25rem 0 .4rem;
+    font-family:Sora;
+    font-size:1.15rem;
+}
+.result-section p{
+    margin:0;
+    color:#e4e4ea;
+    line-height:1.75;
+}
+.metric-value-small{
+    font-size:1rem;
+    line-height:1.35;
+}
+.metric-suffix{
+    color:#aaaab3;
+    font-family:Manrope;
+    font-size:.75rem;
+    font-weight:700;
+}
+.confidence-note{
+    padding:10px 13px;
+    border:1px solid rgba(255,255,255,.09);
+    border-radius:11px;
+    background:rgba(255,255,255,.025);
+    color:#c8c8d1;
+    font-size:.78rem;
+    line-height:1.55;
+}
+.confidence-note strong{
+    color:#f4f4f7;
+}
+.action-banner{
+    display:flex;
+    flex-direction:column;
+    gap:5px;
+    margin-top:16px;
+    padding:17px 18px;
+    border:1px solid rgba(169,156,255,.25);
+    border-radius:15px;
+    background:linear-gradient(135deg,rgba(169,156,255,.12),rgba(255,255,255,.025));
+    color:#e7e7ed;
+}
+.action-banner strong{
+    color:#ffffff;
+    font-size:1rem;
+    line-height:1.5;
+}
+.action-banner span{
+    color:#bdbdc7;
+    font-size:.76rem;
+    line-height:1.5;
+}
+
 .result{
     padding:24px;
     margin-top:20px;
@@ -879,6 +975,10 @@ textarea:focus,
 /* MOBILE */
 
 @media(max-width:768px){
+    .result-hero{padding:16px;}
+    .result{padding:18px;}
+    .action-banner{padding:15px;}
+
 
     .block-container{
         padding:.7rem .65rem 3rem;
