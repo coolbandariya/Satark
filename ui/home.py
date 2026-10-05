@@ -7,11 +7,11 @@ from ui.demo import get_demo_result
 def render_home():
     st.markdown(
         '<div class="home-intro">'
-        '<div class="home-intro-title">Clear answers for suspicious content.</div>'
+        '<div class="home-intro-title">Pause. Investigate. Then act.</div>'
         '<div class="home-intro-copy">'
-        'Start with what you received—not a complicated security dashboard. '
-        'SATARK turns suspicious content into evidence, practical next steps, '
-        'and an easy-to-understand assessment.'
+        'SATARK is a focused threat-checking workspace—not another noisy security dashboard. '
+        'Bring the message, link, screenshot, document or clip you are unsure about. '
+        'We surface the signals, explain the uncertainty, and point to the safest next move.'
         '</div>'
         '</div>',
         unsafe_allow_html=True,
@@ -21,13 +21,13 @@ def render_home():
         '<div class="home-grid">'
         '<div class="home-card"><div class="home-card-index">01 / CHECK</div>'
         '<div class="home-card-title">Messages & links</div>'
-        '<div class="home-card-copy">Inspect messages, URLs, phishing patterns, impersonation and social-engineering pressure.</div></div>'
-        '<div class="home-card"><div class="home-card-index">02 / SEE</div>'
-        '<div class="home-card-title">Images & documents</div>'
-        '<div class="home-card-copy">Review screenshots, QR images and text-based PDFs for visible warning signs.</div></div>'
-        '<div class="home-card"><div class="home-card-index">03 / LEARN</div>'
-        '<div class="home-card-title">Understand the result</div>'
-        '<div class="home-card-copy">See evidence, confidence, recommendations and clear next steps—not just a score.</div></div>'
+        '<div class="home-card-copy">Investigate phishing, impersonation, urgency, credential requests and suspicious domains before you interact.</div></div>'
+        '<div class="home-card"><div class="home-card-index">02 / INSPECT</div>'
+        '<div class="home-card-title">Images, QR & documents</div>'
+        '<div class="home-card-copy">Read visible evidence in screenshots, QR images and text-based PDFs instead of judging by appearance alone.</div></div>'
+        '<div class="home-card"><div class="home-card-index">03 / DECIDE</div>'
+        '<div class="home-card-title">Evidence before confidence</div>'
+        '<div class="home-card-copy">Get a risk view, confidence, evidence and practical next steps—without pretending an AI score is certainty.</div></div>'
         '</div>',
         unsafe_allow_html=True,
     )
@@ -38,20 +38,20 @@ def render_home():
         '<span><strong>URL</strong> links</span>'
         '<span><strong>IMAGE</strong> screenshots</span>'
         '<span><strong>PDF</strong> documents</span>'
+        '<span><strong>QR</strong> scans</span>'
         '<span><strong>VIDEO</strong> frames + audio</span>'
-        '<span><strong>SESSION</strong> temporary history</span>'
         '</div>',
         unsafe_allow_html=True,
     )
 
     st.markdown('<div class="home-actions">', unsafe_allow_html=True)
-    if st.button("Start checking →", use_container_width=True, type="primary", key="goto_analyze"):
+    if st.button("Start an investigation →", use_container_width=True, type="primary", key="goto_analyze"):
         st.session_state.page = "Analyze"
         st.session_state.scroll_to_scanners = True
         st.session_state.demo_mode = False
         st.rerun()
 
-    if st.button("See a sample result", use_container_width=True, key="demo_result"):
+    if st.button("Explore a sample result", use_container_width=True, key="demo_result"):
         st.session_state.result = get_demo_result()
         st.session_state.mode = "Text"
         st.session_state.demo_mode = True
