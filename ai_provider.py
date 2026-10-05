@@ -15,11 +15,9 @@ TEXT_MODEL_PREFERENCES = [
     "openai/gpt-oss-120b",
     "openai/gpt-oss-20b",
 ]
-# Vision model fallback chain. Previously this was a single hardcoded model
-# (qwen/qwen3.8-27b), which meant image/QR analysis broke entirely the moment
-# that one model became unavailable or the API key lost access to it.
-# analyze_with_groq now tries each of these in order and only reports failure
-# once every candidate has been exhausted.
+# Vision model preference list. Groq currently documents Qwen 3.8 27B as its
+# supported multimodal vision model; keeping this as a list lets the analysis
+# layer add a second supported model later without changing its control flow.
 VISION_MODEL_PREFERENCES = [
     "qwen/qwen3.8-27b",
 ]
