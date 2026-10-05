@@ -1237,7 +1237,8 @@ elif st.session_state.page == "Analyze":
         uploaded = st.file_uploader(
             "Upload PDF",
             type=["pdf"],
-            help="Best results come from text-based PDFs.",
+            max_upload_size=25,
+            help="Best results come from text-based PDFs. Maximum size: 25 MB.",
             key="pdf_input"
         )
 
@@ -1261,8 +1262,9 @@ elif st.session_state.page == "Analyze":
                 "m4v"
             ],
             accept_multiple_files=False,
+            max_upload_size=200,
             help=(
-                "SATARK extracts a handful of representative "
+                "SATARK extracts a handful of representative 
                 "frames and, when possible, transcribes the audio. "
                 "Max 200 MB."
             ),
@@ -1303,6 +1305,7 @@ elif st.session_state.page == "Analyze":
                 "webp"
             ],
             accept_multiple_files=True,
+            max_upload_size=10,
             help=(
                 "Upload one or more screenshots, QR images, "
                 "email screenshots or suspicious images. "
