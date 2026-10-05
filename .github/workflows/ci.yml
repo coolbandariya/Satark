@@ -42,7 +42,7 @@ jobs:
       - name: Compile Python source
         run: |
           python -m compileall -q \
-            satark.py scam_challenge.py video_processing.py reports.py \
+            satark.py ai_provider.py scam_challenge.py video_processing.py reports.py \
             satark_utils.py url_security.py tests
 
       - name: Run unit tests
@@ -50,4 +50,4 @@ jobs:
 
       - name: Validate required project assets
         run: |
-          python -c "from pathlib import Path; files=[Path('requirements.txt'),Path('styles.css'),Path('satark.py'),Path('scam_challenge.py'),Path('video_processing.py'),Path('reports.py'),Path('satark_utils.py'),Path('url_security.py')]; missing=[str(p) for p in files if not p.is_file() or p.stat().st_size == 0]; assert not missing, f'Missing or empty files: {missing}'"
+          python -c "from pathlib import Path; files=[Path('requirements.txt'),Path('styles.css'),Path('satark.py'),Path('ai_provider.py'),Path('scam_challenge.py'),Path('video_processing.py'),Path('reports.py'),Path('satark_utils.py'),Path('url_security.py')]; missing=[str(p) for p in files if not p.is_file() or p.stat().st_size == 0]; assert not missing, f'Missing or empty files: {missing}'"
