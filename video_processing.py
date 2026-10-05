@@ -1,6 +1,8 @@
 """Video frame extraction and audio transcription helpers."""
 import base64
 import os
+import shutil
+import subprocess
 import tempfile
 from io import BytesIO
 
@@ -145,14 +147,14 @@ def pil_frames_to_data_urls(frames, max_side=512):
 
 
 def transcribe_video_audio(uploaded_file, client):
-    """Best-effort audio transcription via Groq Whisper. Returns "" if audio
-    extraction isn't available in this environment rather than failing the
-    whole video scan — frame analysis can still proceed without it."""
-    import tempfile
+    """Best-effort audio transcription via ffmpeg + Groq Whisper.
 
-    try:
-        import cv2  # noqa: F401
-    except Exception:
+    The video itself is not sent to the audio endpoint. SATARK first extracts
+    a mono MP3 track with ffmpeg, then sends only that audio to Whisper. If
+    ffmpeg, audio, or provider access is unavailable, frame-only analysis can
+    continue without raising.
+    """
+    if client is None or shutil.which("ffmpeg") is None:
         return ""
 
     try:
@@ -164,31 +166,47 @@ def transcribe_video_audio(uploaded_file, client):
         return ""
 
     suffix = os.path.splitext(safe_text(getattr(uploaded_file, "name", "")))[1] or ".mp4"
-    tmp_path = None
+    video_path = None
+    audio_path = None
     try:
-        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
-            tmp.write(data)
-            tmp_path = tmp.name
+        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as video_file:
+            video_file.write(data)
+            video_path = video_file.name
 
-        with open(tmp_path, "rb") as audio_file:
+        with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as audio_file:
+            audio_path = audio_file.name
+
+        completed = subprocess.run(
+            [
+                "ffmpeg", "-nostdin", "-y", "-v", "error",
+                "-i", video_path,
+                "-vn", "-ac", "1", "-ar", "16000",
+                "-b:a", "32k", audio_path,
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+            timeout=120,
+            check=False,
+        )
+        if completed.returncode != 0 or not os.path.exists(audio_path):
+            return ""
+        if os.path.getsize(audio_path) == 0 or os.path.getsize(audio_path) > 100 * 1024 * 1024:
+            return ""
+
+        with open(audio_path, "rb") as audio_file:
             transcript = client.audio.transcriptions.create(
-                file=(os.path.basename(tmp_path), audio_file.read()),
-                model="whisper-large-v3",
+                file=(os.path.basename(audio_path), audio_file.read()),
+                model="whisper-large-v3-turbo",
                 response_format="text",
             )
         text = transcript if isinstance(transcript, str) else safe_text(getattr(transcript, "text", ""))
-        # Kept short: on Groq's on-demand tier the tokens-per-minute budget is
-        # shared across the transcript, the system prompt, and every video
-        # frame in the same request, so a long transcript alone can blow the
-        # limit even with small images.
         return text.strip()[:3000]
-    except Exception:
-        # Audio may be silent, absent, or the account may lack Whisper access.
-        # Frame-only analysis is still useful, so don't raise here.
+    except (OSError, subprocess.SubprocessError, Exception):
         return ""
     finally:
-        if tmp_path:
-            try:
-                os.unlink(tmp_path)
-            except Exception:
-                pass
+        for path in (video_path, audio_path):
+            if path:
+                try:
+                    os.unlink(path)
+                except OSError:
+                    pass
