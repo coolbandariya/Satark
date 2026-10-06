@@ -53,6 +53,8 @@ a{
 }
 
 .block-container{
+    position:relative;
+    z-index:1;
     max-width:1480px;
     padding:1.2rem clamp(1rem,3vw,3rem) 4rem;
 }
