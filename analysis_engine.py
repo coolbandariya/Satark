@@ -20,15 +20,7 @@ def clamp_score(value):
     try:
         return max(0, min(100, int(float(value))))  # limits score to 0–100
     except (TypeError, ValueError):
-        st.warning(
-            "⚠️ Threat score unavailable: Insufficient security indicators "
-            "were found to make a reliable assessment. Please provide more "
-            "complete information and try again."
-        )
         return 50
-
-
-
 
 def is_scam_claim(category, verdict, summary=""):
     """Detect a scam claim, trusting the model's explicit threat_category field first.
@@ -67,9 +59,6 @@ def is_scam_claim(category, verdict, summary=""):
         return False
 
     return bool(re.search(r"\bscam\b", text))
-
-
-
 
 def normalize_result_consistency(result):
     """Keep scam/phishing category, risk score and displayed verdict consistent."""
@@ -115,20 +104,6 @@ def normalize_result_consistency(result):
     return result
 
 #-------------------------------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 def risk_label(score, category=""):
     score = clamp_score(score)
@@ -206,9 +181,6 @@ def build_fallback_threat_analysis(result):
             "social engineering", "urgency", "pressure", "manipulation"
         ) else "Needs review",
     }
-
-
-
 
 def build_final_conclusion(result):
     existing = safe_text(result.get("final_conclusion", ""))
