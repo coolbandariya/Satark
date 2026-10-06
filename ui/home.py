@@ -9,9 +9,8 @@ def render_home():
     st.markdown('<div class="section-title home-how-title">How SATARK works</div><div class="section-copy">A four-step path from suspicious content to a safer decision.</div>', unsafe_allow_html=True)
     render_stepper()
     st.markdown('<div class="home-trust"><span><strong>TEXT</strong> messages</span><span><strong>URL</strong> links</span><span><strong>IMAGE</strong> screenshots</span><span><strong>PDF</strong> documents</span><span><strong>QR</strong> scans</span><span><strong>VIDEO</strong> frames + audio</span></div>', unsafe_allow_html=True)
-    st.markdown('<div class="home-actions">', unsafe_allow_html=True)
-    if st.button("Start an investigation →", use_container_width=True, type="primary", key="goto_analyze"):
-        st.session_state.page="Analyze"; st.session_state.scroll_to_scanners=True; st.session_state.demo_mode=False; st.rerun()
-    if st.button("Explore an offline sample result", use_container_width=True, key="demo_result"):
-        st.session_state.result=get_demo_result(); st.session_state.mode="Text"; st.session_state.demo_mode=True; st.session_state.page="Analyze"; st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
+    with st.container(horizontal=True, wrap=True, horizontal_alignment="center", vertical_alignment="center", gap="small", key="home-actions"):
+        if st.button("Start an investigation →", width="stretch", type="primary", key="goto_analyze"):
+            st.session_state.page="Analyze"; st.session_state.scroll_to_scanners=True; st.session_state.demo_mode=False; st.rerun()
+        if st.button("Explore an offline sample result", width="stretch", key="demo_result"):
+            st.session_state.result=get_demo_result(); st.session_state.mode="Text"; st.session_state.demo_mode=True; st.session_state.page="Analyze"; st.rerun()
