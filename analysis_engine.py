@@ -6,6 +6,8 @@ core interpretation layer can be unit-tested independently from the UI.
 
 import re
 
+from findings import build_findings
+
 from satark_utils import (
     OFFICIAL_VERIFICATION_SOURCES,
     THREAT_CHECKS,
@@ -294,6 +296,8 @@ def normalize_result(data, raw="", model_used=""):
             result["threat_analysis"][check] = fallback[check]
     result["final_conclusion"] = build_final_conclusion(result)
     result = calibrate_confidence(data, result)
+    result["risk_band"] = risk_label(result.get("risk_score", 50), result.get("threat_category", ""))[0]
+    result["findings"] = build_findings(result)
     return result
 
 
