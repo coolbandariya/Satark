@@ -15,7 +15,7 @@ def assert_layout(page, name):
     metrics=page.evaluate("""() => ({
         viewport: window.innerWidth,
         scrollWidth: document.documentElement.scrollWidth,
-        key: [...document.querySelectorAll('.hero,.home-grid,.home-actions,.home-how-title')].map(el => {
+        key: [...document.querySelectorAll('.hero,.home-grid,.st-key-home-actions,.home-how-title')].map(el => {
             const r=el.getBoundingClientRect();
             return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};
         }),
