@@ -7,6 +7,7 @@ import time
 import math
 import json
 import html
+import hashlib
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -43,7 +44,7 @@ from reports import make_pdf_report
 from satark_utils import safe_text, clean_json_text, normalize_check_value, check_class, THREAT_CHECKS, OFFICIAL_VERIFICATION_SOURCES
 from radar_background import render_radar_background
 from stepper_component import render_stepper
-from config import MAX_HISTORY_ITEMS
+from config import MAX_HISTORY_ITEMS, MAX_TEXT_INPUT_CHARS
 from analysis_engine import (
     clamp_score,
     is_scam_claim,
@@ -560,7 +561,7 @@ elif st.session_state.page == "Analyze":
     st.markdown(
         '<div class="section-title">What do you want to check?</div>'
         '<div class="section-copy">'
-        'Choose a scanner. Your original six SATARK modes remain available, plus Video.'
+        'Choose a scanner. Seven scanners cover text, links, images, documents, QR codes and video.'
         '</div>',
         unsafe_allow_html=True
     )
@@ -600,7 +601,7 @@ elif st.session_state.page == "Analyze":
                 )
 
                 if st.button(
-                    f"Use {name}",
+                    f"Select {name}",
                     key=f"scanner_{name}",
                     use_container_width=True
                 ):
@@ -731,7 +732,8 @@ elif st.session_state.page == "Analyze":
                 "Paste any message, post, SMS, "
                 "social-media content or suspicious text here..."
             ),
-            key=f"text_input_{mode}"
+            key=f"text_input_{mode}",
+            max_chars=MAX_TEXT_INPUT_CHARS,
         )
 
 
@@ -969,7 +971,7 @@ elif st.session_state.page == "Analyze":
                             "Please enter some content to analyze."
                         )
 
-                    prepared = content[:50000]
+                    prepared = content[:MAX_TEXT_INPUT_CHARS]
 
 
                 elif mode == "URL":
