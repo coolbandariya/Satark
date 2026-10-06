@@ -35,6 +35,17 @@ def assert_layout(page, name):
     page.screenshot(path=str(ARTIFACTS / f"{name}.png"),full_page=True)
 
 
+def assert_no_overlap(page, selector, name):
+    rects=page.locator(selector).evaluate_all("""els => els.map(el => { const r=el.getBoundingClientRect(); return {left:r.left,right:r.right,top:r.top,bottom:r.bottom}; })""")
+    for i,left in enumerate(rects):
+        for j,right in enumerate(rects):
+            if j <= i:
+                continue
+            horizontal=max(0,min(left["right"],right["right"])-max(left["left"],right["left"]))
+            vertical=max(0,min(left["bottom"],right["bottom"])-max(left["top"],right["top"]))
+            assert horizontal == 0 or vertical == 0, f"{name}: {selector} elements overlap: {left} vs {right}"
+
+
 def main():
     with sync_playwright() as p:
         browser=p.chromium.launch()
@@ -45,6 +56,8 @@ def main():
             if name=="desktop":
                 page.get_by_role("button",name="Start an investigation →").click()
                 page.get_by_text("What do you want to check?").wait_for(timeout=30_000)
+                assert_no_overlap(page, ".scanner", f"{name}-scanner")
+                assert_no_overlap(page, ".home-card", f"{name}-home-card")
             page.close()
         browser.close()
 
