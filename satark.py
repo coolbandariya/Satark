@@ -45,6 +45,7 @@ from reportlab.platypus import (
 )
 from reports import make_pdf_report
 from satark_utils import safe_text, clean_json_text, normalize_check_value, check_class
+from radar_background import render_radar_background
 
 
 # ============================================================
@@ -97,6 +98,9 @@ st.markdown(
     "<style>" + Path(__file__).with_name("styles.css").read_text(encoding="utf-8") + "</style>",
     unsafe_allow_html=True,
 )
+
+# Full-screen OGL radar backdrop; content remains above it via CSS z-index.
+render_radar_background()
 
 # --------------------------- Helpers --------------------------
 
