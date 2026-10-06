@@ -182,7 +182,7 @@ python -m unittest discover -s tests -v
 
 These checks cover dependency consistency, critical lint errors, full Python compilation, analysis normalization, URL safety, UI contracts, provider selection, media processing, and layout/source hygiene. They do **not** replace manual testing of Streamlit interactions, live Groq requests, deployment configuration, or end-to-end file processing.
 
-GitHub Actions also runs CodeQL and dependency review. A passing unit-test run alone does not establish production readiness, but the repository now has explicit automated gates for the highest-risk source and dependency regressions.
+GitHub Actions also runs CodeQL. A passing unit-test run alone does not establish production readiness, but the repository now has explicit automated gates for the highest-risk source and dependency regressions.
 
 ## Security, privacy, and limitations
 
