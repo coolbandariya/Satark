@@ -70,6 +70,7 @@ Do not submit passwords, one-time codes, private keys, or unnecessary personal i
 - **Python** — application logic
 - **Streamlit** — interactive web interface and session state
 - **CSS** — application styling
+- **OGL / WebGL** — React Bits-inspired radar background rendered in a Streamlit HTML component
 - **Groq** — AI model API and supported audio transcription
   - Text workflows prefer `openai/gpt-oss-120b`, with `openai/gpt-oss-20b` as fallback when available.
   - Vision workflows use `qwen/qwen3.8-27b`, subject to the API key's available models.
@@ -79,7 +80,7 @@ Do not submit passwords, one-time codes, private keys, or unnecessary personal i
 - **OpenCV** — video frame extraction
 - **FFmpeg** — optional audio-track extraction for video transcription
 
-The repository separates several responsibilities into modules. The main Streamlit entry point still contains substantial analysis and UI orchestration, so the application is not yet fully decoupled.
+The repository separates several responsibilities into modules. The radar background is a browser-side OGL dependency loaded from esm.sh; it is not a Python package and therefore is intentionally absent from `requirements.txt`. The main Streamlit entry point still contains substantial analysis and UI orchestration, so the application is not yet fully decoupled.
 
 ## Run locally
 
@@ -160,6 +161,7 @@ If the app offers a sidebar key field, it can also be used for local experimenta
 ├── satark_utils.py               # Shared text/result helpers
 ├── url_security.py               # URL validation and public-page fetching
 ├── styles.css                    # Application styles
+├── radar_background.py            # OGL/WebGL radar backdrop
 ├── requirements.txt              # Python dependencies
 ├── README.md
 └── SECURITY.md                   # Security policy and deployment checklist
