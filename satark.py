@@ -44,7 +44,7 @@ from reports import make_pdf_report
 from satark_utils import safe_text, clean_json_text, normalize_check_value, check_class, THREAT_CHECKS, OFFICIAL_VERIFICATION_SOURCES
 from radar_background import render_radar_background
 from stepper_component import render_stepper
-from config import MAX_HISTORY_ITEMS, MAX_TEXT_INPUT_CHARS
+from config import MAX_HISTORY_ITEMS, MAX_TEXT_INPUT_CHARS, MAX_ANALYSES_PER_MINUTE
 from analysis_engine import (
     clamp_score,
     is_scam_claim,
@@ -485,7 +485,7 @@ def init_state():
         "mode":"Text","result":None,"history":[],"page":"Home",
         "challenge_index":0,"challenge_score":0,"challenge_answered":False,
         "available_models":set(),"text_model":None,"vision_model":None,
-        "last_input_fingerprint":"","analysis_request_id":"","demo_mode":False,"scroll_to_scanners":False,
+        "last_input_fingerprint":"","analysis_request_id":"","demo_mode":False,"scroll_to_scanners":False,"analysis_timestamps":[],
     }
     for k,v in defaults.items():
         if k not in st.session_state: st.session_state[k]=v
@@ -915,6 +915,19 @@ elif st.session_state.page == "Analyze":
     # ==========================================================
 
     if analyze_clicked:
+
+        now_monotonic = time.monotonic()
+        recent_requests = [
+            timestamp
+            for timestamp in st.session_state.get("analysis_timestamps", [])
+            if now_monotonic - timestamp < 60
+        ]
+        if len(recent_requests) >= MAX_ANALYSES_PER_MINUTE:
+            st.session_state.analysis_timestamps = recent_requests
+            st.error("SATARK has reached the session analysis limit. Please wait about a minute before trying again.")
+            st.stop()
+        recent_requests.append(now_monotonic)
+        st.session_state.analysis_timestamps = recent_requests
 
         if not safe_text(api_key):
 
