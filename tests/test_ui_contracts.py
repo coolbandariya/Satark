@@ -28,9 +28,9 @@ class UIContractTests(unittest.TestCase):
         self.assertIn("Explore a sample result", HOME)
 
     def test_navigation_uses_plain_language_and_privacy_boundary(self):
-        self.assertIn('"Analyze","🔎 Analyze"', NAV)
-        self.assertIn('"Academy","🎓 Academy"', NAV)
-        self.assertIn('"Classroom","👨‍🏫 Classroom"', NAV)
+        self.assertRegex(NAV, r'\("Analyze"\s*,\s*"🔎 Analyze"\)')
+        self.assertRegex(NAV, r'\("Academy"\s*,\s*"🎓 Academy"\)')
+        self.assertRegex(NAV, r'\("Classroom"\s*,\s*"👨‍🏫 Classroom"\)')
         self.assertIn("Privacy boundary", NAV)
         self.assertIn("Never submit passwords, OTPs, private keys", NAV)
         self.assertNotIn("Who are you?", NAV)
