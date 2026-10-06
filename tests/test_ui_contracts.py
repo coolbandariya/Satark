@@ -12,7 +12,7 @@ class UIContractTests(unittest.TestCase):
         self.assertLess(len(APP),50000)
 
     def test_layout_guardrails_exist(self):
-        for expected in (".st-key-home-actions{,".sr-only{",".report-section{","overflow-wrap:anywhere","prefers-reduced-motion:reduce","overflow-x:hidden"):
+        for expected in (".st-key-home-actions{",".sr-only{",".report-section{","overflow-wrap:anywhere","prefers-reduced-motion:reduce","overflow-x:hidden"):
             self.assertIn(expected,CSS)
 
     def test_app_does_not_reference_missing_analysis_constants(self):
