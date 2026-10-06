@@ -451,7 +451,6 @@ def render_result(result):
     st.markdown(f'<section class="report-section"><h3>💡 Final Conclusion</h3><div class="conclusion-card">{conclusion}</div></section>', unsafe_allow_html=True)
 
 
-
 def add_history(result, mode):
     if "history" not in st.session_state: st.session_state.history=[]
     entry = {
@@ -464,7 +463,6 @@ def add_history(result, mode):
     }
     st.session_state.history.insert(0,entry)
     st.session_state.history=st.session_state.history[:MAX_HISTORY_ITEMS]
-
 
 
 # ==============================================================
