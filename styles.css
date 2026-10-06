@@ -1229,7 +1229,8 @@ html, body, [data-testid="stAppViewContainer"]{
     overflow-x:hidden;
 }
 
-.home-actions{
+.home-actions,
+.st-key-home-actions{
     display:grid;
     grid-template-columns:repeat(2,minmax(0,1fr));
     gap:.75rem;
@@ -1237,7 +1238,8 @@ html, body, [data-testid="stAppViewContainer"]{
     margin:1rem auto 1.5rem;
 }
 
-.home-actions [data-testid="stButton"]{
+.home-actions [data-testid="stButton"],
+.st-key-home-actions [data-testid="stButton"]{
     min-width:0;
 }
 
