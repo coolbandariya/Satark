@@ -916,6 +916,15 @@ elif st.session_state.page == "Analyze":
 
     if analyze_clicked:
 
+        if not safe_text(api_key):
+
+            st.error(
+                "🔑 Enter your Groq API key in the sidebar first."
+            )
+
+            st.stop()
+
+
         now_monotonic = time.monotonic()
         recent_requests = [
             timestamp
@@ -928,15 +937,6 @@ elif st.session_state.page == "Analyze":
             st.stop()
         recent_requests.append(now_monotonic)
         st.session_state.analysis_timestamps = recent_requests
-
-        if not safe_text(api_key):
-
-            st.error(
-                "🔑 Enter your Groq API key in the sidebar first."
-            )
-
-            st.stop()
-
 
         try:
 
