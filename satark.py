@@ -46,6 +46,7 @@ from reportlab.platypus import (
 from reports import make_pdf_report
 from satark_utils import safe_text, clean_json_text, normalize_check_value, check_class
 from radar_background import render_radar_background
+from stepper_component import render_stepper
 
 
 # ============================================================
@@ -949,6 +950,10 @@ if st.session_state.page == "Home":
         '</div>',
         unsafe_allow_html=True,
     )
+
+    st.markdown('<div class="section-title" style="margin-top:2rem;">How SATARK works</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-copy">A quick four-step guide before you start analyzing suspicious content.</div>', unsafe_allow_html=True)
+    render_stepper()
 
     st.markdown(
         '<div class="home-trust">'
