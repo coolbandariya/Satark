@@ -8,7 +8,7 @@ class StepperComponentTests(unittest.TestCase):
     def test_loads_react_and_motion(self):
         self.assertIn("react@18.3.1", _STEPPER_HTML)
         self.assertIn("react-dom@18.3.1/client", _STEPPER_HTML)
-        self.assertIn("motion@12.23.24/react", _STEPPER_HTML)
+        self.assertIn("motion@13.4.6/react", _STEPPER_HTML)
 
     def test_contains_stepper_interactions(self):
         for token in ("setCurrent", "AnimatePresence", "Previous", "Next", "Complete"):
