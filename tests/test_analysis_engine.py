@@ -16,6 +16,8 @@ class AnalysisEngineTests(unittest.TestCase):
         self.assertEqual(result["risk_band"],"CRITICAL THREAT")
         self.assertEqual(result["findings"][0]["severity"],"high")
         self.assertEqual(result["findings"][0]["title"],"Phishing Signs")
+        clear=[item for item in result["findings"] if item["title"]=="Malware Indicators"][0]
+        self.assertEqual(clear["severity"],"clear")
 
     def test_ambiguous_evidence_reduces_confidence(self):
         result=calibrate_confidence(
