@@ -6,9 +6,8 @@ import random
 import time
 import math
 import json
-import base64
-import hashlib
 import html
+import hashlib
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -30,8 +29,6 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 # 📄 FILE & IMAGE PROCESSING
-from pypdf import PdfReader
-from PIL import Image
 
 # 📑 PDF GENERATION
 from reportlab.lib import colors
@@ -44,452 +41,25 @@ from reportlab.platypus import (
     Table, TableStyle, PageBreak, KeepTogether
 )
 from reports import make_pdf_report
-from satark_utils import safe_text, clean_json_text, normalize_check_value, check_class
+from satark_utils import safe_text, clean_json_text, normalize_check_value, check_class, THREAT_CHECKS, OFFICIAL_VERIFICATION_SOURCES
 from radar_background import render_radar_background
 from stepper_component import render_stepper
-
-
-# ============================================================
-# SATARK — Smart AI Threat Analysis & Risk Knowledge
-# Streamlit entry point; feature modules are kept separate where practical
-#
-# Keeps the original SATARK analysis flow, while adding:
-# - automatic Groq model discovery
-# - resilient model selection based on provider discovery
-# - improved result presentation
-# - session history + report export
-# - Scam Challenge
-# - SATARK Academy
-# - Classroom Mode
-# - evidence / confidence / actions
-# - privacy-first session storage
-#
-# CHANGES IN THIS VERSION:
-# 1. calibrate_confidence() no longer force-floors confidence to 95-99.99%.
-#    It now reports a value that actually reflects model + evidence strength,
-#    across the full 0-100 range.
-# 2. render_result() color-codes the confidence metric (red/amber/green)
-#    so low-confidence results are visually distinct.
-# 3. VISION_MODEL_PREFERENCES is now a real fallback chain instead of a
-#    single hardcoded model; analyze_with_groq tries each in order instead
-#    of giving up after the first failure.
-# 4. is_scam_claim / normalize_result_consistency now trust the model's
-#    explicit threat_category field first, and only fall back to regex
-#    parsing of prose when the category is missing/ambiguous. This makes
-#    scam/phishing detection less fragile to wording changes.
-# 5. SYSTEM_PROMPT's confidence instruction is now explicit about using the
-#    full 0-100 range honestly instead of defaulting high.
-# 6. NEW: Video scanner mode. Videos are analyzed by extracting a handful of
-#    representative frames (via OpenCV) and, when ffmpeg/moviepy is available,
-#    transcribing the audio track (via Groq Whisper) so speech-based scam
-#    signals aren't missed. Frames + transcript are fed into the same
-#    analyze_with_groq pipeline used for images/text.
-# ============================================================
-
-st.set_page_config(
-    page_title="SATARK — AI Threat Analyzer",
-    page_icon="◈",
-    layout="wide",
-    initial_sidebar_state="expanded",
+from config import MAX_HISTORY_ITEMS, MAX_TEXT_INPUT_CHARS, MAX_ANALYSES_PER_MINUTE
+from analysis_engine import (
+    clamp_score,
+    is_scam_claim,
+    normalize_result_consistency,
+    risk_label,
+    build_fallback_threat_analysis,
+    build_final_conclusion,
+    calibrate_confidence,
+    normalize_result,
 )
-
-# ----------------------------- CSS ----------------------------
-
-st.markdown(
-    "<style>" + Path(__file__).with_name("styles.css").read_text(encoding="utf-8") + "</style>",
-    unsafe_allow_html=True,
-)
-
-# Full-screen OGL radar backdrop; content remains above it via CSS z-index.
-render_radar_background()
-
-# --------------------------- Helpers --------------------------
-
-def clamp_score(value):
-    try:
-        return max(0, min(100, int(float(value))))  # limits score to 0–100
-    except (TypeError, ValueError):
-        st.warning(
-            "⚠️ Threat score unavailable: Insufficient security indicators "
-            "were found to make a reliable assessment. Please provide more "
-            "complete information and try again."
-        )
-        return 50
-
-
-
-
-def is_scam_claim(category, verdict, summary=""):
-    """Detect a scam claim, trusting the model's explicit threat_category field first.
-
-    The category field is a constrained enum the model was explicitly asked to
-    fill in, so it is a far more reliable signal than re-deriving "is this a
-    scam" from free-text prose. Regex parsing of the verdict/summary is now
-    only a fallback for when the category is missing or ambiguous (e.g. still
-    "Needs review"), rather than the primary signal.
-    """
-    category_text = safe_text(category).strip().lower()
-
-    if category_text == "scam":
-        return True
-
-    if category_text and category_text not in {"needs review", ""}:
-        # The model gave a specific, non-scam category (e.g. "Safe", "Phishing",
-        # "Malware"). Trust it instead of re-scanning prose that might mention
-        # the word "scam" in a hedged, comparative, or negated sentence.
-        return False
-
-    text = " ".join(
-        safe_text(v) for v in (category, verdict, summary)
-    ).lower()
-
-    negative_patterns = (
-        r"\bnot\s+(?:necessarily\s+)?(?:a\s+)?scam\b",
-        r"\bno\s+(?:evidence\s+of\s+)?(?:a\s+)?scam\b",
-        r"\b(?:does|do)\s+not\s+(?:appear|seem)\s+to\s+be\s+(?:a\s+)?scam\b",
-        r"\bunlikely\s+to\s+be\s+(?:a\s+)?scam\b",
-        r"\b(?:cannot|can't)\s+(?:confirm|verify)\s+(?:that\s+it\s+is\s+)?(?:a\s+)?scam\b",
-        r"\bno\s+clear\s+indication\s+of\s+(?:a\s+)?scam\b",
-    )
-
-    if any(re.search(pattern, text) for pattern in negative_patterns):
-        return False
-
-    return bool(re.search(r"\bscam\b", text))
-
-
-
-
-def normalize_result_consistency(result):
-    """Keep scam/phishing category, risk score and displayed verdict consistent."""
-    category = safe_text(
-        result.get("threat_category", "Needs review"),
-        "Needs review"
-    )
-    verdict = safe_text(
-        result.get("verdict", "Manual review recommended."),
-        "Manual review recommended."
-    )
-    summary = safe_text(result.get("summary", ""))
-
-    category_lower = category.lower()
-    combined_text = f"{category} {verdict} {summary}".lower()
-
-    is_scam = is_scam_claim(category, verdict, summary)
-
-    # Prefer the explicit category for phishing too; fall back to phrase
-    # matching only when the category doesn't already say "Phishing".
-    is_phishing = category_lower == "phishing" or bool(re.search(
-        r"\b(phishing attempt|phishing attack|phishing link|phishing message|is phishing|appears to be phishing)\b",
-        combined_text
-    ))
-
-    if is_scam or is_phishing:
-        if is_scam:
-            result["threat_category"] = "Scam"
-
-        result["risk_score"] = max(
-            70,
-            clamp_score(result.get("risk_score", 50))
-        )
-
-        if is_scam and not re.search(r"\bscam\b", verdict.lower()):
-            result["verdict"] = "This message is a scam and should not be trusted."
-
-    else:
-        result["risk_score"] = clamp_score(
-            result.get("risk_score", 50)
-        )
-
-    return result
-
-#-------------------------------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-def risk_label(score, category=""):
-    score = clamp_score(score)
-    if safe_text(category).lower() == "scam":
-        return "SCAM", "critical"
-    if score < 35:
-        return "SAFE", "safe"
-    if score < 70:
-        return "CAUTION", "caution"
-    return "CRITICAL THREAT", "critical"
-
-
-def build_fallback_threat_analysis(result):
-    category = safe_text(result.get("threat_category", "")).lower()
-    indicators = " ".join(result.get("key_indicators", [])).lower()
-    summary = safe_text(result.get("summary", "")).lower()
-    verdict = safe_text(result.get("verdict", "")).lower()
-
-    text = category + " " + indicators + " " + summary + " " + verdict
-
-    def has(*terms):
-        return any(term in text for term in terms)
-
-    public_figure_claim = has(
-        "public figure", "celebrity", "politician",
-        "brand ambassador", "endorsement", "endorses",
-        "celebrity endorsement", "public figure endorsement"
-    )
-
-    deepfake = has(
-        "deepfake", "deep fake", "synthetic media",
-        "ai-generated", "ai generated", "manipulated image",
-        "face manipulation", "digitally manipulated"
-    )
-
-    fake_claim = has(
-        "fake", "false", "fabricat", "misinformation",
-        "misleading", "unverified", "unsupported claim",
-        "false claim", "deceptive"
-    )
-
-    return {
-        "Scam Indicators": "Detected" if has(
-            "scam", "fraud", "prize", "fee"
-        ) else "Needs review",
-
-        "Phishing Signs": "Detected" if has(
-            "phishing", "credential", "login", "password", "otp"
-        ) else "Needs review",
-
-        "Deepfake Risk": (
-            "High" if deepfake
-            else "Medium" if public_figure_claim
-            else "Low"
-        ),
-
-        "Fake Information": "Detected" if fake_claim else "Needs review",
-
-        "Suspicious Links": "Detected" if has(
-            "suspicious link", "malicious link", "url", "domain"
-        ) else "Needs review",
-
-        "Impersonation": "Detected" if (
-            public_figure_claim or has(
-                "impersonation", "impersonat",
-                "pretend", "fake authority"
-            )
-        ) else "Needs review",
-
-        "Malware Indicators": "Detected" if has(
-            "malware", "trojan", "ransomware", "apk", "virus"
-        ) else "Not detected",
-
-        "Social Engineering": "Detected" if has(
-            "social engineering", "urgency", "pressure", "manipulation"
-        ) else "Needs review",
-    }
-
-
-
-
-def build_final_conclusion(result):
-    existing = safe_text(result.get("final_conclusion", ""))
-    if existing:
-        return existing
-    label, _ = risk_label(result.get("risk_score", 50), result.get("threat_category", ""))
-    summary = safe_text(result.get("summary", ""))
-    verdict = safe_text(result.get("verdict", "Manual review recommended."))
-    if summary:
-        return f"SATARK assessed this item as {label.lower()} based on the evidence identified during analysis. {summary} {verdict} Verify the source independently before taking any high-impact action."
-    return f"SATARK assessed this item as {label.lower()}. {verdict} Verify the source independently before taking any high-impact action."
-
-
-def calibrate_confidence(data, result):
-    """Report a SATARK confidence value that reflects real evidence strength.
-
-    Unlike the previous implementation, this does NOT force the value into a
-    fixed high band. The raw model confidence is kept as ``model_confidence``
-    for auditability, and the user-facing ``confidence`` is the raw value
-    adjusted only slightly by how complete/ambiguous the supporting evidence
-    is. Weak or ambiguous evidence can and should produce a low confidence
-    score — that is the whole point of showing it.
-    """
-    try:
-        raw_conf = float(data.get("confidence", result.get("confidence", 70)))
-    except (TypeError, ValueError):
-        raw_conf = 70.0
-    raw_conf = max(0.0, min(100.0, raw_conf))
-    result["model_confidence"] = round(raw_conf, 2)
-
-    checks = result.get("threat_analysis", {}) or {}
-    review_count = sum(1 for value in checks.values() if check_class(value) == "check-review")
-    evidence_count = len(result.get("key_indicators", []))
-
-    # Ambiguous/unresolved checks should pull confidence down, not up.
-    ambiguity_penalty = (review_count / max(1, len(THREAT_CHECKS))) * 20.0
-
-    # Well-evidenced findings get a small, capped bonus — not a floor.
-    evidence_bonus = min(5.0, evidence_count * 1.0)
-
-    calibrated = raw_conf - ambiguity_penalty + evidence_bonus
-    result["confidence"] = round(max(0.0, min(100.0, calibrated)), 2)
-    return result
-
-
-def normalize_result(data, raw="", model_used=""):
-    if not isinstance(data, dict):
-        data = {}
-    indicators = data.get("key_indicators", data.get("indicators", []))
-    recommendations = data.get("recommendations", data.get("safety_recommendations", []))
-    if isinstance(indicators, str): indicators = [indicators]
-    if isinstance(recommendations, str): recommendations = [recommendations]
-    if not isinstance(indicators, list): indicators = []
-    if not isinstance(recommendations, list): recommendations = []
-
-    raw_checks = data.get("threat_analysis", {})
-    if not isinstance(raw_checks, dict):
-        raw_checks = {}
-    threat_analysis = {
-        check: normalize_check_value(raw_checks.get(check, ""))
-        for check in THREAT_CHECKS
-    }
-
-    result = {
-        "risk_score": clamp_score(data.get("risk_score", data.get("threat_score", 50))),
-        "threat_category": safe_text(data.get("threat_category", data.get("category", "Needs review")), "Needs review"),
-        "verdict": safe_text(data.get("verdict", data.get("final_verdict", "Manual review recommended.")), "Manual review recommended."),
-        "summary": safe_text(data.get("summary", data.get("executive_summary", ""))),
-        "key_indicators": [safe_text(x) for x in indicators if safe_text(x)][:8],
-        "recommendations": [safe_text(x) for x in recommendations if safe_text(x)][:8],
-        "confidence": clamp_score(data.get("confidence", 70)),
-        "model_used": model_used or safe_text(data.get("model_used", "")),
-        "scam_pattern": safe_text(data.get("scam_pattern", data.get("pattern", ""))),
-        "threat_analysis": threat_analysis,
-        "final_conclusion": safe_text(data.get("final_conclusion", data.get("conclusion", ""))),
-        "verification_sources": OFFICIAL_VERIFICATION_SOURCES,
-        "raw": raw,
-    }
-    result = normalize_result_consistency(result)
-    if not result["scam_pattern"]:
-        result["scam_pattern"] = result["threat_category"]
-    fallback = build_fallback_threat_analysis(result)
-    for check in THREAT_CHECKS:
-        if result["threat_analysis"][check] == "Needs review":
-            result["threat_analysis"][check] = fallback[check]
-    result["final_conclusion"] = build_final_conclusion(result)
-    result = calibrate_confidence(data, result)
-    return result
-
-
-from url_security import VisibleTextParser, is_public_url, fetch_url_text
-
-MAX_PDF_BYTES = 25 * 1024 * 1024
-MAX_IMAGE_BYTES = 10 * 1024 * 1024
-
-def _uploaded_size(uploaded_file):
-    try:
-        return int(getattr(uploaded_file, "size"))
-    except (TypeError, ValueError):
-        pass
-    try:
-        return len(uploaded_file.getvalue())
-    except Exception:
-        return None
-
-def extract_pdf_text(uploaded_file):
-    size = _uploaded_size(uploaded_file)
-    if size is not None and size > MAX_PDF_BYTES:
-        raise ValueError("This PDF is larger than SATARK's 25 MB processing limit.")
-    reader = PdfReader(uploaded_file)
-    pages = []
-    for page in reader.pages[:30]:
-        try:
-            text = page.extract_text() or ""
-            if text.strip(): pages.append(text)
-        except Exception:
-            pass
-    text = "\n\n".join(pages).strip()
-    if not text:
-        raise ValueError("No readable text was found in this PDF. It may be scanned/image-only. Please use a screenshot/image of the relevant page for vision analysis.")
-    return text[:50000]
-
-
-def image_to_data_url(uploaded_file):
-    """Convert one uploaded image to a compact JPEG data URL.
-
-    Kept modest in size (max_side=900, moderate JPEG quality) so a small
-    number of images stays well under Groq's on-demand tokens-per-minute
-    budget for vision models — full-resolution uploads were previously
-    large enough on their own to trip the TPM rate limit."""
-    from io import BytesIO
-    size = _uploaded_size(uploaded_file)
-    if size is not None and size > MAX_IMAGE_BYTES:
-        raise ValueError("This image is larger than SATARK's 10 MB processing limit.")
-    try:
-        uploaded_file.seek(0)
-    except Exception:
-        pass
-    image = Image.open(uploaded_file).convert("RGB")
-    max_side = 900
-    if max(image.size) > max_side:
-        scale = max_side / max(image.size)
-        image = image.resize((max(1, int(image.width * scale)), max(1, int(image.height * scale))))
-    for quality in (75, 62, 50, 40):
-        buffer = BytesIO()
-        image.save(buffer, format="JPEG", quality=quality, optimize=True)
-        encoded = base64.b64encode(buffer.getvalue()).decode("utf-8")
-        if len(encoded) <= 900_000 or quality == 40:
-            return f"data:image/jpeg;base64,{encoded}"
-    return f"data:image/jpeg;base64,{encoded}"
-
-
-def images_to_data_urls(uploaded_files, max_images=5):
-    """Convert multiple uploaded images while keeping the request manageable."""
-    if not uploaded_files:
-        return []
-    urls = []
-    for uploaded_file in list(uploaded_files)[:max_images]:
-        urls.append(image_to_data_url(uploaded_file))
-    return urls
-
-
-def uploaded_fingerprint(uploaded_files):
-    """Return a content fingerprint so a new scan cannot reuse stale image state."""
-    if not uploaded_files:
-        return ""
-    digest = hashlib.sha256()
-    for uploaded_file in uploaded_files:
-        try:
-            data = uploaded_file.getvalue()
-        except Exception:
-            data = b""
-        digest.update(safe_text(getattr(uploaded_file, "name", "")).encode("utf-8", errors="ignore"))
-        digest.update(str(len(data)).encode("ascii"))
-        digest.update(hashlib.sha256(data).digest())
-    return digest.hexdigest()
-
-
-def single_file_fingerprint(uploaded_file):
-    """Fingerprint a single uploaded file (used for video scanning)."""
-    if not uploaded_file:
-        return ""
-    try:
-        data = uploaded_file.getvalue()
-    except Exception:
-        data = b""
-    digest = hashlib.sha256()
-    digest.update(safe_text(getattr(uploaded_file, "name", "")).encode("utf-8", errors="ignore"))
-    digest.update(str(len(data)).encode("ascii"))
-    digest.update(hashlib.sha256(data).digest())
-    return digest.hexdigest()
-
+from ui.home import render_home
+from ui.navigation import render_sidebar
+from ui.results import render_threat_analysis, render_verification_sources
+from ui.history import render_history
+from ui.learning import render_academy, render_classroom
 
 from video_processing import (
     MAX_VIDEO_FRAMES,
@@ -577,6 +147,74 @@ Return ONLY valid JSON, no markdown, no code fences. Required schema:
 }
 """
 
+
+from input_processing import (
+    MAX_PDF_BYTES,
+    MAX_IMAGE_BYTES,
+    _uploaded_size,
+    extract_pdf_text,
+    image_to_data_url,
+    images_to_data_urls,
+    uploaded_fingerprint,
+    single_file_fingerprint,
+)
+
+
+# ============================================================
+# SATARK — Smart AI Threat Analysis & Risk Knowledge
+# Streamlit entry point; feature modules are kept separate where practical
+#
+# Keeps the original SATARK analysis flow, while adding:
+# - automatic Groq model discovery
+# - resilient model selection based on provider discovery
+# - improved result presentation
+# - session history + report export
+# - Scam Challenge
+# - SATARK Academy
+# - Classroom Mode
+# - evidence / confidence / actions
+# - privacy-first session storage
+#
+# CHANGES IN THIS VERSION:
+# 1. calibrate_confidence() no longer force-floors confidence to 95-99.99%.
+#    It now reports a value that actually reflects model + evidence strength,
+#    across the full 0-100 range.
+# 2. render_result() color-codes the confidence metric (red/amber/green)
+#    so low-confidence results are visually distinct.
+# 3. VISION_MODEL_PREFERENCES is now a real fallback chain instead of a
+#    single hardcoded model; analyze_with_groq tries each in order instead
+#    of giving up after the first failure.
+# 4. is_scam_claim / normalize_result_consistency now trust the model's
+#    explicit threat_category field first, and only fall back to regex
+#    parsing of prose when the category is missing/ambiguous. This makes
+#    scam/phishing detection less fragile to wording changes.
+# 5. SYSTEM_PROMPT's confidence instruction is now explicit about using the
+#    full 0-100 range honestly instead of defaulting high.
+# 6. NEW: Video scanner mode. Videos are analyzed by extracting a handful of
+#    representative frames (via OpenCV) and, when ffmpeg/moviepy is available,
+#    transcribing the audio track (via Groq Whisper) so speech-based scam
+#    signals aren't missed. Frames + transcript are fed into the same
+#    analyze_with_groq pipeline used for images/text.
+# ============================================================
+
+st.set_page_config(
+    page_title="SATARK — AI Threat Analyzer",
+    page_icon="◈",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
+# ----------------------------- CSS ----------------------------
+
+st.markdown(
+    "<style>" + Path(__file__).with_name("styles.css").read_text(encoding="utf-8") + "</style>",
+    unsafe_allow_html=True,
+)
+
+# Full-screen OGL radar backdrop; content remains above it via CSS z-index.
+render_radar_background()
+
+# --------------------------- Helpers --------------------------
 
 def analyze_with_groq(client, content, mode, role, image_data_urls=None, available_models=None):
     """Run a SATARK analysis using an appropriate Groq model.
@@ -745,44 +383,6 @@ Not detected, Low, Medium, High.
         )
 
     raise RuntimeError(
-        f"SATARK could not complete the {kind} analysis with any configured Groq model.\n{detail}"
-    )
-
-
-# ---------------------- UI/result helpers ----------------------
-def render_threat_analysis(result):
-    rows = []
-    for check in THREAT_CHECKS:
-        value = safe_text(result.get("threat_analysis", {}).get(check, "Needs review"), "Needs review")
-        cls = check_class(value)
-        icon = "✖" if cls == "check-clear" else "✓" if cls == "check-detected" else "•"
-        rows.append(f'<tr><td>{html.escape(check)}</td><td class="{cls}">{icon} {html.escape(value)}</td></tr>')
-    table = (
-        '<table class="report-table"><thead><tr><th>Security Check</th><th>Result</th></tr></thead>'
-        '<tbody>' + ''.join(rows) + '</tbody></table>'
-    )
-    legend = (
-        '<div class="status-legend">'
-        '<div class="status-legend-title">How to read the results</div>'
-        '<span class="status-item"><span class="status-detected">✓ Detected</span> — sufficient evidence that the indicator is present.</span>'
-        '<span class="status-item"><span class="status-review">• Needs review</span> — evidence is ambiguous or insufficient; verify it manually.</span>'
-        '<span class="status-item"><span class="status-clear">✖ Not detected</span> — no meaningful evidence of that indicator was found.</span>'
-        '</div>'
-    )
-    st.markdown(f'<section class="report-section"><h3>🔎 Threat Analysis</h3>{table}{legend}</section>', unsafe_allow_html=True)
-
-
-def render_verification_sources(result):
-    rows=[]
-    for item in result.get("verification_sources", OFFICIAL_VERIFICATION_SOURCES):
-        source=html.escape(safe_text(item.get("source")))
-        purpose=html.escape(safe_text(item.get("purpose")))
-        website=safe_text(item.get("website"))
-        safe_href=html.escape(website, quote=True)
-        safe_label=html.escape(website)
-        rows.append(f'<tr><td>{source}</td><td>{purpose}</td><td><a class="source-link" href="{safe_href}" target="_blank">{safe_label}</a></td></tr>')
-    table=(
-        '<table class="report-table"><thead><tr><th>Source</th><th>Purpose</th><th>Official Website</th></tr></thead>'
         '<tbody>'+''.join(rows)+'</tbody></table>'
     )
     st.markdown(f'<section class="report-section"><h3>📚 Official Verification Sources</h3>{table}</section>', unsafe_allow_html=True)
@@ -851,7 +451,6 @@ def render_result(result):
     st.markdown(f'<section class="report-section"><h3>💡 Final Conclusion</h3><div class="conclusion-card">{conclusion}</div></section>', unsafe_allow_html=True)
 
 
-
 def add_history(result, mode):
     if "history" not in st.session_state: st.session_state.history=[]
     entry = {
@@ -863,8 +462,7 @@ def add_history(result, mode):
         "result": result,
     }
     st.session_state.history.insert(0,entry)
-    st.session_state.history=st.session_state.history[:20]
-
+    st.session_state.history=st.session_state.history[:MAX_HISTORY_ITEMS]
 
 
 # ==============================================================
@@ -885,7 +483,7 @@ def init_state():
         "mode":"Text","result":None,"history":[],"page":"Home",
         "challenge_index":0,"challenge_score":0,"challenge_answered":False,
         "available_models":set(),"text_model":None,"vision_model":None,
-        "last_input_fingerprint":"","analysis_request_id":"",
+        "last_input_fingerprint":"","analysis_request_id":"","demo_mode":False,"scroll_to_scanners":False,"analysis_timestamps":[],
     }
     for k,v in defaults.items():
         if k not in st.session_state: st.session_state[k]=v
@@ -893,29 +491,13 @@ init_state()
 sc_init_state()  # Scam Challenge v2 session-state defaults
 
 # --------------------------- Sidebar ---------------------------
-with st.sidebar:
-    st.markdown('<div class="brand"><div class="brand-logo">SATARK <span class="brand-dot">◦</span></div><div class="brand-tag">Smart AI Threat Analysis & Risk Knowledge</div></div>',unsafe_allow_html=True)
-    st.markdown('<div class="side-label">Navigate</div>',unsafe_allow_html=True)
-    for page,label in [("Home","🏠 Home"),("Analyze","🔎 Check something"),("History","🕘 History"),("Challenge","🎯 Scam Challenge"),("Academy","🎓 SATARK Academy"),("Classroom","👨‍🏫 Classroom Mode")]:
-        if st.button(label,key=f"nav_{page}",use_container_width=True): st.session_state.page=page; st.rerun()
-    st.markdown('<div class="side-label">API configuration</div>',unsafe_allow_html=True)
-    env_key=os.getenv("GROQ_API_KEY","")
-    api_key=st.text_input("🔑 Groq API Key",value=env_key,type="password",placeholder="Paste your Groq API key",help="Kept in the Streamlit session; not intentionally written to disk by SATARK.")
-    if api_key:
-        if st.button("Check AI connection",key="check_ai",use_container_width=True):
-            try:
-                client=get_client(api_key); available=discover_models(client)
-                st.session_state.available_models=available
-                st.session_state.text_model=choose_model(available,TEXT_MODEL_PREFERENCES)
-                st.session_state.vision_model=choose_model(available,VISION_MODEL_PREFERENCES)
-                if st.session_state.text_model and st.session_state.vision_model: st.success("AI connected • text + vision available")
-                elif st.session_state.text_model: st.warning("AI connected • text available, no vision model exposed to this key")
-                else: st.error("API key is accepted but no supported SATARK text model was found.")
-            except Exception as exc: st.error(f"Could not check Groq ({type(exc).__name__}). Verify the key, network, and provider status.")
-    st.markdown('<div class="side-label">Personalization</div>',unsafe_allow_html=True)
-    role=st.selectbox("👤 Who are you?",["Student","Teacher","Working professional","Parent / Guardian","Senior user","Security learner"],index=0)
-    st.markdown('<div class="privacy"><strong>🔒 Privacy first</strong><br>SATARK keeps history only in this Streamlit session. Submitted content is not intentionally saved to disk by this app. Content is sent to Groq only when you analyze it. Avoid passwords, private keys and secrets.</div>',unsafe_allow_html=True)
-
+api_key, role = render_sidebar(
+    get_client,
+    discover_models,
+    choose_model,
+    TEXT_MODEL_PREFERENCES,
+    VISION_MODEL_PREFERENCES,
+)
 # ---------------------------- Hero -----------------------------
 st.markdown('<section class="hero"><div class="pill">AI SECURITY • EXPLAIN • LEARN • PROTECT</div><h1><span class="hero-primary">Think it’s a scam?</span><br><span class="hero-secondary">Let <span class="hero-brand">SATARK</span> check it.</span></h1><p><strong>Paste a message, inspect a link, upload a screenshot, video, or analyze a PDF.</strong><br>SATARK explains the risk in simple language and shows the evidence behind its assessment.</p></section>',unsafe_allow_html=True)
 
@@ -923,63 +505,7 @@ st.markdown('<section class="hero"><div class="pill">AI SECURITY • EXPLAIN •
 # --------------------------- Pages -----------------------------
 
 if st.session_state.page == "Home":
-
-    st.markdown(
-        '<div class="home-intro">'
-        '<div class="home-intro-title">Security analysis without the noise.</div>'
-        '<div class="home-intro-copy">'
-        'Start with what you received, not with a complicated security dashboard. '
-        'SATARK turns suspicious content into clear evidence, practical next steps, '
-        'and a result you can understand.'
-        '</div>'
-        '</div>',
-        unsafe_allow_html=True,
-    )
-
-    st.markdown(
-        '<div class="home-grid">'
-        '<div class="home-card"><div class="home-card-index">01 / CHECK</div>'
-        '<div class="home-card-title">Messages & links</div>'
-        '<div class="home-card-copy">Inspect suspicious text, URLs, phishing patterns and social-engineering pressure.</div></div>'
-        '<div class="home-card"><div class="home-card-index">02 / SEE</div>'
-        '<div class="home-card-title">Images & documents</div>'
-        '<div class="home-card-copy">Review screenshots, QR-related images and text-based PDFs for visible warning signs.</div></div>'
-        '<div class="home-card"><div class="home-card-index">03 / LEARN</div>'
-        '<div class="home-card-title">Understand the result</div>'
-        '<div class="home-card-copy">See evidence, confidence, recommendations and the reasoning behind the assessment.</div></div>'
-        '</div>',
-        unsafe_allow_html=True,
-    )
-
-    st.markdown('<div class="section-title" style="margin-top:2rem;">How SATARK works</div>', unsafe_allow_html=True)
-    st.markdown('<div class="section-copy">A quick four-step guide before you start analyzing suspicious content.</div>', unsafe_allow_html=True)
-    render_stepper()
-
-    st.markdown(
-        '<div class="home-trust">'
-        '<span><strong>TEXT</strong> analysis</span>'
-        '<span><strong>URL</strong> safety checks</span>'
-        '<span><strong>IMAGE</strong> vision</span>'
-        '<span><strong>PDF</strong> extraction</span>'
-        '<span><strong>VIDEO</strong> frame + audio</span>'
-        '<span><strong>SESSION</strong> history only</span>'
-        '</div>',
-        unsafe_allow_html=True,
-    )
-
-    st.markdown('<div class="analyze">', unsafe_allow_html=True)
-
-    if st.button(
-        "Start a security check  →",
-        use_container_width=True,
-        type="primary",
-        key="goto_analyze"
-    ):
-        st.session_state.page = "Analyze"
-        st.session_state.scroll_to_scanners = True
-        st.rerun()
-
-    st.markdown('</div>', unsafe_allow_html=True)
+    render_home()
 
 
 elif st.session_state.page == "Analyze":
@@ -1033,7 +559,7 @@ elif st.session_state.page == "Analyze":
     st.markdown(
         '<div class="section-title">What do you want to check?</div>'
         '<div class="section-copy">'
-        'Choose a scanner. Your original six SATARK modes remain available, plus Video.'
+        'Choose a scanner. Seven scanners cover text, links, images, documents, QR codes and video.'
         '</div>',
         unsafe_allow_html=True
     )
@@ -1073,7 +599,7 @@ elif st.session_state.page == "Analyze":
                 )
 
                 if st.button(
-                    f"Use {name}",
+                    f"Select {name}",
                     key=f"scanner_{name}",
                     use_container_width=True
                 ):
@@ -1204,7 +730,8 @@ elif st.session_state.page == "Analyze":
                 "Paste any message, post, SMS, "
                 "social-media content or suspicious text here..."
             ),
-            key=f"text_input_{mode}"
+            key=f"text_input_{mode}",
+            max_chars=MAX_TEXT_INPUT_CHARS,
         )
 
 
@@ -1396,6 +923,19 @@ elif st.session_state.page == "Analyze":
             st.stop()
 
 
+        now_monotonic = time.monotonic()
+        recent_requests = [
+            timestamp
+            for timestamp in st.session_state.get("analysis_timestamps", [])
+            if now_monotonic - timestamp < 60
+        ]
+        if len(recent_requests) >= MAX_ANALYSES_PER_MINUTE:
+            st.session_state.analysis_timestamps = recent_requests
+            st.error("SATARK has reached the session analysis limit. Please wait about a minute before trying again.")
+            st.stop()
+        recent_requests.append(now_monotonic)
+        st.session_state.analysis_timestamps = recent_requests
+
         try:
 
             # Fresh request ID for every analysis
@@ -1442,7 +982,7 @@ elif st.session_state.page == "Analyze":
                             "Please enter some content to analyze."
                         )
 
-                    prepared = content[:50000]
+                    prepared = content[:MAX_TEXT_INPUT_CHARS]
 
 
                 elif mode == "URL":
@@ -1705,111 +1245,8 @@ elif st.session_state.page == "Analyze":
 # ==============================================================
 
 elif st.session_state.page == "History":
+    render_history(st.session_state.history, make_pdf_report, risk_label)
 
-    st.markdown(
-        '<div class="section-title">🕘 Scan History</div>'
-        '<div class="section-copy">'
-        'Session-only history. Original submitted content is not '
-        'stored here; only analysis results and metadata are retained.'
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-    if st.session_state.history:
-
-        if st.button(
-            "Clear session history",
-            key="clear_history"
-        ):
-
-            st.session_state.history = []
-            st.session_state.result = None
-            st.rerun()
-
-
-        for i, entry in enumerate(
-            st.session_state.history
-        ):
-
-            score = entry["score"]
-
-            label, css = risk_label(
-                score,
-                entry.get("category", "")
-            )
-
-
-            with st.expander(
-                f"{entry['mode']} • "
-                f"{entry['category']} • "
-                f"{score}/100 • "
-                f"{entry['time']}"
-            ):
-
-                st.markdown(
-                    f'<span class="badge">{label}</span> '
-                    f'<span class="badge">'
-                    f'{html.escape(entry["category"])}'
-                    f'</span>',
-                    unsafe_allow_html=True
-                )
-
-                st.write(
-                    entry["verdict"]
-                )
-
-
-                c1, c2 = st.columns(2)
-
-
-                with c1:
-
-                    if st.button(
-                        "Open result",
-                        key=f"history_open_{i}"
-                    ):
-
-                        st.session_state.result = (
-                            entry["result"]
-                        )
-
-                        st.session_state.mode = (
-                            entry["mode"]
-                        )
-
-                        st.session_state.page = (
-                            "Analyze"
-                        )
-
-                        st.rerun()
-
-
-                with c2:
-
-                    st.download_button(
-                        "📄 Export PDF",
-                        make_pdf_report(
-                            entry["result"],
-                            entry["mode"]
-                        ),
-                        file_name=(
-                            f"SATARK_report_{i+1}.pdf"
-                        ),
-                        mime="application/pdf",
-                        key=f"history_dl_{i}"
-                    )
-
-    else:
-
-        st.info(
-            "No scans yet. Analyze something suspicious "
-            "and it will appear here for this session."
-        )
-
-
-# ==============================================================
-# SCAM CHALLENGE
-# ==============================================================
 
 elif st.session_state.page == "Challenge":
 
@@ -1825,235 +1262,15 @@ elif st.session_state.page == "Challenge":
 
 
 elif st.session_state.page == "Academy":
+    render_academy()
 
-    st.markdown(
-        '<div class="section-title">🎓 SATARK Academy</div>'
-        '<div class="section-copy">'
-        'Learn the patterns behind the scams instead of relying '
-        'on AI forever.'
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-
-    lessons = [
-
-        (
-            "🎣",
-            "Phishing",
-            "Fake messages and pages designed to steal "
-            "credentials or information."
-        ),
-
-        (
-            "⏰",
-            "Urgency manipulation",
-            "Pressure tactics that make you act before you verify."
-        ),
-
-        (
-            "👤",
-            "Impersonation",
-            "Attackers pretending to be banks, schools, "
-            "companies, friends or officials."
-        ),
-
-        (
-            "🔗",
-            "Suspicious links",
-            "Look-alike domains, strange paths, redirects "
-            "and unexpected login pages."
-        ),
-
-        (
-            "💳",
-            "Payment fraud",
-            "Fake fees, refunds, prizes, QR payments "
-            "and requests for money."
-        ),
-
-        (
-            "🔐",
-            "Account takeover",
-            "Attempts to obtain passwords, OTPs, recovery "
-            "codes or session access."
-        )
-
-    ]
-
-
-    cols = st.columns(3)
-
-
-    for i, (icon, title, copy) in enumerate(
-        lessons
-    ):
-
-        with cols[i % 3]:
-
-            st.markdown(
-                f'''
-                <div class="feature-card">
-                    <div class="feature-icon">{icon}</div>
-                    <div class="feature-title">{title}</div>
-                    <div class="feature-copy">{copy}</div>
-                </div>
-                ''',
-                unsafe_allow_html=True
-            )
-
-
-    st.markdown(
-        "### A simple rule to remember"
-    )
-
-
-    st.info(
-        "STOP → VERIFY → ACT. If a message creates pressure, "
-        "asks for secrets, or requests money, pause and verify "
-        "through an independent official channel."
-    )
-
-
-# ==============================================================
-# CLASSROOM
-# ==============================================================
 
 elif st.session_state.page == "Classroom":
-
-    st.markdown(
-        '<div class="section-title">👨‍🏫 Classroom Mode</div>'
-        '<div class="section-copy">'
-        'A simple teacher-facing view for using SATARK '
-        'as a cyber-safety learning tool.'
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-
-    history = st.session_state.history
-
-    total = len(history)
-
-    avg = (
-        round(
-            sum(x["score"] for x in history) / total
-        )
-        if total
-        else 0
-    )
-
-    high = sum(
-        1
-        for x in history
-        if x["score"] >= 70
-    )
-
-
-    a, b, c = st.columns(3)
-
-
-    with a:
-
-        st.markdown(
-            f'''
-            <div class="metric">
-                <div class="metric-label">
-                    Scans this session
-                </div>
-                <div class="metric-value">
-                    {total}
-                </div>
-            </div>
-            ''',
-            unsafe_allow_html=True
-        )
-
-
-    with b:
-
-        st.markdown(
-            f'''
-            <div class="metric">
-                <div class="metric-label">
-                    Average risk
-                </div>
-                <div class="metric-value">
-                    {avg}/100
-                </div>
-            </div>
-            ''',
-            unsafe_allow_html=True
-        )
-
-
-    with c:
-
-        st.markdown(
-            f'''
-            <div class="metric">
-                <div class="metric-label">
-                    High-risk findings
-                </div>
-                <div class="metric-value critical">
-                    {high}
-                </div>
-            </div>
-            ''',
-            unsafe_allow_html=True
-        )
-
-
-    st.markdown(
-        "### Suggested classroom flow"
-    )
-
-
-    st.markdown(
-        "**1.** Give students a suspicious message.  "
-        "**2.** Ask them to identify warning signs.  "
-        "**3.** Run it through SATARK.  "
-        "**4.** Compare the evidence.  "
-        "**5.** Use Scam Challenge to reinforce the lesson."
-    )
-
-
-    st.markdown(
-        "### Common patterns in this session"
-    )
-
-
-    counts = {}
-
-
-    for item in history:
-
-        key = item["category"]
-
-        counts[key] = counts.get(key, 0) + 1
-
-
-    if counts:
-
-        for k, v in sorted(
-            counts.items(),
-            key=lambda x: x[1],
-            reverse=True
-        ):
-
-            st.write(
-                f"• **{k}** — {v} scan(s)"
-            )
-
-    else:
-
-        st.info(
-            "Run a few example scans to populate "
-            "classroom statistics."
-        )
+    render_classroom(st.session_state.history)
 
 
 # ==============================================================
+# FOOTER
 # FOOTER
 # ==============================================================
 

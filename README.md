@@ -10,7 +10,8 @@ SATARK is an AI-assisted security-awareness application for exploring suspicious
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/Interface-Streamlit-FF4B4B?logo=streamlit&logoColor=white)
 ![AI](https://img.shields.io/badge/AI-Groq-111827)
-![Project status](https://img.shields.io/badge/status-prototype-8b5cf6)
+![Project status](https://img.shields.io/badge/status-active%20development-8b5cf6)
+![CodeQL](https://github.com/coolbandariya/Satark/actions/workflows/codeql.yml/badge.svg)
 ![CI](https://github.com/coolbandariya/Satark/actions/workflows/ci.yml/badge.svg)
 
 </div>
@@ -81,7 +82,7 @@ Do not submit passwords, one-time codes, private keys, or unnecessary personal i
 - **OpenCV** — video frame extraction
 - **FFmpeg** — optional audio-track extraction for video transcription
 
-The repository separates several responsibilities into modules. The radar background is a browser-side OGL dependency loaded from esm.sh, and the onboarding Stepper loads React, ReactDOM, and Motion from esm.sh; these are browser-side dependencies and are intentionally absent from `requirements.txt`. The main Streamlit entry point still contains substantial analysis and UI orchestration, so the application is not yet fully decoupled.
+The repository separates the analysis, input-processing, finding-model, security, provider, and major UI responsibilities into modules. The radar background is a browser-side OGL dependency loaded from esm.sh, and the onboarding Stepper loads React, ReactDOM, and Motion from esm.sh; these are browser-side dependencies and are intentionally absent from `requirements.txt`. The remaining `satark.py` code is orchestration rather than a single monolithic implementation, with further service extraction left as a deliberate roadmap item.
 
 ## Run locally
 
@@ -175,13 +176,13 @@ Install the project dependencies, then run:
 
 ```bash
 python -m pip check
-python -m compileall -q satark.py ai_provider.py scam_challenge.py video_processing.py reports.py satark_utils.py url_security.py tests
+python -m compileall -q .
 python -m unittest discover -s tests -v
 ```
 
-These checks cover dependency consistency, Python compilation, helper/model-selection tests, URL/PDF safety cases, and video-processing tests. They do **not** replace manual testing of Streamlit interactions, live Groq requests, deployment configuration, or end-to-end file processing.
+These checks cover dependency consistency, critical lint errors, full Python compilation, analysis normalization, URL safety, UI contracts, provider selection, media processing, and layout/source hygiene. They do **not** replace manual testing of Streamlit interactions, live Groq requests, deployment configuration, or end-to-end file processing.
 
-GitHub Actions also validates the same core checks on pushes and pull requests, including dependency installation, `pip check`, compilation, unit tests, stylesheet integrity, and required-file checks. A passing unit-test run alone does not establish production readiness.
+GitHub Actions also runs CodeQL. A passing unit-test run alone does not establish production readiness, but the repository now has explicit automated gates for the highest-risk source and dependency regressions.
 
 ## Security, privacy, and limitations
 

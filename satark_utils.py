@@ -14,8 +14,6 @@ def clean_json_text(text):
     return text[start:end + 1] if start != -1 and end > start else text
 
 
-
-
 THREAT_CHECKS = [
     "Scam Indicators",
     "Phishing Signs",
@@ -26,8 +24,6 @@ THREAT_CHECKS = [
     "Malware Indicators",
     "Social Engineering",
 ]
-
-
 
 
 OFFICIAL_VERIFICATION_SOURCES = [
@@ -129,11 +125,6 @@ def check_class(value):
         return "check-detected"
 
     return "check-review"
-
-
-
-
-
 
 
 #-------------------------------------------------------------------------------------------
