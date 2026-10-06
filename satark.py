@@ -43,6 +43,7 @@ from reports import make_pdf_report
 from satark_utils import safe_text, clean_json_text, normalize_check_value, check_class, THREAT_CHECKS, OFFICIAL_VERIFICATION_SOURCES
 from radar_background import render_radar_background
 from stepper_component import render_stepper
+from config import MAX_HISTORY_ITEMS
 from analysis_engine import (
     clamp_score,
     is_scam_claim,
@@ -53,6 +54,11 @@ from analysis_engine import (
     calibrate_confidence,
     normalize_result,
 )
+from ui.home import render_home
+from ui.navigation import render_sidebar
+from ui.results import render_threat_analysis, render_verification_sources
+from ui.history import render_history
+from ui.learning import render_academy, render_classroom
 from input_processing import (
     MAX_PDF_BYTES,
     MAX_IMAGE_BYTES,
@@ -288,44 +294,6 @@ Not detected, Low, Medium, High.
         )
 
     raise RuntimeError(
-        f"SATARK could not complete the {kind} analysis with any configured Groq model.\n{detail}"
-    )
-
-
-# ---------------------- UI/result helpers ----------------------
-def render_threat_analysis(result):
-    rows = []
-    for check in THREAT_CHECKS:
-        value = safe_text(result.get("threat_analysis", {}).get(check, "Needs review"), "Needs review")
-        cls = check_class(value)
-        icon = "✖" if cls == "check-clear" else "✓" if cls == "check-detected" else "•"
-        rows.append(f'<tr><td>{html.escape(check)}</td><td class="{cls}">{icon} {html.escape(value)}</td></tr>')
-    table = (
-        '<table class="report-table"><thead><tr><th>Security Check</th><th>Result</th></tr></thead>'
-        '<tbody>' + ''.join(rows) + '</tbody></table>'
-    )
-    legend = (
-        '<div class="status-legend">'
-        '<div class="status-legend-title">How to read the results</div>'
-        '<span class="status-item"><span class="status-detected">✓ Detected</span> — sufficient evidence that the indicator is present.</span>'
-        '<span class="status-item"><span class="status-review">• Needs review</span> — evidence is ambiguous or insufficient; verify it manually.</span>'
-        '<span class="status-item"><span class="status-clear">✖ Not detected</span> — no meaningful evidence of that indicator was found.</span>'
-        '</div>'
-    )
-    st.markdown(f'<section class="report-section"><h3>🔎 Threat Analysis</h3>{table}{legend}</section>', unsafe_allow_html=True)
-
-
-def render_verification_sources(result):
-    rows=[]
-    for item in result.get("verification_sources", OFFICIAL_VERIFICATION_SOURCES):
-        source=html.escape(safe_text(item.get("source")))
-        purpose=html.escape(safe_text(item.get("purpose")))
-        website=safe_text(item.get("website"))
-        safe_href=html.escape(website, quote=True)
-        safe_label=html.escape(website)
-        rows.append(f'<tr><td>{source}</td><td>{purpose}</td><td><a class="source-link" href="{safe_href}" target="_blank">{safe_label}</a></td></tr>')
-    table=(
-        '<table class="report-table"><thead><tr><th>Source</th><th>Purpose</th><th>Official Website</th></tr></thead>'
         '<tbody>'+''.join(rows)+'</tbody></table>'
     )
     st.markdown(f'<section class="report-section"><h3>📚 Official Verification Sources</h3>{table}</section>', unsafe_allow_html=True)
@@ -406,7 +374,7 @@ def add_history(result, mode):
         "result": result,
     }
     st.session_state.history.insert(0,entry)
-    st.session_state.history=st.session_state.history[:20]
+    st.session_state.history=st.session_state.history[:MAX_HISTORY_ITEMS]
 
 
 
@@ -428,7 +396,7 @@ def init_state():
         "mode":"Text","result":None,"history":[],"page":"Home",
         "challenge_index":0,"challenge_score":0,"challenge_answered":False,
         "available_models":set(),"text_model":None,"vision_model":None,
-        "last_input_fingerprint":"","analysis_request_id":"",
+        "last_input_fingerprint":"","analysis_request_id":"","demo_mode":False,"scroll_to_scanners":False,
     }
     for k,v in defaults.items():
         if k not in st.session_state: st.session_state[k]=v
@@ -436,29 +404,13 @@ init_state()
 sc_init_state()  # Scam Challenge v2 session-state defaults
 
 # --------------------------- Sidebar ---------------------------
-with st.sidebar:
-    st.markdown('<div class="brand"><div class="brand-logo">SATARK <span class="brand-dot">◦</span></div><div class="brand-tag">Smart AI Threat Analysis & Risk Knowledge</div></div>',unsafe_allow_html=True)
-    st.markdown('<div class="side-label">Navigate</div>',unsafe_allow_html=True)
-    for page,label in [("Home","🏠 Home"),("Analyze","🔎 Check something"),("History","🕘 History"),("Challenge","🎯 Scam Challenge"),("Academy","🎓 SATARK Academy"),("Classroom","👨‍🏫 Classroom Mode")]:
-        if st.button(label,key=f"nav_{page}",use_container_width=True): st.session_state.page=page; st.rerun()
-    st.markdown('<div class="side-label">API configuration</div>',unsafe_allow_html=True)
-    env_key=os.getenv("GROQ_API_KEY","")
-    api_key=st.text_input("🔑 Groq API Key",value=env_key,type="password",placeholder="Paste your Groq API key",help="Kept in the Streamlit session; not intentionally written to disk by SATARK.")
-    if api_key:
-        if st.button("Check AI connection",key="check_ai",use_container_width=True):
-            try:
-                client=get_client(api_key); available=discover_models(client)
-                st.session_state.available_models=available
-                st.session_state.text_model=choose_model(available,TEXT_MODEL_PREFERENCES)
-                st.session_state.vision_model=choose_model(available,VISION_MODEL_PREFERENCES)
-                if st.session_state.text_model and st.session_state.vision_model: st.success("AI connected • text + vision available")
-                elif st.session_state.text_model: st.warning("AI connected • text available, no vision model exposed to this key")
-                else: st.error("API key is accepted but no supported SATARK text model was found.")
-            except Exception as exc: st.error(f"Could not check Groq ({type(exc).__name__}). Verify the key, network, and provider status.")
-    st.markdown('<div class="side-label">Personalization</div>',unsafe_allow_html=True)
-    role=st.selectbox("👤 Who are you?",["Student","Teacher","Working professional","Parent / Guardian","Senior user","Security learner"],index=0)
-    st.markdown('<div class="privacy"><strong>🔒 Privacy first</strong><br>SATARK keeps history only in this Streamlit session. Submitted content is not intentionally saved to disk by this app. Content is sent to Groq only when you analyze it. Avoid passwords, private keys and secrets.</div>',unsafe_allow_html=True)
-
+api_key, role = render_sidebar(
+    get_client,
+    discover_models,
+    choose_model,
+    TEXT_MODEL_PREFERENCES,
+    VISION_MODEL_PREFERENCES,
+)
 # ---------------------------- Hero -----------------------------
 st.markdown('<section class="hero"><div class="pill">AI SECURITY • EXPLAIN • LEARN • PROTECT</div><h1><span class="hero-primary">Think it’s a scam?</span><br><span class="hero-secondary">Let <span class="hero-brand">SATARK</span> check it.</span></h1><p><strong>Paste a message, inspect a link, upload a screenshot, video, or analyze a PDF.</strong><br>SATARK explains the risk in simple language and shows the evidence behind its assessment.</p></section>',unsafe_allow_html=True)
 
@@ -466,63 +418,7 @@ st.markdown('<section class="hero"><div class="pill">AI SECURITY • EXPLAIN •
 # --------------------------- Pages -----------------------------
 
 if st.session_state.page == "Home":
-
-    st.markdown(
-        '<div class="home-intro">'
-        '<div class="home-intro-title">Security analysis without the noise.</div>'
-        '<div class="home-intro-copy">'
-        'Start with what you received, not with a complicated security dashboard. '
-        'SATARK turns suspicious content into clear evidence, practical next steps, '
-        'and a result you can understand.'
-        '</div>'
-        '</div>',
-        unsafe_allow_html=True,
-    )
-
-    st.markdown(
-        '<div class="home-grid">'
-        '<div class="home-card"><div class="home-card-index">01 / CHECK</div>'
-        '<div class="home-card-title">Messages & links</div>'
-        '<div class="home-card-copy">Inspect suspicious text, URLs, phishing patterns and social-engineering pressure.</div></div>'
-        '<div class="home-card"><div class="home-card-index">02 / SEE</div>'
-        '<div class="home-card-title">Images & documents</div>'
-        '<div class="home-card-copy">Review screenshots, QR-related images and text-based PDFs for visible warning signs.</div></div>'
-        '<div class="home-card"><div class="home-card-index">03 / LEARN</div>'
-        '<div class="home-card-title">Understand the result</div>'
-        '<div class="home-card-copy">See evidence, confidence, recommendations and the reasoning behind the assessment.</div></div>'
-        '</div>',
-        unsafe_allow_html=True,
-    )
-
-    st.markdown('<div class="section-title" style="margin-top:2rem;">How SATARK works</div>', unsafe_allow_html=True)
-    st.markdown('<div class="section-copy">A quick four-step guide before you start analyzing suspicious content.</div>', unsafe_allow_html=True)
-    render_stepper()
-
-    st.markdown(
-        '<div class="home-trust">'
-        '<span><strong>TEXT</strong> analysis</span>'
-        '<span><strong>URL</strong> safety checks</span>'
-        '<span><strong>IMAGE</strong> vision</span>'
-        '<span><strong>PDF</strong> extraction</span>'
-        '<span><strong>VIDEO</strong> frame + audio</span>'
-        '<span><strong>SESSION</strong> history only</span>'
-        '</div>',
-        unsafe_allow_html=True,
-    )
-
-    st.markdown('<div class="analyze">', unsafe_allow_html=True)
-
-    if st.button(
-        "Start a security check  →",
-        use_container_width=True,
-        type="primary",
-        key="goto_analyze"
-    ):
-        st.session_state.page = "Analyze"
-        st.session_state.scroll_to_scanners = True
-        st.rerun()
-
-    st.markdown('</div>', unsafe_allow_html=True)
+    render_home()
 
 
 elif st.session_state.page == "Analyze":
@@ -1248,111 +1144,8 @@ elif st.session_state.page == "Analyze":
 # ==============================================================
 
 elif st.session_state.page == "History":
+    render_history(st.session_state.history, make_pdf_report, risk_label)
 
-    st.markdown(
-        '<div class="section-title">🕘 Scan History</div>'
-        '<div class="section-copy">'
-        'Session-only history. Original submitted content is not '
-        'stored here; only analysis results and metadata are retained.'
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-    if st.session_state.history:
-
-        if st.button(
-            "Clear session history",
-            key="clear_history"
-        ):
-
-            st.session_state.history = []
-            st.session_state.result = None
-            st.rerun()
-
-
-        for i, entry in enumerate(
-            st.session_state.history
-        ):
-
-            score = entry["score"]
-
-            label, css = risk_label(
-                score,
-                entry.get("category", "")
-            )
-
-
-            with st.expander(
-                f"{entry['mode']} • "
-                f"{entry['category']} • "
-                f"{score}/100 • "
-                f"{entry['time']}"
-            ):
-
-                st.markdown(
-                    f'<span class="badge">{label}</span> '
-                    f'<span class="badge">'
-                    f'{html.escape(entry["category"])}'
-                    f'</span>',
-                    unsafe_allow_html=True
-                )
-
-                st.write(
-                    entry["verdict"]
-                )
-
-
-                c1, c2 = st.columns(2)
-
-
-                with c1:
-
-                    if st.button(
-                        "Open result",
-                        key=f"history_open_{i}"
-                    ):
-
-                        st.session_state.result = (
-                            entry["result"]
-                        )
-
-                        st.session_state.mode = (
-                            entry["mode"]
-                        )
-
-                        st.session_state.page = (
-                            "Analyze"
-                        )
-
-                        st.rerun()
-
-
-                with c2:
-
-                    st.download_button(
-                        "📄 Export PDF",
-                        make_pdf_report(
-                            entry["result"],
-                            entry["mode"]
-                        ),
-                        file_name=(
-                            f"SATARK_report_{i+1}.pdf"
-                        ),
-                        mime="application/pdf",
-                        key=f"history_dl_{i}"
-                    )
-
-    else:
-
-        st.info(
-            "No scans yet. Analyze something suspicious "
-            "and it will appear here for this session."
-        )
-
-
-# ==============================================================
-# SCAM CHALLENGE
-# ==============================================================
 
 elif st.session_state.page == "Challenge":
 
@@ -1368,235 +1161,15 @@ elif st.session_state.page == "Challenge":
 
 
 elif st.session_state.page == "Academy":
+    render_academy()
 
-    st.markdown(
-        '<div class="section-title">🎓 SATARK Academy</div>'
-        '<div class="section-copy">'
-        'Learn the patterns behind the scams instead of relying '
-        'on AI forever.'
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-
-    lessons = [
-
-        (
-            "🎣",
-            "Phishing",
-            "Fake messages and pages designed to steal "
-            "credentials or information."
-        ),
-
-        (
-            "⏰",
-            "Urgency manipulation",
-            "Pressure tactics that make you act before you verify."
-        ),
-
-        (
-            "👤",
-            "Impersonation",
-            "Attackers pretending to be banks, schools, "
-            "companies, friends or officials."
-        ),
-
-        (
-            "🔗",
-            "Suspicious links",
-            "Look-alike domains, strange paths, redirects "
-            "and unexpected login pages."
-        ),
-
-        (
-            "💳",
-            "Payment fraud",
-            "Fake fees, refunds, prizes, QR payments "
-            "and requests for money."
-        ),
-
-        (
-            "🔐",
-            "Account takeover",
-            "Attempts to obtain passwords, OTPs, recovery "
-            "codes or session access."
-        )
-
-    ]
-
-
-    cols = st.columns(3)
-
-
-    for i, (icon, title, copy) in enumerate(
-        lessons
-    ):
-
-        with cols[i % 3]:
-
-            st.markdown(
-                f'''
-                <div class="feature-card">
-                    <div class="feature-icon">{icon}</div>
-                    <div class="feature-title">{title}</div>
-                    <div class="feature-copy">{copy}</div>
-                </div>
-                ''',
-                unsafe_allow_html=True
-            )
-
-
-    st.markdown(
-        "### A simple rule to remember"
-    )
-
-
-    st.info(
-        "STOP → VERIFY → ACT. If a message creates pressure, "
-        "asks for secrets, or requests money, pause and verify "
-        "through an independent official channel."
-    )
-
-
-# ==============================================================
-# CLASSROOM
-# ==============================================================
 
 elif st.session_state.page == "Classroom":
-
-    st.markdown(
-        '<div class="section-title">👨‍🏫 Classroom Mode</div>'
-        '<div class="section-copy">'
-        'A simple teacher-facing view for using SATARK '
-        'as a cyber-safety learning tool.'
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-
-    history = st.session_state.history
-
-    total = len(history)
-
-    avg = (
-        round(
-            sum(x["score"] for x in history) / total
-        )
-        if total
-        else 0
-    )
-
-    high = sum(
-        1
-        for x in history
-        if x["score"] >= 70
-    )
-
-
-    a, b, c = st.columns(3)
-
-
-    with a:
-
-        st.markdown(
-            f'''
-            <div class="metric">
-                <div class="metric-label">
-                    Scans this session
-                </div>
-                <div class="metric-value">
-                    {total}
-                </div>
-            </div>
-            ''',
-            unsafe_allow_html=True
-        )
-
-
-    with b:
-
-        st.markdown(
-            f'''
-            <div class="metric">
-                <div class="metric-label">
-                    Average risk
-                </div>
-                <div class="metric-value">
-                    {avg}/100
-                </div>
-            </div>
-            ''',
-            unsafe_allow_html=True
-        )
-
-
-    with c:
-
-        st.markdown(
-            f'''
-            <div class="metric">
-                <div class="metric-label">
-                    High-risk findings
-                </div>
-                <div class="metric-value critical">
-                    {high}
-                </div>
-            </div>
-            ''',
-            unsafe_allow_html=True
-        )
-
-
-    st.markdown(
-        "### Suggested classroom flow"
-    )
-
-
-    st.markdown(
-        "**1.** Give students a suspicious message.  "
-        "**2.** Ask them to identify warning signs.  "
-        "**3.** Run it through SATARK.  "
-        "**4.** Compare the evidence.  "
-        "**5.** Use Scam Challenge to reinforce the lesson."
-    )
-
-
-    st.markdown(
-        "### Common patterns in this session"
-    )
-
-
-    counts = {}
-
-
-    for item in history:
-
-        key = item["category"]
-
-        counts[key] = counts.get(key, 0) + 1
-
-
-    if counts:
-
-        for k, v in sorted(
-            counts.items(),
-            key=lambda x: x[1],
-            reverse=True
-        ):
-
-            st.write(
-                f"• **{k}** — {v} scan(s)"
-            )
-
-    else:
-
-        st.info(
-            "Run a few example scans to populate "
-            "classroom statistics."
-        )
+    render_classroom(st.session_state.history)
 
 
 # ==============================================================
+# FOOTER
 # FOOTER
 # ==============================================================
 
