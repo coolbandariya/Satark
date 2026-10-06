@@ -47,7 +47,7 @@ button.nav:hover{filter:brightness(1.08)}
 <script type="module">
 import React,{useState,useLayoutEffect,useRef} from "https://esm.sh/react@18.3.1";
 import {createRoot} from "https://esm.sh/react-dom@18.3.1/client";
-import {motion,AnimatePresence} from "https://esm.sh/motion@12.23.24/react";
+import {motion,AnimatePresence} from "https://esm.sh/motion@13.4.6/react";
 
 const h=React.createElement;
 const steps=[
