@@ -94,7 +94,7 @@ div[data-testid="stButton"]>button[kind="primary"]{
 }
 .sc-dash-badge{flex-shrink:0;}
 .sc-dash-rankinfo{flex:1;min-width:220px;}
- 
+
 /* ---- HEADER + POINTS BADGE (top-right, all views) ---- */
 .sc-header-row{
   display:flex;
@@ -142,7 +142,7 @@ div[data-testid="stButton"]>button[kind="primary"]{
 .sc-stat{padding:12px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.045);text-align:center;}
 .sc-stat-v{font-family:Sora,sans-serif;font-size:1.3rem;font-weight:800;color:#f7f7fb;}
 .sc-stat-l{margin-top:3px;font-size:.63rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#a7aabb;}
- 
+
 /* ---- BADGES (game-rank style emblem) ---- */
 .sc-badge-wrap{position:relative;width:92px;height:92px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .sc-badge-wrap.sc-lg{width:128px;height:128px;}
@@ -201,7 +201,7 @@ div[data-testid="stButton"]>button[kind="primary"]{
 }
 @keyframes sc-rotatering{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
 @keyframes sc-shimmer{0%{background-position:-120% -120%;}100%{background-position:120% 120%;}}
- 
+
 /* ---- LEVEL MAP ---- */
 .sc-rankblock{margin:22px 0 6px;padding:14px 16px;border:1px solid var(--line2);border-radius:16px;background:rgba(255,255,255,.035);}
 .sc-rankblock-head{display:flex;align-items:center;gap:14px;margin-bottom:2px;}
@@ -213,7 +213,7 @@ div[data-testid="stButton"]>button[kind="primary"]{
 .sc-cell-completed{background:rgba(62,224,138,.12);border-color:rgba(62,224,138,.45);color:#a4f5c4;}
 .sc-cell-current{background:rgba(164,139,255,.18);border-color:rgba(164,139,255,.8);color:#ece7ff;animation:sc-pulse 2.2s ease-in-out infinite;--rc:#a48bff;}
 div[data-testid="stButton"]>button.sc-levelbtn-locked, div[data-testid="stButton"] button:disabled{opacity:.45;cursor:not-allowed;}
- 
+
 /* ---- HUD ---- */
 .sc-hud{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;padding:14px;margin-bottom:14px;border:1px solid var(--line2);border-radius:15px;background:rgba(255,255,255,.04);}
 .sc-hud-item{text-align:center;}
@@ -227,7 +227,7 @@ div[data-testid="stButton"]>button.sc-levelbtn-locked, div[data-testid="stButton
 .sc-feedback-wrong{background:rgba(255,92,92,.13);border-color:rgba(255,92,92,.45);color:#ffb3b3;}
 .sc-feedback-pts{font-family:Sora,sans-serif;font-size:1.5rem;margin-top:2px;}
 .sc-explain{padding:14px 16px;border-left:3px solid var(--violet);border-radius:12px;background:var(--violet2);color:#eceefb;line-height:1.6;font-size:.89rem;}
- 
+
 /* ---- RESULTS / RANKUP ---- */
 .sc-results{padding:26px;border-radius:20px;border:1px solid var(--line2);text-align:center;background:linear-gradient(160deg,rgba(28,30,40,.94),rgba(13,14,20,.97));box-shadow:0 20px 55px rgba(0,0,0,.4);}
 .sc-results-level{color:#a7aabb;font-size:.72rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;}
@@ -270,16 +270,16 @@ SC_RANKS = [
     {"num": "X", "roman": "X", "name": "SATARK LEGEND", "lo": 91, "hi": 100,
      "icon": "👁️", "anim": "sc-anim-legend", "color": "#f2c879"},
 ]
- 
- 
+
+
 def sc_rank_for_level(level):
     level = max(1, min(100, level))
     for r in SC_RANKS:
         if r["lo"] <= level <= r["hi"]:
             return r
     return SC_RANKS[-1]
- 
- 
+
+
 def sc_badge_html(rank, size="lg"):
     """Game-style rank emblem. Built flush-left / single-line to avoid
     Markdown treating indented HTML as a code block."""
@@ -290,8 +290,8 @@ def sc_badge_html(rank, size="lg"):
             '<div class="sc-badge-core"><span>' + rank["icon"] + '</span></div>'
             '<div class="sc-badge-tier">RANK ' + rank["roman"] + '</div>'
             '</div>')
- 
- 
+
+
 # ---------------- Shared vocabulary pools ----------------
 SC_BANKS = ["HDFC Bank", "ICICI Bank", "SBI", "Axis Bank", "Kotak Mahindra", "Punjab National Bank", "Yes Bank", "IDFC First Bank"]
 SC_UPI = ["PhonePe", "Google Pay", "Paytm", "BHIM UPI", "Amazon Pay"]
@@ -308,8 +308,8 @@ SC_APPS = ["a food delivery app", "a bank app", "an e-commerce app", "a UPI app"
 SC_DOC_TYPES = ["a shared invoice", "a payroll spreadsheet", "a project proposal", "a scanned contract", "a shared photo album"]
 SC_REASONS = ["a medical emergency", "a car accident abroad", "being stranded at an airport", "an urgent visa fee", "a hospital deposit"]
 SC_RELATIONS = ["a close relative", "your father", "your sister", "your best friend", "your spouse", "your son"]
- 
- 
+
+
 def _mk(rng, category, question, correct, distractors, explanation, qtype="identify"):
     opts = [correct] + list(distractors)
     rng.shuffle(opts)
@@ -321,8 +321,8 @@ def _mk(rng, category, question, correct, distractors, explanation, qtype="ident
         "answer": opts.index(correct),
         "explanation": explanation,
     }
- 
- 
+
+
 def g_phishing(rng, tier):
     bank = rng.choice(SC_BANKS)
     mins = rng.choice([5, 10, 15, 20, 30, 45])
@@ -343,8 +343,8 @@ def g_phishing(rng, tier):
     ], "Legitimate banks never create artificial time pressure and never send verification "
        "links to look-alike domains. Always type the bank's known URL directly instead of "
        "clicking a link in an unsolicited message.")
- 
- 
+
+
 def g_otp(rng, tier):
     who = rng.choice(["your bank's fraud department", "a 'customer care executive'", "a courier agent", "a delivery partner", "a 'RBI compliance officer'"])
     amt = rng.randint(2000, 60000)
@@ -361,8 +361,8 @@ def g_otp(rng, tier):
         "Reading it out loud does not share it electronically",
     ], "An OTP is a one-time authorization code. No legitimate process ever requires you to "
        "read it to someone else — doing so approves whatever transaction the scammer initiated.")
- 
- 
+
+
 def g_suspicious_link(rng, tier):
     topic = rng.choice(["a parcel customs fee", "a subscription renewal", "a KYC update", "a refund", "an electricity bill", "a SIM deactivation notice"])
     tag = rng.choice(['pay', 'kyc', 'verify', 'refund', 'update', 'confirm'])
@@ -376,8 +376,8 @@ def g_suspicious_link(rng, tier):
         "Whether the sender has a profile photo",
     ], "Shortened links hide the real destination. Expanding or hovering over a link before "
        "clicking reveals the true domain, which is the single most reliable signal.")
- 
- 
+
+
 def g_fake_prize(rng, tier):
     amt = rng.choice([15000, 25000, 35000, 50000, 75000, 100000, 150000])
     fee = rng.choice([299, 499, 999, 1499, 1999])
@@ -391,8 +391,8 @@ def g_fake_prize(rng, tier):
         "The fee is a round number",
     ], "Legitimate lotteries or rewards deduct tax/fees from the winnings itself — they never "
        "ask winners to pay money upfront to 'unlock' a prize.")
- 
- 
+
+
 def g_impersonation(rng, tier):
     name = rng.choice(SC_NAMES)
     role = rng.choice(["your manager", "a close relative", "your company's HR head", "an old college friend", "your landlord"])
@@ -406,8 +406,8 @@ def g_impersonation(rng, tier):
         "Ignore it completely without checking",
     ], "Impersonation scams rely on urgency and an inability to verify in the moment. A quick "
        "call to the real person on a known number instantly exposes the scam.")
- 
- 
+
+
 def g_fake_support(rng, tier):
     app = rng.choice(SC_APPS)
     issue = rng.choice(["a failed refund", "a login issue", "a stuck payment", "an app crash", "a missing order"])
@@ -423,8 +423,8 @@ def g_fake_support(rng, tier):
     ], "Fake customer-care numbers are frequently seeded on the open web. Once a scammer has "
        "remote access, they can open your banking apps directly — never install remote-access "
        "software at the request of an unsolicited 'support' call.")
- 
- 
+
+
 def g_delivery(rng, tier):
     courier = rng.choice(SC_COURIERS)
     fee = rng.choice([2, 5, 10, 19, 25, 49])
@@ -439,8 +439,8 @@ def g_delivery(rng, tier):
         "Reply STOP to the SMS",
     ], "The tiny fee is deliberate — designed to feel too small to question. The link domain "
        "is not the courier's real domain, and real customs charges are never collected via SMS links.")
- 
- 
+
+
 def g_fake_bank_msg(rng, tier):
     bank = rng.choice(SC_BANKS)
     amt = rng.randint(8000, 95000)
@@ -455,8 +455,8 @@ def g_fake_bank_msg(rng, tier):
         "A promotional offer from the bank",
     ], "Fabricated debit alerts create panic so the victim calls a number controlled by the "
        "scammer, who then asks for card/OTP details to 'reverse' a transaction that never happened.")
- 
- 
+
+
 def g_upi(rng, tier):
     app = rng.choice(SC_UPI)
     amt = rng.randint(500, 25000)
@@ -475,8 +475,8 @@ def g_upi(rng, tier):
         "It is safe as long as the request is under ₹2,000",
     ], "A UPI 'collect' request always deducts money from whoever approves it. Anyone asking "
        "you to approve a collect request to 'receive' a payment is trying to debit your account.")
- 
- 
+
+
 def g_qr(rng, tier):
     amt = rng.randint(800, 30000)
     reason = rng.choice(["a refund for a returned item", "a cashback offer", "a prize claim", "a security deposit return"])
@@ -489,8 +489,8 @@ def g_qr(rng, tier):
         "QR refunds take longer than UPI IDs",
     ], "Receiving money never requires scanning a QR code or entering your PIN. Any process "
        "that asks for a PIN after a QR scan is a payment being pulled from your account.")
- 
- 
+
+
 def g_job(rng, tier):
     company = rng.choice(SC_COMPANIES)
     pay = rng.randint(25, 95) * 1000
@@ -505,8 +505,8 @@ def g_job(rng, tier):
         "This is normal for remote jobs",
     ], "Any job that asks the candidate to pay money upfront — registration, training kits, "
        "or 'refundable' deposits — is a strong indicator of a job scam, regardless of the brand name used.")
- 
- 
+
+
 def g_social_impersonation(rng, tier):
     platform = rng.choice(SC_PLATFORMS)
     name = rng.choice(SC_NAMES)
@@ -520,8 +520,8 @@ def g_social_impersonation(rng, tier):
         "Social platforms cannot be impersonated",
     ], "Cloned or hacked profiles are commonly used to message a real person's existing contacts, "
        "who are more likely to trust a request that appears to come from someone they know.")
- 
- 
+
+
 def g_advanced_phishing(rng, tier):
     bank = rng.choice(SC_BANKS)
     tail = rng.choice(["alerts", "secure-kyc", "netbanking", "verify", "support"])
@@ -536,8 +536,8 @@ def g_advanced_phishing(rng, tier):
         "The page asks for a login and password",
     ], "Sophisticated phishing kits can copy visual design perfectly. The domain in the address "
        "bar (not the page's appearance) is the one element attackers cannot fake convincingly.")
- 
- 
+
+
 def g_url_manipulation(rng, tier):
     real = rng.choice(SC_DOMAINS_REAL)
     style = rng.choice(["hyphen-insert", "char-swap", "subdomain-trick", "extra-word"])
@@ -560,8 +560,8 @@ def g_url_manipulation(rng, tier):
                f"'{fake}' subtly alters the real domain '{real}' — extra words, character swaps, or "
                f"fake subdomains are invisible at a glance but resolve to an entirely different, "
                f"attacker-controlled server.")
- 
- 
+
+
 def g_domain_spoofing(rng, tier):
     real = rng.choice(["hdfcbank.com", "icicibank.com", "sbi.co.in", "axisbank.com", "kotak.com", "yesbank.in", "idfcfirstbank.com"])
     tail = rng.choice(["verify", "secure-login", "kyc-update", "account-check", "reactivate", "confirm-id"])
@@ -576,8 +576,8 @@ def g_domain_spoofing(rng, tier):
         "It depends on the browser being used",
     ], "Attackers can obtain valid HTTPS certificates for spoofed domains just as easily as "
        "legitimate sites. Encryption protects data in transit, it says nothing about who owns the site.")
- 
- 
+
+
 def g_social_engineering(rng, tier):
     dept = rng.choice(SC_DEPTS)
     mgr = rng.choice(SC_NAMES)
@@ -593,8 +593,8 @@ def g_social_engineering(rng, tier):
         "Two-factor authentication working correctly",
     ], "Social engineers research real names, roles and jargon in advance so the pretext feels "
        "credible. The actual goal is almost always to extract a one-time code or credential from you directly.")
- 
- 
+
+
 def g_fake_support_interaction(rng, tier):
     app = rng.choice(SC_APPS)
     minutes = rng.choice([3, 5, 8, 10, 12, 15])
@@ -610,8 +610,8 @@ def g_fake_support_interaction(rng, tier):
         "It is fine as long as the session stays short",
     ], "Never entering a password doesn't make screen-sharing safe — everything visible on "
        "screen, including OTP pop-ups and account details, is captured by the person watching.")
- 
- 
+
+
 def g_marketplace(rng, tier):
     item = rng.choice(SC_ITEMS)
     pay = rng.choice(["a courier company's 'advance payment protection'", "a 'buyer protection escrow' link", "a 'marketplace insurance' form"])
@@ -625,8 +625,8 @@ def g_marketplace(rng, tier):
         "Ask the buyer for ID proof first",
     ], "'Payment protection' links from buyers are a classic marketplace scam — the link is a "
        "credential-harvesting page, not a real courier or payment provider.")
- 
- 
+
+
 def g_account_takeover(rng, tier):
     service = rng.choice(["email", "social media", "banking app", "cloud storage"])
     city = rng.choice(SC_CITIES)
@@ -641,8 +641,8 @@ def g_account_takeover(rng, tier):
         "Reply to the alert email asking who logged in",
     ], "A login alert followed by an unrequested reset email indicates an active takeover attempt. "
        "Acting immediately — before the attacker completes the reset — is what limits the damage.")
- 
- 
+
+
 def g_bec(rng, tier):
     role = rng.choice(["CEO", "CFO", "Managing Director", "VP Finance"])
     dept = rng.choice(["finance team", "accounts payable team", "procurement desk"])
@@ -660,8 +660,8 @@ def g_bec(rng, tier):
         "A phishing attempt aimed at employees' personal accounts",
     ], "BEC attacks specifically target finance/payment approval steps by impersonating "
        "executives and discouraging verification. The 'don't call me' instruction is itself a red flag.")
- 
- 
+
+
 def g_credential_harvesting(rng, tier):
     doc = rng.choice(SC_DOC_TYPES)
     host = rng.choice(["a generic cloud-storage-lookalike domain", "a link-shortener redirect", "a domain with no company branding at all"])
@@ -676,8 +676,8 @@ def g_credential_harvesting(rng, tier):
         "It only matters if you reuse the same password elsewhere",
     ], "Fake 'sign in to view' pages exist purely to capture credentials. Reusing the same "
        "password elsewhere is what turns one leaked login into access to many other accounts.")
- 
- 
+
+
 def g_investment(rng, tier):
     source = rng.choice(SC_BROKERS)
     pct = rng.choice([12, 15, 20, 25, 30, 40])
@@ -694,8 +694,8 @@ def g_investment(rng, tier):
         "It focuses on pre-IPO companies",
     ], "No legitimate investment can guarantee fixed high returns — markets carry risk by "
        "definition. Guaranteed-return promises are one of the most consistent signals of an investment scam.")
- 
- 
+
+
 def g_multistage(rng, tier):
     days = rng.choice([3, 5, 7, 10, 14, 21])
     mentor = rng.choice(["trading mentor", "crypto guru", "forex expert", "'senior analyst'", "portfolio coach"])
@@ -712,8 +712,8 @@ def g_multistage(rng, tier):
         "A random coincidence with no coordinated goal",
     ], "Multi-stage scams (often called 'pig butchering' scams) deliberately spread the "
        "manipulation over days or weeks so the final financial request doesn't feel sudden or risky.")
- 
- 
+
+
 def g_deepfake(rng, tier):
     relation = rng.choice(SC_RELATIONS)
     reason = rng.choice(SC_REASONS)
@@ -729,8 +729,8 @@ def g_deepfake(rng, tier):
     ], "Real-time deepfake audio/video can convincingly mimic appearance and voice but often "
        "glitches under unexpected questions. A callback on an independently known number defeats "
        "the scam because the attacker cannot intercept it.")
- 
- 
+
+
 def g_romance(rng, tier):
     platform = rng.choice(SC_PLATFORMS + ["a dating app"])
     weeks = rng.choice([2, 3, 4, 6, 8])
@@ -745,8 +745,8 @@ def g_romance(rng, tier):
         "Proof that the relationship is serious",
     ], "Romance scams invest weeks in emotional connection specifically so a later money "
        "request feels like helping someone you care about, rather than a stranger's demand.")
- 
- 
+
+
 SC_GENERATORS = {
     "Phishing": g_phishing, "OTP Scam": g_otp, "Suspicious Link": g_suspicious_link,
     "Fake Prize": g_fake_prize, "Impersonation": g_impersonation, "Fake Support": g_fake_support,
@@ -760,7 +760,7 @@ SC_GENERATORS = {
     "Multi-Stage Social Engineering": g_multistage, "Deepfake Scam": g_deepfake,
     "Romance Scam": g_romance,
 }
- 
+
 SC_TIER_CATEGORIES = {
     1: ["Phishing", "OTP Scam", "Suspicious Link", "Fake Prize", "Impersonation", "Fake Support"],
     2: ["Delivery Scam", "Fake Bank Message", "UPI Scam", "QR Scam", "Job Scam", "Social Media Impersonation"],
@@ -772,8 +772,8 @@ SC_TIER_CATEGORIES = {
 SC_TIER_CATEGORIES[5] = SC_TIER_CATEGORIES[3] + SC_TIER_CATEGORIES[4]
 SC_TIER_CATEGORIES[6] = SC_TIER_CATEGORIES[4] + ["Advanced Phishing", "Domain Spoofing", "Social Engineering"]
 SC_TIER_CATEGORIES[7] = SC_TIER_CATEGORIES[4] + ["Multi-Stage Social Engineering", "Deepfake Scam", "Business Email Compromise"]
- 
- 
+
+
 def sc_tier_for_level(level):
     if level <= 10:
         return 1
@@ -788,12 +788,12 @@ def sc_tier_for_level(level):
     if level <= 90:
         return 6
     return 7
- 
- 
+
+
 # Max points per question (was 1000, now 2000 -> 20,000 max per level)
 SC_MAX_POINTS = 2000
- 
- 
+
+
 @st.cache_data(show_spinner=False)
 def sc_build_bank():
     bank = {}
@@ -813,8 +813,8 @@ def sc_build_bank():
             questions.append(qd)
         bank[level] = questions
     return bank
- 
- 
+
+
 def sc_compute_points(correct, elapsed):
     if not correct:
         return 0
@@ -822,8 +822,8 @@ def sc_compute_points(correct, elapsed):
     raw = SC_MAX_POINTS * math.exp(-t / 18.0)
     floor_pts = int(SC_MAX_POINTS * 0.08)  # 160 at 2000 max
     return int(max(floor_pts, min(SC_MAX_POINTS, round(raw))))
- 
- 
+
+
 # ------------------------ SC-LOGIC-END -------------------------
 
 # ------------------------ SC-UI-START ---------------------------
@@ -845,12 +845,12 @@ def sc_start_level(level):
     st.session_state.sc_level_points = 0
     st.session_state.sc_q_start = time.time()
     st.session_state.sc_view = "play"
- 
- 
+
+
 def sc_progress_pct():
     return round(((st.session_state.sc_highest_unlocked - 1) / 100) * 100)
- 
- 
+
+
 def render_sc_dashboard():
     rank = sc_rank_for_level(st.session_state.sc_highest_unlocked)
     pct = sc_progress_pct()
@@ -897,8 +897,8 @@ def render_sc_dashboard():
         if st.button("🗺️ View Level Map", key="sc_view_map", use_container_width=True):
             st.session_state.sc_view = "levelmap"
             st.rerun()
- 
- 
+
+
 def render_sc_levelmap():
     if st.button("← Back to Dashboard", key="sc_map_back"):
         st.session_state.sc_view = "dashboard"
@@ -949,8 +949,8 @@ def render_sc_levelmap():
                             '<div class="sc-cell sc-cell-locked">🔒<br>' + f'{lv:02d}' + '</div>',
                             unsafe_allow_html=True
                         )
- 
- 
+
+
 def render_sc_play():
     level = st.session_state.sc_playing_level
     bank = sc_build_bank()
@@ -958,14 +958,14 @@ def render_sc_play():
     qi = st.session_state.sc_q_idx
     q = questions[qi]
     rank = sc_rank_for_level(level)
- 
+
     top_l, top_r = st.columns([1, 5])
     with top_l:
         if st.button("← Exit", key="sc_play_exit"):
             st.session_state.sc_playing_level = None
             st.session_state.sc_view = "levelmap"
             st.rerun()
- 
+
     acc_txt = f"{st.session_state.sc_level_correct}/{qi + (1 if st.session_state.sc_answered else 0)}"
     st.markdown(
         '<div class="sc-hud">'
@@ -1035,8 +1035,8 @@ def render_sc_play():
                 st.session_state.sc_selected_idx = None
                 st.session_state.sc_q_start = time.time()
             st.rerun()
- 
- 
+
+
 def sc_rank_levels_all_perfect(rank):
     """True only if every one of the rank's 10 levels has been aced (10/10) at least once."""
     return all(
@@ -1103,8 +1103,8 @@ def sc_finish_level(level):
         st.session_state.sc_view = "rankup"
     else:
         st.session_state.sc_view = "results"
- 
- 
+
+
 def render_sc_rankup():
     rank = st.session_state.sc_pending_rankup
     st.markdown(
@@ -1122,8 +1122,8 @@ def render_sc_rankup():
         st.session_state.sc_pending_rankup = None
         st.session_state.sc_view = "results"
         st.rerun()
- 
- 
+
+
 def render_sc_results():
     r = st.session_state.sc_last_level_result
     level = r["level"]
@@ -1181,8 +1181,8 @@ def render_sc_results():
         if level < 100 and st.button(btn_label, key="sc_res_next", type="primary", use_container_width=True):
             sc_start_level(target)
             st.rerun()
- 
- 
+
+
 def sc_live_points():
     """Total points banked from completed levels, plus whatever has been
     earned so far in the level currently being played (updates the moment
@@ -1191,8 +1191,8 @@ def sc_live_points():
     if st.session_state.sc_view == "play":
         live += st.session_state.sc_level_points
     return live
- 
- 
+
+
 def render_scam_challenge():
     points = sc_live_points()
     st.markdown(
@@ -1219,8 +1219,8 @@ def render_scam_challenge():
         render_sc_results()
     else:
         render_sc_dashboard()
- 
- 
+
+
 # ------------------------- SC-UI-END ------------------------------
 
 SC_DEFAULTS = {
@@ -1247,14 +1247,12 @@ SC_DEFAULTS = {
     "sc_pending_rankup": None,
     "sc_last_level_result": None,
 }
- 
- 
+
+
 def sc_init_state():
     for k, v in SC_DEFAULTS.items():
         if k not in st.session_state:
             st.session_state[k] = v
- 
- 
 
 
 # ----------------------- Session state -------------------------
