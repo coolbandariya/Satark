@@ -62,4 +62,4 @@ SATARK stores history in Streamlit session state only. It does not intentionally
 - Restrict access/authentication when the application is not intended to be public.
 - Monitor provider errors, latency, rate limits, and resource consumption.
 - Verify the deployed browser smoke suite and manually inspect representative devices.
-- Maintain dependency updates and rollback procedures.
+- Maintain dependency updates, review provider advisories, and keep rollback procedures.
