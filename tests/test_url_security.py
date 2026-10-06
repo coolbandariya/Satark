@@ -7,7 +7,7 @@ class URLSecurityTests(unittest.TestCase):
     def test_redirect_budget_is_enforced(self):
         handler=SafeRedirectHandler(max_redirects=1)
         req=Mock()
-        with patch("url_security.is_public_url", return_value=True):
+        with patch("url_security.is_public_url", return_value=True), patch("url_security.HTTPRedirectHandler.redirect_request", return_value=req):
             handler.redirect_request(req, Mock(), 302, "Found", {}, "https://example.com/one")
             with self.assertRaises(ValueError):
                 handler.redirect_request(req, Mock(), 302, "Found", {}, "https://example.com/two")
