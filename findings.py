@@ -11,14 +11,14 @@ _SEVERITY = {
 
 def finding_severity(value):
     text = str(value or "").strip().lower()
+    if "not detected" in text or "clear" in text:
+        return "clear"
     if "high" in text or "detected" in text:
         return "high"
     if "medium" in text:
         return "medium"
     if "low" in text:
         return "low"
-    if "not detected" in text or "clear" in text:
-        return "clear"
     return "unknown"
 
 
