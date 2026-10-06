@@ -50,8 +50,25 @@ jobs:
 
       - name: Validate UI stylesheet
         run: |
-          python -c "from pathlib import Path; css=Path('styles.css').read_text(encoding='utf-8'); assert css.count('{') == css.count('}'), 'Unbalanced CSS braces'; required=['.hero{','.scanner{','.home-grid{','@media(max-width:768px)']; missing=[x for x in required if x not in css]; assert not missing, f'Missing UI selectors: {missing}'"
+          python -c "from pathlib import Path; css=Path('styles.css').read_text(encoding='utf-8'); assert css.count('{') == css.count('}'), 'Unbalanced CSS braces'; required=['.hero{','.scanner{','.home-grid{','.home-actions{','.sr-only{','@media(max-width:768px)','prefers-reduced-motion:reduce','overflow-x:hidden']; missing=[x for x in required if x not in css]; assert not missing, f'Missing UI selectors: {missing}'"
 
       - name: Validate required project assets
         run: |
-          python -c "from pathlib import Path; files=[Path('requirements.txt'),Path('styles.css'),Path('satark.py'),Path('radar_background.py'),Path('stepper_component.py'),Path('ai_provider.py'),Path('scam_challenge.py'),Path('video_processing.py'),Path('reports.py'),Path('satark_utils.py'),Path('url_security.py')]; missing=[str(p) for p in files if not p.is_file() or p.stat().st_size == 0]; assert not missing, f'Missing or empty files: {missing}'"
+          python -c "from pathlib import Path; files=[Path('requirements.txt'),Path('styles.css'),Path('satark.py'),Path('config.py'),Path('analysis_engine.py'),Path('findings.py'),Path('input_processing.py'),Path('radar_background.py'),Path('stepper_component.py'),Path('ai_provider.py'),Path('scam_challenge.py'),Path('video_processing.py'),Path('reports.py'),Path('satark_utils.py'),Path('url_security.py'),Path('ui/__init__.py'),Path('ui/home.py'),Path('ui/navigation.py'),Path('ui/results.py'),Path('ui/history.py'),Path('ui/learning.py'),Path('ui/demo.py')]; missing=[str(p) for p in files if not p.is_file() or p.stat().st_size == 0]; assert not missing, f'Missing or empty files: {missing}'"
+
+      - name: Check source whitespace and accidental empty lines
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          bad=[]
+          for path in Path('.').rglob('*.py'):
+              if '.git' in path.parts:
+                  continue
+              lines=path.read_text(encoding='utf-8').splitlines()
+              if any(line.endswith((' ', '\\t')) for line in lines):
+                  bad.append(f'{path}: trailing whitespace')
+              if '\\n\\n\\n\\n' in path.read_text(encoding='utf-8'):
+                  bad.append(f'{path}: 3+ consecutive blank lines')
+          if bad:
+              raise SystemExit('\\n'.join(bad))
+          PY
