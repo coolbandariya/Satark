@@ -347,6 +347,18 @@ textarea:focus-visible,
   background:#101312!important;
 }
 
+.st-key-result_report{
+  max-width:1120px;
+  margin:1.2rem auto 0;
+  padding:1.3rem!important;
+  border:1px solid var(--line-strong)!important;
+  border-radius:20px!important;
+  background:#0c0f0e!important;
+  box-shadow:0 24px 70px rgba(0,0,0,.22);
+}
+.metric-value-compact{font-size:1rem!important;overflow-wrap:anywhere}
+.result-summary{color:#d9d6cd;line-height:1.8;margin:.2rem 0 0}
+
 /* Results */
 .result{
   max-width:1120px;
