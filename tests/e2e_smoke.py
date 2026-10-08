@@ -56,6 +56,22 @@ def main():
                 assert_no_overlap(page, ".scanner", f"{name}-scanner")
                 assert_no_overlap(page, ".home-card", f"{name}-home-card")
                 assert_no_overlap(page, ".workflow-step", f"{name}-workflow-step")
+                assert page.get_by_role("button",name="Select Text").is_visible()
+                page.get_by_role("button",name="Select Text").click()
+                page.get_by_text("Security Analysis").wait_for(timeout=30_000)
+
+                # Exercise every top-level navigation surface without requiring
+                # an external provider key.
+                for label, marker in (
+                    ("History", "Analysis history"),
+                    ("Scam Challenge", "Scam Challenge"),
+                    ("Academy", "SATARK Academy"),
+                    ("Classroom", "Classroom Mode"),
+                ):
+                    page.get_by_text(label, exact=False).first.click()
+                    page.get_by_text(marker).wait_for(timeout=30_000)
+
+                page.screenshot(path=str(ARTIFACTS / f"{name}-pages.png"),full_page=True)
             page.close()
         browser.close()
 
