@@ -11,8 +11,8 @@ SATARK is an AI-assisted security-awareness application for exploring suspicious
 ![Streamlit](https://img.shields.io/badge/Interface-Streamlit-FF4B4B?logo=streamlit&logoColor=white)
 ![AI](https://img.shields.io/badge/AI-Groq-111827)
 ![Project status](https://img.shields.io/badge/status-active%20development-8b5cf6)
-![CodeQL](https://github.com/coolbandariya/Satark/actions/workflows/codeql.yml/badge.svg)
-![CI](https://github.com/coolbandariya/Satark/actions/workflows/ci.yml/badge.svg)
+![CodeQL](https://github.com/kaustubhdua/Satark/actions/workflows/codeql.yml/badge.svg)
+![CI](https://github.com/kaustubhdua/Satark/actions/workflows/ci.yml/badge.svg)
 
 </div>
 
@@ -97,7 +97,7 @@ The repository separates the analysis, input-processing, finding-model, security
 Clone the repository and enter its directory:
 
 ```bash
-git clone https://github.com/coolbandariya/Satark.git
+git clone https://github.com/kaustubhdua/Satark.git
 cd Satark
 python -m venv .venv
 ```
