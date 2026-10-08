@@ -47,6 +47,13 @@ button,[role="button"],input,textarea,select{font:inherit}
 }
 
 /* Sidebar */
+/* Sidebar workspace polish */
+[data-testid="stSidebar"] [data-testid="stButton"]>button{justify-content:flex-start!important;text-align:left!important;min-height:42px!important;margin:.12rem 0!important;padding:.55rem .72rem!important;border-radius:10px!important;background:transparent!important;border-color:transparent!important;color:#9aa1ad!important}
+[data-testid="stSidebar"] [data-testid="stButton"]>button:hover{background:rgba(123,150,220,.08)!important;border-color:rgba(123,150,220,.14)!important;color:#e8ebf0!important;transform:translateX(2px)!important}
+[data-testid="stSidebar"] [data-testid="stButton"]>button[kind="primary"]{background:linear-gradient(90deg,rgba(103,135,224,.16),rgba(121,226,189,.05))!important;border-color:rgba(121,226,189,.18)!important;color:#f2f4f7!important;box-shadow:inset 3px 0 #79e2bd!important}
+[data-testid="stSidebar"] [data-testid="stTextInput"] input{min-height:42px!important}
+[data-testid="stSidebar"] .privacy{border-color:rgba(121,226,189,.12);background:linear-gradient(135deg,rgba(121,226,189,.045),rgba(103,135,224,.035))}
+
 [data-testid="stSidebar"]{
   background:#090a0a;
   border-right:1px solid var(--line);
