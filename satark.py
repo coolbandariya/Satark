@@ -198,7 +198,7 @@ from input_processing import (
 # ============================================================
 
 st.set_page_config(
-    page_title="SATARK — AI Threat Analyzer",
+    page_title="SATARK — Digital Threat Triage",
     page_icon="◈",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -444,8 +444,8 @@ def render_result(result):
         st.markdown('</div>',unsafe_allow_html=True)
     st.markdown('</div>',unsafe_allow_html=True)
 
-    render_threat_analysis(result)
-    render_verification_sources(result)
+    render_threat_analysis(result, THREAT_CHECKS)
+    render_verification_sources(result, OFFICIAL_VERIFICATION_SOURCES)
 
     conclusion = html.escape(build_final_conclusion(result))
     st.markdown(f'<section class="report-section"><h3>💡 Final Conclusion</h3><div class="conclusion-card">{conclusion}</div></section>', unsafe_allow_html=True)
