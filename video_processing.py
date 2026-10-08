@@ -87,8 +87,12 @@ def extract_video_frames(uploaded_file, max_frames=MAX_VIDEO_FRAMES):
                 if not ok:
                     break
                 count += 1
-                if count % 30 == 0 and len(frames) < max_frames:
-                    frames.append(_bgr_to_pil(frame_bgr))
+                # Metadata can be missing for short or variable-frame-rate clips.
+                # Capture useful frames without requiring a 30-frame threshold.
+                if len(frames) < max_frames:
+                    stride = max(1, 30 // max_frames)
+                    if count == 1 or count % stride == 0:
+                        frames.append(_bgr_to_pil(frame_bgr))
                 if len(frames) >= max_frames:
                     break
             if not frames:
