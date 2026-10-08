@@ -3,6 +3,29 @@ import html
 import streamlit as st
 
 
+def _safe_score(value):
+    try:
+        score = int(float(value))
+    except (TypeError, ValueError, OverflowError):
+        return 0
+    return max(0, min(100, score))
+
+
+def _safe_entry(entry):
+    if not isinstance(entry, dict):
+        return {"mode": "Unknown", "category": "Needs review", "score": 0, "time": "", "verdict": "Manual review recommended.", "result": {}}
+    result = entry.get("result")
+    return {
+        **entry,
+        "mode": str(entry.get("mode") or "Unknown"),
+        "category": str(entry.get("category") or "Needs review"),
+        "score": _safe_score(entry.get("score", 0)),
+        "time": str(entry.get("time") or ""),
+        "verdict": str(entry.get("verdict") or "Manual review recommended."),
+        "result": result if isinstance(result, dict) else {},
+    }
+
+
 def render_history(history, make_pdf_report, risk_label):
     st.markdown(
         '<div class="section-title">🕘 Analysis history</div>'
@@ -10,6 +33,7 @@ def render_history(history, make_pdf_report, risk_label):
         unsafe_allow_html=True,
     )
 
+    history = [_safe_entry(entry) for entry in history if isinstance(entry, dict)]
     if not history:
         st.info("No analyses yet. Run a check and the result will appear here for this session.")
         if st.button("🔎 Start an investigation", key="history_to_analyze", type="primary", use_container_width=True):
@@ -41,7 +65,7 @@ def render_history(history, make_pdf_report, risk_label):
     def matches(entry):
         if mode_filter != "All" and str(entry.get("mode")) != mode_filter:
             return False
-        score = int(entry.get("score", 0))
+        score = _safe_score(entry.get("score", 0))
         if risk_filter == "Safe" and score >= 35:
             return False
         if risk_filter == "Caution" and not (35 <= score < 70):
@@ -81,8 +105,8 @@ def render_history(history, make_pdf_report, risk_label):
             c1, c2 = st.columns(2)
             with c1:
                 if st.button("Open result", key=f"history_open_{visible_index}"):
-                    st.session_state.result = entry["result"]
-                    st.session_state.mode = entry["mode"]
+                    st.session_state.result = entry.get("result") or None
+                    st.session_state.mode = entry.get("mode", "Unknown")
                     st.session_state.demo_mode = False
                     st.session_state.page = "Analyze"
                     st.rerun()
