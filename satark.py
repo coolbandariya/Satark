@@ -744,6 +744,7 @@ elif st.session_state.page == "Analyze":
         content = st.text_input(
             "Website URL",
             placeholder="https://example.com",
+            type="url",
             key="url_input"
         )
 
