@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Test and tooling
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
