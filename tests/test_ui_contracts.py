@@ -33,7 +33,7 @@ class UIContractTests(unittest.TestCase):
 
     def test_layout_guardrails_exist(self):
         for expected in (
-            ".home-actions,",
+            ".home-actions{",
             ".sr-only{",
             ".report-section{",
             ".workflow-grid{",
