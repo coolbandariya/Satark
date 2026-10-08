@@ -299,6 +299,54 @@ textarea:focus,[data-testid="stTextInput"] input:focus{
 [data-testid="stFileUploader"] *{color:#dcd8cf!important}
 [data-testid="stFileUploaderDropzoneInstructions"] div{color:#ddd9cf!important}
 
+/* Learning cards + subtle spotlight interaction */
+.feature-card{
+  position:relative;
+  overflow:hidden;
+  min-height:165px;
+  padding:1.15rem;
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:#0c0f0e;
+  transition:transform .18s ease,border-color .18s ease,background .18s ease;
+}
+.feature-card::before,
+.home-card::before,
+.workflow-step::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:radial-gradient(circle at 50% -20%,rgba(215,181,111,.12),transparent 48%);
+  opacity:0;
+  transition:opacity .18s ease;
+}
+.feature-card:hover,.home-card:hover,.workflow-step:hover{
+  transform:translateY(-2px);
+  border-color:rgba(215,181,111,.30);
+}
+.feature-card:hover::before,.home-card:hover::before,.workflow-step:hover::before{opacity:1}
+.feature-card>*{position:relative}
+.feature-icon{font-size:1.35rem;line-height:1}
+.feature-title{margin-top:.8rem;color:#f0ede4;font-size:.96rem;font-weight:800;letter-spacing:-.02em}
+.feature-copy{margin-top:.4rem;color:#99978f;font-size:.76rem;line-height:1.6}
+
+/* Inputs and focus states */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+[data-baseweb="select"]:focus-within,
+[data-testid="stFileUploaderDropzone"]:focus-within{
+  outline:2px solid rgba(215,181,111,.72)!important;
+  outline-offset:2px!important;
+}
+
+/* Toasts and alerts */
+[data-testid="stAlert"]{
+  border:1px solid var(--line)!important;
+  background:#101312!important;
+}
+
 /* Results */
 .result{
   max-width:1120px;
