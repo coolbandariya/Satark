@@ -397,7 +397,7 @@ textarea:focus,[data-testid="stTextInput"] input:focus{
 [data-testid="stDownloadButton"] button p,[data-testid="stDownloadButton"] button span{color:#171716!important;font-weight:850!important}
 
 /* Layout helpers */
-.home-actions,.st-key-home-actions{
+.home-actions{
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
   gap:.7rem;
@@ -405,6 +405,7 @@ textarea:focus,[data-testid="stTextInput"] input:focus{
   margin:1rem auto 1.4rem;
 }
 .home-actions [data-testid="stButton"],.st-key-home-actions [data-testid="stButton"]{min-width:0}
+.st-key-home-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.7rem;max-width:680px;margin:1rem auto 1.4rem;}
 .home-how-title{max-width:1120px}
 .sr-only{
   position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;
