@@ -71,8 +71,8 @@ Do not submit passwords, one-time codes, private keys, or unnecessary personal i
 - **Python** — application logic
 - **Streamlit** — interactive web interface and session state
 - **CSS** — application styling
-- **OGL / WebGL** — React Bits-inspired radar background rendered in a Streamlit HTML component
-- **React + Motion** — React Bits-inspired Stepper onboarding rendered in a Streamlit HTML component
+- **CSS** — dependency-free visual system, responsive layout and reduced-motion support
+- **Streamlit** — native layout and interaction primitives, avoiding a second browser runtime
 - **Groq** — AI model API and supported audio transcription
   - Text workflows prefer `openai/gpt-oss-120b`, with `openai/gpt-oss-20b` as fallback when available.
   - Vision workflows use `qwen/qwen3.8-27b`, subject to the API key's available models.
@@ -82,7 +82,7 @@ Do not submit passwords, one-time codes, private keys, or unnecessary personal i
 - **OpenCV** — video frame extraction
 - **FFmpeg** — optional audio-track extraction for video transcription
 
-The repository separates the analysis, input-processing, finding-model, security, provider, and major UI responsibilities into modules. The radar background is a browser-side OGL dependency loaded from esm.sh, and the onboarding Stepper loads React, ReactDOM, and Motion from esm.sh; these are browser-side dependencies and are intentionally absent from `requirements.txt`. The remaining `satark.py` code is orchestration rather than a single monolithic implementation, with further service extraction left as a deliberate roadmap item.
+The repository separates analysis, input processing, findings, security, provider, media processing, reporting and major UI responsibilities into modules. The visual layer is CSS-first and the onboarding workflow uses native Streamlit rendering, so the core interface does not depend on a second browser runtime or a third-party JavaScript CDN. `satark.py` remains the orchestration layer, while provider, processing and UI responsibilities are extracted into focused modules.
 
 ## Run locally
 
@@ -163,8 +163,8 @@ If the app offers a sidebar key field, it can also be used for local experimenta
 ├── satark_utils.py               # Shared text/result helpers
 ├── url_security.py               # URL validation and public-page fetching
 ├── styles.css                    # Application styles
-├── radar_background.py            # OGL/WebGL radar backdrop
-├── stepper_component.py           # React Bits/Motion onboarding stepper
+├── radar_background.py            # CSS-only background hook
+├── stepper_component.py           # Dependency-free onboarding workflow
 ├── requirements.txt              # Python dependencies
 ├── README.md
 └── SECURITY.md                   # Security policy and deployment checklist
