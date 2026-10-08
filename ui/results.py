@@ -1,7 +1,7 @@
 """Accessible result-table presentation components."""
 import html
 import streamlit as st
-from satark_utils import safe_text, check_class
+from satark_utils import safe_text, safe_url, check_class
 
 def render_threat_analysis(result, threat_checks):
     rows=[]; checks=result.get("threat_analysis",{})
@@ -18,8 +18,8 @@ def render_verification_sources(result, default_sources):
     if not isinstance(sources,list): sources=default_sources
     for item in sources:
         if not isinstance(item,dict): continue
-        source=html.escape(safe_text(item.get("source"))); purpose=html.escape(safe_text(item.get("purpose"))); website=safe_text(item.get("website"))
-        if not website.startswith(("https://","http://")): continue
+        source=html.escape(safe_text(item.get("source"))); purpose=html.escape(safe_text(item.get("purpose"))); website=safe_url(item.get("website"))
+        if not website: continue
         safe_href=html.escape(website,quote=True)
         rows.append(f'<tr><td>{source}</td><td>{purpose}</td><td><a class="source-link" href="{safe_href}" target="_blank" rel="noopener noreferrer">{html.escape(website)}</a></td></tr>')
     table='<table class="report-table"><caption class="sr-only">Official sources for independently verifying high-impact findings</caption><thead><tr><th scope="col">Source</th><th scope="col">Purpose</th><th scope="col">Official Website</th></tr></thead><tbody>'+''.join(rows)+'</tbody></table>'
