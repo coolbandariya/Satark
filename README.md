@@ -3,7 +3,9 @@
 # SATARK
 ### Smart AI Threat Analysis & Risk Knowledge
 
-[![Live App](https://img.shields.io/badge/Live%20App-Open%20SATARK-111827?logo=streamlit&logoColor=white)](https://satark-32uppvjxwmderrchbhj7gj.streamlit.app/)  
+[![Live App](https://img.shields.io/badge/Live%20App-Open%20SATARK-111827?logo=streamlit&logoColor=white)](https://satark-32uppvjxwmderrchbhj7gj.streamlit.app/)
+
+<img src="assets/satark-banner.svg" alt="SATARK — Smart AI Threat Analysis & Risk Knowledge" width="1200">  
 [![Security](https://img.shields.io/badge/security-awareness-focused-d7b56f)](SECURITY.md)
 
 **Understand suspicious content. Recognize digital threats. Build safer online habits.**
