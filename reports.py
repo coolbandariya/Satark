@@ -184,7 +184,7 @@ def make_pdf_report(result, mode):
     story.append(Paragraph("Final Conclusion", h2))
     conclusion=Paragraph(pdf_escape(build_final_conclusion(result)),body)
     ct=Table([[conclusion]],colWidths=[175*mm])
-    ct.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,-1),light_violet),('BOX',(0,0),(-1,-1),0.7,colors.HexColor('#b6adff')),('LEFTPADDING',(0,0),(-1,-1),10),('RIGHTPADDING',(0,0),(-1,-1),10),('TOPPADDING',(0,0),(-1,-1),10),('BOTTOMPADDING',(0,0),(-1,-1),10)]))
+    ct.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,-1),light_gold),('BOX',(0,0),(-1,-1),0.7,colors.HexColor('#d8bb78')),('LEFTPADDING',(0,0),(-1,-1),10),('RIGHTPADDING',(0,0),(-1,-1),10),('TOPPADDING',(0,0),(-1,-1),10),('BOTTOMPADDING',(0,0),(-1,-1),10)]))
     story.append(ct)
     story.append(Spacer(1,8))
     story.append(Paragraph("SATARK is an AI-assisted advisory tool. Verify high-impact security decisions independently.", centered))
