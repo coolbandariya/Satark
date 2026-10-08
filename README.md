@@ -3,14 +3,19 @@
 # SATARK
 ### Smart AI Threat Analysis & Risk Knowledge
 
+[![Live App](https://img.shields.io/badge/Live%20App-Open%20SATARK-111827?logo=streamlit&logoColor=white)](https://satark-32uppvjxwmderrchbhj7gj.streamlit.app/)  
+[![Security](https://img.shields.io/badge/security-awareness-focused-d7b56f)](SECURITY.md)
+
 **Understand suspicious content. Recognize digital threats. Build safer online habits.**
 
-SATARK is an AI-assisted security-awareness workspace for exploring suspicious messages, links, images, QR codes, PDFs, and supported videos. It combines guided analysis with practical learning features.
+SATARK is an AI-assisted security-awareness workspace for triaging suspicious messages, links, images, QR codes, PDFs, and supported videos.
+
+It is designed around a simple workflow: **bring the evidence → inspect the signals → understand the assessment → verify before acting.** The project combines practical threat triage with a polished learning workspace for scam-awareness practice.
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/Interface-Streamlit-FF4B4B?logo=streamlit&logoColor=white)
 ![AI](https://img.shields.io/badge/AI-Groq-111827)
-![Project status](https://img.shields.io/badge/status-active%20development-8b5cf6)
+![Project status](https://img.shields.io/badge/status-active-16a34a)
 ![CodeQL](https://github.com/kaustubhdua/Satark/actions/workflows/codeql.yml/badge.svg)
 ![CI](https://github.com/kaustubhdua/Satark/actions/workflows/ci.yml/badge.svg)
 
@@ -70,8 +75,8 @@ Do not submit passwords, one-time codes, private keys, or unnecessary personal i
 
 - **Python** — application logic
 - **Streamlit** — interactive web interface and session state
-- **CSS** — dependency-free visual system, responsive layout and reduced-motion support
-- **Streamlit** — native layout and interaction primitives, avoiding a second browser runtime
+- **CSS** — dependency-free visual system, responsive layout, micro-interactions and reduced-motion support
+- **Native Streamlit UI** — layout, navigation, learning and onboarding surfaces without a second browser runtime
 - **Groq** — AI model API and supported audio transcription
   - Text workflows prefer `openai/gpt-oss-120b`, with `openai/gpt-oss-20b` as fallback when available.
   - Vision workflows use `qwen/qwen3.8-27b`, subject to the API key's available models.
@@ -210,8 +215,9 @@ See [Analysis limitations](docs/ANALYSIS_LIMITATIONS.md) and the [Security polic
 - [x] Extract Groq client and model-selection helpers from the Streamlit entry point.
 - [x] Add broader workflow and end-to-end tests.
 - [x] Pin runtime dependencies and add automated CI validation.
-- [ ] Verify the latest `main` CI run after each production-facing change.
-- [ ] Complete a deployment-specific security and runtime review.
+- [x] Keep the unit-test suite aligned with the current dependency-free UI architecture.
+- [ ] Add deployment-specific security and runtime review notes for each hosting target.
+- [ ] Expand live browser coverage for every scanner workflow.
 
 ## Contributing
 
