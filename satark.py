@@ -383,9 +383,8 @@ Not detected, Low, Medium, High.
         )
 
     raise RuntimeError(
-        '<tbody>'+''.join(rows)+'</tbody></table>'
+        "No configured model could complete the analysis. " + detail
     )
-    st.markdown(f'<section class="report-section"><h3>📚 Official Verification Sources</h3>{table}</section>', unsafe_allow_html=True)
 
 
 def confidence_css_class(confidence):
@@ -444,8 +443,8 @@ def render_result(result):
         st.markdown('</div>',unsafe_allow_html=True)
     st.markdown('</div>',unsafe_allow_html=True)
 
-    render_threat_analysis(result)
-    render_verification_sources(result)
+    render_threat_analysis(result, THREAT_CHECKS)
+    render_verification_sources(result, OFFICIAL_VERIFICATION_SOURCES)
 
     conclusion = html.escape(build_final_conclusion(result))
     st.markdown(f'<section class="report-section"><h3>💡 Final Conclusion</h3><div class="conclusion-card">{conclusion}</div></section>', unsafe_allow_html=True)
