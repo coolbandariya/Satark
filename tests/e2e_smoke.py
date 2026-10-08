@@ -68,7 +68,7 @@ def main():
                     ("Academy", "SATARK Academy"),
                     ("Classroom", "Classroom Mode"),
                 ):
-                    page.get_by_text(label, exact=False).first.click()
+                    page.locator('[data-testid="stSidebar"] button').filter(has_text=label).click()
                     page.get_by_text(marker).wait_for(timeout=30_000)
 
                 page.screenshot(path=str(ARTIFACTS / f"{name}-pages.png"),full_page=True)
