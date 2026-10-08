@@ -1,9 +1,11 @@
 """Accessible result-table presentation components."""
 import html
 import streamlit as st
-from satark_utils import safe_text, safe_url, check_class
+from satark_utils import safe_text, safe_url, check_class, THREAT_CHECKS, OFFICIAL_VERIFICATION_SOURCES
 
-def render_threat_analysis(result, threat_checks):
+def render_threat_analysis(result, threat_checks=None):
+    """Render threat checks with the canonical SATARK defaults when omitted."""
+    threat_checks = threat_checks or THREAT_CHECKS
     rows=[]; checks=result.get("threat_analysis",{})
     if not isinstance(checks,dict): checks={}
     for check in threat_checks:
@@ -13,7 +15,9 @@ def render_threat_analysis(result, threat_checks):
     legend='<div class="status-legend"><div class="status-legend-title">How to read the results</div><span class="status-item"><span class="status-detected">✓ Detected</span> — sufficient evidence that the indicator is present.</span><span class="status-item"><span class="status-review">• Needs review</span> — evidence is ambiguous or insufficient; verify it manually.</span><span class="status-item"><span class="status-clear">✖ Not detected</span> — no meaningful evidence of that indicator was found.</span></div>'
     st.markdown(f'<section class="report-section"><h3>🔎 Threat signals</h3>{table}{legend}</section>',unsafe_allow_html=True)
 
-def render_verification_sources(result, default_sources):
+def render_verification_sources(result, default_sources=None):
+    """Render verification sources with the canonical SATARK defaults when omitted."""
+    default_sources = default_sources or OFFICIAL_VERIFICATION_SOURCES
     rows=[]; sources=result.get("verification_sources",default_sources)
     if not isinstance(sources,list): sources=default_sources
     for item in sources:
