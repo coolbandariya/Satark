@@ -11,7 +11,7 @@ ARTIFACTS.mkdir(parents=True,exist_ok=True)
 def assert_layout(page, name):
     page.wait_for_timeout(1500)
     body=page.locator("body").inner_text()
-    assert "Pause. Investigate. Then act." in body, f"{name}: home copy missing"
+    assert "Make uncertainty visible." in body, f"{name}: home copy missing"
     metrics=page.evaluate("""() => ({
         viewport: window.innerWidth,
         scrollWidth: document.documentElement.scrollWidth,
