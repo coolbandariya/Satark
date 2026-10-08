@@ -39,11 +39,19 @@ def render_academy():
         st.rerun()
 
 
+def _safe_score(value):
+    try:
+        return max(0, min(100, int(float(value))))
+    except (TypeError, ValueError, OverflowError):
+        return 0
+
+
 def render_classroom(history):
     st.markdown('<div class="section-title">👨‍🏫 Classroom Mode</div><div class="section-copy">A session-level teaching dashboard. Nothing here is persisted as a student record.</div>', unsafe_allow_html=True)
+    history = [item for item in history if isinstance(item, dict)]
     total = len(history)
-    avg = round(sum(x.get("score", 0) for x in history) / total) if total else 0
-    high = sum(1 for x in history if x.get("score", 0) >= 70)
+    avg = round(sum(_safe_score(x.get("score", 0)) for x in history) / total) if total else 0
+    high = sum(1 for x in history if _safe_score(x.get("score", 0)) >= 70)
 
     a, b, c = st.columns(3)
     with a:
