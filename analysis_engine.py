@@ -118,7 +118,11 @@ def risk_label(score, category=""):
 
 def build_fallback_threat_analysis(result):
     category = safe_text(result.get("threat_category", "")).lower()
-    indicators = " ".join(result.get("key_indicators", [])).lower()
+    raw_indicators = result.get("key_indicators", [])
+    if isinstance(raw_indicators, (list, tuple)):
+        indicators = " ".join(safe_text(item) for item in raw_indicators).lower()
+    else:
+        indicators = safe_text(raw_indicators).lower()
     summary = safe_text(result.get("summary", "")).lower()
     verdict = safe_text(result.get("verdict", "")).lower()
 
