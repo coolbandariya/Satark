@@ -425,7 +425,7 @@ textarea:focus,[data-testid="stTextInput"] input:focus{
   .home-intro{text-align:left}
   .home-trust{justify-content:flex-start}
   .workflow-grid{grid-template-columns:1fr}
-  .home-actions{grid-template-columns:1fr}
+  .home-actions,.st-key-home-actions{grid-template-columns:1fr}
   .scanner{min-height:112px}
   .result{padding:.9rem}
   .report-table{min-width:560px}
