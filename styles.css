@@ -595,3 +595,28 @@ textarea:focus-visible,
     animation:none!important;
   }
 }
+
+.history-card{
+  position:relative;
+  overflow:hidden;
+  padding:.95rem;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#101312;
+  animation:satark-history-in .4s cubic-bezier(.22,.8,.2,1) both;
+}
+.history-card::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(110deg,transparent 0%,rgba(215,181,111,.055) 48%,transparent 100%);
+  transform:translateX(-110%);
+  transition:transform .55s ease;
+}
+.history-card:hover::after{transform:translateX(110%)}
+.history-verdict{margin-top:.7rem;color:#d5d2ca;line-height:1.6;font-size:.82rem}
+@keyframes satark-history-in{
+  from{opacity:0;transform:translateY(8px)}
+  to{opacity:1;transform:translateY(0)}
+}
