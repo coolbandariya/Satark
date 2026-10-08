@@ -298,7 +298,13 @@ Not detected, Low, Medium, High.
     for model in candidates:
         try:
             response = call(model)
-            raw = response.choices[0].message.content or ""
+            choices = getattr(response, "choices", None) or []
+            if not choices:
+                raise RuntimeError("The AI provider returned no choices.")
+            message = getattr(choices[0], "message", None)
+            if message is None:
+                raise RuntimeError("The AI provider returned an incomplete response.")
+            raw = getattr(message, "content", "") or ""
 
             # Groq normally returns a string. Be defensive if an SDK version
             # exposes structured content instead.
@@ -337,7 +343,10 @@ Not detected, Low, Medium, High.
                 finally:
                     user_prompt = original_prompt
 
-                repaired = repair_response.choices[0].message.content or ""
+                repair_choices = getattr(repair_response, "choices", None) or []
+                if not repair_choices or getattr(repair_choices[0], "message", None) is None:
+                    raise RuntimeError("The AI provider returned no usable JSON repair response.")
+                repaired = getattr(repair_choices[0].message, "content", "") or ""
                 if not isinstance(repaired, str):
                     repaired = str(repaired)
                 repaired = repaired.strip()
