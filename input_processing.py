@@ -19,8 +19,10 @@ MAX_IMAGE_PIXELS = 25_000_000
 
 def _uploaded_size(uploaded_file):
     try:
-        return int(getattr(uploaded_file, "size"))
-    except (TypeError, ValueError):
+        size = getattr(uploaded_file, "size", None)
+        if size is not None:
+            return int(size)
+    except (AttributeError, TypeError, ValueError):
         pass
     try:
         return len(uploaded_file.getvalue())
