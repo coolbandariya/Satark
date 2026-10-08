@@ -19,19 +19,16 @@ def assert_layout(page, name):
             const r=el.getBoundingClientRect();
             return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};
         }),
-        radar: [...document.querySelectorAll('iframe[aria-hidden="true"]')].map(el => ({
-            position:getComputedStyle(el).position,
-            zIndex:getComputedStyle(el).zIndex,
-            pointerEvents:getComputedStyle(el).pointerEvents,
-        }))
+        workflowSteps: document.querySelectorAll(".workflow-step").length,
+        scanners: document.querySelectorAll(".scanner").length
     })""")
     assert metrics["scrollWidth"] <= metrics["viewport"] + 2, f"{name}: horizontal overflow {metrics}"
     for rect in metrics["key"]:
         assert rect["left"] >= -2, f"{name}: element extends left of viewport: {rect}"
         assert rect["right"] <= metrics["viewport"] + 2, f"{name}: element extends right of viewport: {rect}"
-    for radar in metrics["radar"]:
-        assert radar["position"] == "fixed", f"{name}: radar iframe is not fixed"
-        assert radar["pointerEvents"] == "none", f"{name}: radar intercepts pointer events"
+    assert metrics["workflowSteps"] == 4, f"{name}: onboarding workflow is incomplete"
+    if name == "desktop":
+        assert metrics["scanners"] == 0, f"{name}: scanners unexpectedly rendered on home"
     page.screenshot(path=str(ARTIFACTS / f"{name}.png"),full_page=True)
 
 
@@ -58,6 +55,7 @@ def main():
                 page.get_by_text("What do you want to check?").wait_for(timeout=30_000)
                 assert_no_overlap(page, ".scanner", f"{name}-scanner")
                 assert_no_overlap(page, ".home-card", f"{name}-home-card")
+                assert_no_overlap(page, ".workflow-step", f"{name}-workflow-step")
             page.close()
         browser.close()
 
