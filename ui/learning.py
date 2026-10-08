@@ -1,5 +1,4 @@
 """Interactive learning surfaces for SATARK Academy and Classroom Mode."""
-import json
 import streamlit as st
 
 LESSONS = [
