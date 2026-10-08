@@ -201,7 +201,7 @@ st.set_page_config(
     page_title="SATARK — Digital Threat Triage",
     page_icon="◈",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="auto",
 )
 
 # ----------------------------- CSS ----------------------------
@@ -559,7 +559,7 @@ elif st.session_state.page == "Analyze":
     st.markdown(
         '<div class="section-title">What do you want to check?</div>'
         '<div class="section-copy">'
-        'Choose a scanner. Seven scanners cover text, links, images, documents, QR codes and video.'
+        'Choose a scanner. Six scanners cover text, links, images, documents, QR codes and video.'
         '</div>',
         unsafe_allow_html=True
     )
@@ -805,7 +805,7 @@ elif st.session_state.page == "Analyze":
         )
 
         if video_file is not None:
-            st.video(video_file)
+            st.video(video_file, alt="Uploaded video preview for SATARK analysis")
 
         uploaded = None
 
