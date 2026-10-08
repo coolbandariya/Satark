@@ -498,3 +498,100 @@ textarea:focus-visible,
     scroll-behavior:auto!important;
   }
 }
+
+
+/* ============================================================
+   SATARK INTERACTION LAYER
+   React-Bits-inspired: spotlight, depth, stagger, magnetic-feel.
+   CSS-only so the app keeps one predictable Streamlit runtime.
+   ============================================================ */
+.home-card,.feature-card,.workflow-step,.scanner,.metric,.evidence,.action,.report-section,.result{
+  isolation:isolate;
+}
+.home-card::after,.feature-card::after,.workflow-step::after,.scanner::after{
+  content:"";
+  position:absolute;
+  inset:-1px;
+  border-radius:inherit;
+  pointer-events:none;
+  opacity:0;
+  background:radial-gradient(280px circle at var(--spot-x,50%) var(--spot-y,0%),rgba(215,181,111,.16),transparent 58%);
+  transition:opacity .25s ease;
+  z-index:-1;
+}
+.home-card:hover::after,.feature-card:hover::after,.workflow-step:hover::after,.scanner:hover::after{
+  opacity:1;
+}
+.home-card,.feature-card,.workflow-step,.scanner{
+  position:relative;
+  transform:translateZ(0);
+  will-change:transform;
+}
+.home-card:hover,.feature-card:hover,.workflow-step:hover{
+  transform:perspective(900px) rotateX(.8deg) translateY(-4px);
+  box-shadow:0 18px 45px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.035);
+}
+.scanner:hover{
+  transform:perspective(700px) rotateX(.6deg) translateY(-3px);
+  box-shadow:0 16px 35px rgba(0,0,0,.20);
+}
+.home-grid .home-card{animation:satark-card-in .55s cubic-bezier(.22,.8,.2,1) both;}
+.home-grid .home-card:nth-child(2){animation-delay:.07s}
+.home-grid .home-card:nth-child(3){animation-delay:.14s}
+.workflow-grid .workflow-step{animation:satark-card-in .55s cubic-bezier(.22,.8,.2,1) both;}
+.workflow-grid .workflow-step:nth-child(2){animation-delay:.06s}
+.workflow-grid .workflow-step:nth-child(3){animation-delay:.12s}
+.workflow-grid .workflow-step:nth-child(4){animation-delay:.18s}
+@keyframes satark-card-in{
+  from{opacity:0;transform:translateY(12px) scale(.985)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+.hero{
+  position:relative;
+  overflow:hidden;
+}
+.hero::after{
+  content:"";
+  position:absolute;
+  width:360px;height:360px;
+  right:-130px;top:-180px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(215,181,111,.13),transparent 66%);
+  pointer-events:none;
+  animation:satark-glow-drift 8s ease-in-out infinite alternate;
+}
+@keyframes satark-glow-drift{
+  from{transform:translate3d(0,0,0) scale(1)}
+  to{transform:translate3d(-30px,22px,0) scale(1.08)}
+}
+.section-copy strong{color:var(--accent-soft)}
+.st-key-home-actions [data-testid="stButton"]>button{
+  position:relative;
+  overflow:hidden;
+}
+.st-key-home-actions [data-testid="stButton"]>button::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.13) 50%,transparent 65%);
+  transform:translateX(-120%);
+  transition:transform .55s ease;
+}
+.st-key-home-actions [data-testid="stButton"]>button:hover::after{
+  transform:translateX(120%);
+}
+[data-testid="stSidebar"] [data-testid="stButton"]>button{
+  position:relative;
+  overflow:hidden;
+}
+[data-testid="stSidebar"] [data-testid="stButton"]>button:hover{
+  transform:translateX(2px);
+}
+.analysis-loader span{
+  box-shadow:0 0 18px rgba(215,181,111,.38);
+}
+@media(prefers-reduced-motion:reduce){
+  .home-grid .home-card,.workflow-grid .workflow-step,.hero::after{
+    animation:none!important;
+  }
+}
