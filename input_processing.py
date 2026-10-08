@@ -15,6 +15,7 @@ from satark_utils import safe_text
 
 MAX_PDF_BYTES = 25 * 1024 * 1024
 MAX_IMAGE_BYTES = 10 * 1024 * 1024
+MAX_IMAGE_PIXELS = 25_000_000
 
 def _uploaded_size(uploaded_file):
     """Return an upload size for Streamlit uploads and file-like test inputs."""
@@ -74,8 +75,16 @@ def image_to_data_url(uploaded_file):
     except Exception:
         pass
     try:
-        image = Image.open(uploaded_file).convert("RGB")
+        image = Image.open(uploaded_file)
+        width, height = image.size
+        if width * height > MAX_IMAGE_PIXELS:
+            raise ValueError("This image has too many pixels for SATARK to process safely.")
+        image = image.convert("RGB")
         image.load()
+    except ValueError:
+        raise
+    except Image.DecompressionBombError as exc:
+        raise ValueError("This image is too large to process safely.") from exc
     except Exception as exc:
         raise ValueError("SATARK could not read this image. Use a valid PNG, JPG or WEBP file.") from exc
     max_side = 900
