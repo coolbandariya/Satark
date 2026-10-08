@@ -70,7 +70,6 @@ Do not submit passwords, one-time codes, private keys, or unnecessary personal i
 
 - **Python** — application logic
 - **Streamlit** — interactive web interface and session state
-- **CSS** — application styling
 - **CSS** — dependency-free visual system, responsive layout and reduced-motion support
 - **Streamlit** — native layout and interaction primitives, avoiding a second browser runtime
 - **Groq** — AI model API and supported audio transcription
@@ -152,9 +151,13 @@ If the app offers a sidebar key field, it can also be used for local experimenta
 ├── docs/
 │   └── ANALYSIS_LIMITATIONS.md  # Interpretation and safe-use guidance
 ├── tests/
-│   ├── test_ai_provider.py      # Provider/model-selection tests
-│   ├── test_satark_utils.py     # Shared helper tests
-│   └── test_video_processing.py # Video helper tests
+│   ├── test_ai_provider.py          # Provider/model-selection tests
+│   ├── test_analysis_engine.py      # Result normalization/confidence tests
+│   ├── test_input_processing.py     # Upload validation tests
+│   ├── test_satark_utils.py         # Shared helper tests
+│   ├── test_satark_utils_urls.py    # Verification URL safety tests
+│   ├── test_scam_challenge.py       # Game-engine regression tests
+│   └── test_video_processing.py     # Video helper tests
 ├── satark.py                    # Streamlit entry point and app workflows
 ├── ai_provider.py               # Groq client and model-selection helpers
 ├── scam_challenge.py             # Scam Challenge game and rendering
@@ -205,8 +208,9 @@ See [Analysis limitations](docs/ANALYSIS_LIMITATIONS.md) and the [Security polic
 - [x] Extract video processing helpers.
 - [x] Add unit tests for shared helpers and video processing.
 - [x] Extract Groq client and model-selection helpers from the Streamlit entry point.
-- [ ] Add broader workflow and end-to-end tests.
-- [x] Pin runtime dependencies and add automated CI validation.\n- [x] Keep CI green on the current `main` baseline.
+- [x] Add broader workflow and end-to-end tests.
+- [x] Pin runtime dependencies and add automated CI validation.
+- [ ] Verify the latest `main` CI run after each production-facing change.
 - [ ] Complete a deployment-specific security and runtime review.
 
 ## Contributing
