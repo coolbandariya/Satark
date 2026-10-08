@@ -94,6 +94,21 @@ OFFICIAL_VERIFICATION_SOURCES = [
     },
 ]
 
+def safe_url(value):
+    """Allow only explicit web URLs for user-visible verification links."""
+    from urllib.parse import urlparse
+    url = safe_text(value)
+    try:
+        parsed = urlparse(url)
+    except ValueError:
+        return ""
+    if parsed.scheme not in {"https", "http"} or not parsed.netloc:
+        return ""
+    if parsed.username is not None or parsed.password is not None:
+        return ""
+    return url
+
+
 def normalize_check_value(value):
     if isinstance(value, bool):
         return "Detected" if value else "Not detected"
