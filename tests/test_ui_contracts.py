@@ -8,6 +8,8 @@ APP = (ROOT / "satark.py").read_text(encoding="utf-8")
 CSS = (ROOT / "styles.css").read_text(encoding="utf-8")
 RADAR = (ROOT / "radar_background.py").read_text(encoding="utf-8")
 STEPPER = (ROOT / "stepper_component.py").read_text(encoding="utf-8")
+HISTORY = (ROOT / "ui/history.py").read_text(encoding="utf-8")
+LEARNING = (ROOT / "ui/learning.py").read_text(encoding="utf-8")
 
 
 class UIContractTests(unittest.TestCase):
@@ -40,6 +42,10 @@ class UIContractTests(unittest.TestCase):
             "overflow-x:hidden",
         ):
             self.assertIn(expected, CSS)
+
+    def test_learning_and_history_are_actionable(self):
+        for expected in ("history_query", "history_mode_filter", "classroom_export", "academy_to_challenge"):
+            self.assertIn(expected, HISTORY + LEARNING)
 
     def test_home_is_not_dependent_on_external_browser_runtimes(self):
         self.assertNotIn("esm.sh", RADAR)
