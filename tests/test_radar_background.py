@@ -9,7 +9,7 @@ class RadarBackgroundTests(unittest.TestCase):
         self.assertTrue(callable(render_radar_background))
 
     def test_background_hook_is_dependency_free(self):
-        self.assertIsNone(render_radar_background.__annotations__.get("return") and render_radar_background())
+        self.assertIsNone(render_radar_background())
 
 
 if __name__ == "__main__":
