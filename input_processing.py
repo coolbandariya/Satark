@@ -17,9 +17,20 @@ MAX_PDF_BYTES = 25 * 1024 * 1024
 MAX_IMAGE_BYTES = 10 * 1024 * 1024
 
 def _uploaded_size(uploaded_file):
+    """Return an upload size for Streamlit uploads and file-like test inputs."""
+    raw_size = getattr(uploaded_file, "size", None)
     try:
-        return int(getattr(uploaded_file, "size"))
-    except (TypeError, ValueError):
+        if raw_size is not None:
+            return int(raw_size)
+    except (TypeError, ValueError, OverflowError):
+        pass
+    try:
+        current = uploaded_file.tell()
+        uploaded_file.seek(0, 2)
+        size = uploaded_file.tell()
+        uploaded_file.seek(current)
+        return int(size)
+    except Exception:
         pass
     try:
         return len(uploaded_file.getvalue())
