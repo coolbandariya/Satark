@@ -399,56 +399,119 @@ def confidence_css_class(confidence):
 
 
 def render_result(result):
-    score = clamp_score(result.get("risk_score",50))
+    score = clamp_score(result.get("risk_score", 50))
     label, css = risk_label(score, result.get("threat_category", ""))
     indicators = result.get("key_indicators", [])
     recs = result.get("recommendations", [])
-    confidence = float(result.get("confidence",70.0))
+    confidence = float(result.get("confidence", 70.0))
     conf_css = confidence_css_class(confidence)
-    category = html.escape(result.get("threat_category","Needs review"))
-    verdict = html.escape(result.get("verdict","Manual review recommended."))
-    pattern = html.escape(result.get("scam_pattern", category))
+    category = html.escape(safe_text(result.get("threat_category", "Needs review")))
+    verdict = html.escape(safe_text(result.get("verdict", "Manual review recommended.")))
+    pattern = html.escape(safe_text(result.get("scam_pattern", category)))
 
-    st.markdown('<div class="result">', unsafe_allow_html=True)
-    st.markdown('<div class="result-head">🛡️ SATARK Security Report</div><div class="eyebrow">Evidence-first AI assessment • advisory, not a guarantee</div>', unsafe_allow_html=True)
-    a,b,c,d = st.columns(4)
-    with a: st.markdown(f'<div class="metric"><div class="metric-label">Threat level</div><div class="metric-value {css}">{label}</div></div>',unsafe_allow_html=True)
-    with b: st.markdown(f'<div class="metric"><div class="metric-label">Risk score</div><div class="metric-value">{score}/100</div></div>',unsafe_allow_html=True)
-    with c: st.markdown(f'<div class="metric"><div class="metric-label">Pattern</div><div class="metric-value" style="font-size:1rem">{pattern}</div></div>',unsafe_allow_html=True)
-    with d: st.markdown(f'<div class="metric"><div class="metric-label">AI confidence</div><div class="metric-value {conf_css}">{confidence:.2f}%</div></div>',unsafe_allow_html=True)
-    st.markdown(f'<div class="bar"><div style="width:{score}%"></div></div>',unsafe_allow_html=True)
-    if confidence < 50:
-        st.info("ℹ️ Confidence is low — the evidence found was limited or ambiguous. Treat this result as a starting point, not a final answer, and verify manually.")
-    st.markdown(f'<div class="verdict"><strong>Final verdict</strong><br>{verdict}</div>',unsafe_allow_html=True)
+    with st.container(border=True, key="result_report"):
+        st.markdown(
+            '<div class="result-head">🛡️ SATARK Security Report</div>'
+            '<div class="eyebrow">Evidence-first AI assessment • advisory, not a guarantee</div>',
+            unsafe_allow_html=True,
+        )
 
-    if result.get("summary"):
-        st.markdown("### 🔎 What SATARK found")
-        st.markdown(f'<p style="color:#e4e4ea;line-height:1.8">{html.escape(result["summary"])}</p>', unsafe_allow_html=True)
+        a, b, c, d = st.columns(4)
+        with a:
+            st.markdown(
+                f'<div class="metric"><div class="metric-label">Threat level</div>'
+                f'<div class="metric-value {css}">{label}</div></div>',
+                unsafe_allow_html=True,
+            )
+        with b:
+            st.markdown(
+                f'<div class="metric"><div class="metric-label">Risk score</div>'
+                f'<div class="metric-value">{score}/100</div></div>',
+                unsafe_allow_html=True,
+            )
+        with c:
+            st.markdown(
+                f'<div class="metric"><div class="metric-label">Pattern</div>'
+                f'<div class="metric-value metric-value-compact">{pattern}</div></div>',
+                unsafe_allow_html=True,
+            )
+        with d:
+            st.markdown(
+                f'<div class="metric"><div class="metric-label">AI confidence</div>'
+                f'<div class="metric-value {conf_css}">{confidence:.2f}%</div></div>',
+                unsafe_allow_html=True,
+            )
 
-    left,right = st.columns(2)
-    with left:
-        st.markdown('<div class="evidence"><strong>🧩 Evidence detected</strong>',unsafe_allow_html=True)
-        if indicators:
-            for item in indicators:
-                st.markdown(f'<div class="evidence-item">⚠️ {html.escape(item)}</div>',unsafe_allow_html=True)
+        st.markdown(
+            f'<div class="bar" role="progressbar" aria-label="Risk score" '
+            f'aria-valuemin="0" aria-valuemax="100" aria-valuenow="{score}">'
+            f'<div style="width:{score}%"></div></div>',
+            unsafe_allow_html=True,
+        )
+
+        if confidence < 50:
+            st.info(
+                "Confidence is low — the evidence found was limited or ambiguous. "
+                "Treat this result as a starting point, not a final answer, and verify manually."
+            )
+
+        st.markdown(
+            f'<div class="verdict"><strong>Final verdict</strong><br>{verdict}</div>',
+            unsafe_allow_html=True,
+        )
+
+        if result.get("summary"):
+            st.markdown("### 🔎 What SATARK found")
+            st.markdown(
+                f'<p class="result-summary">{html.escape(safe_text(result["summary"]))}</p>',
+                unsafe_allow_html=True,
+            )
+
+        indicator_values = []
+        if isinstance(indicators, (list, tuple)):
+            indicator_values = [safe_text(item) for item in indicators if safe_text(item)]
         else:
-            st.markdown('<div class="evidence-item">No specific indicators were returned.</div>',unsafe_allow_html=True)
-        st.markdown('</div>',unsafe_allow_html=True)
-    with right:
-        st.markdown('<div class="evidence"><strong>🧭 What to do now</strong>',unsafe_allow_html=True)
-        if recs:
-            for item in recs:
-                st.markdown(f'<div class="action-item"><span>✓</span><span>{html.escape(item)}</span></div>',unsafe_allow_html=True)
+            value = safe_text(indicators)
+            indicator_values = [value] if value else []
+
+        recommendation_values = []
+        if isinstance(recs, (list, tuple)):
+            recommendation_values = [safe_text(item) for item in recs if safe_text(item)]
         else:
-            st.markdown('<div class="action-item">Review the content manually before acting.</div>',unsafe_allow_html=True)
-        st.markdown('</div>',unsafe_allow_html=True)
-    st.markdown('</div>',unsafe_allow_html=True)
+            value = safe_text(recs)
+            recommendation_values = [value] if value else []
 
-    render_threat_analysis(result, THREAT_CHECKS)
-    render_verification_sources(result, OFFICIAL_VERIFICATION_SOURCES)
+        evidence_items = "".join(
+            f'<div class="evidence-item">⚠️ {html.escape(item)}</div>'
+            for item in indicator_values
+        ) or '<div class="evidence-item">No specific indicators were returned.</div>'
 
-    conclusion = html.escape(build_final_conclusion(result))
-    st.markdown(f'<section class="report-section"><h3>💡 Final Conclusion</h3><div class="conclusion-card">{conclusion}</div></section>', unsafe_allow_html=True)
+        action_items = "".join(
+            f'<div class="action-item"><span>✓</span><span>{html.escape(item)}</span></div>'
+            for item in recommendation_values
+        ) or '<div class="action-item">Review the content manually before acting.</div>'
+
+        left, right = st.columns(2)
+        with left:
+            st.markdown(
+                f'<div class="evidence"><strong>🧩 Evidence detected</strong>{evidence_items}</div>',
+                unsafe_allow_html=True,
+            )
+        with right:
+            st.markdown(
+                f'<div class="evidence"><strong>🧭 What to do now</strong>{action_items}</div>',
+                unsafe_allow_html=True,
+            )
+
+        render_threat_analysis(result, THREAT_CHECKS)
+        render_verification_sources(result, OFFICIAL_VERIFICATION_SOURCES)
+
+        conclusion = html.escape(build_final_conclusion(result))
+        st.markdown(
+            f'<section class="report-section"><h3>💡 Final Conclusion</h3>'
+            f'<div class="conclusion-card">{conclusion}</div></section>',
+            unsafe_allow_html=True,
+        )
 
 
 def add_history(result, mode):
