@@ -3,11 +3,13 @@
 import unittest
 from io import BytesIO
 from types import SimpleNamespace
+from unittest.mock import patch
 
 from PIL import Image
 
 from input_processing import (
     MAX_IMAGE_BYTES,
+    MAX_IMAGE_PIXELS,
     MAX_PDF_BYTES,
     extract_pdf_text,
     image_to_data_url,
@@ -25,6 +27,14 @@ class InputProcessingTests(unittest.TestCase):
         upload = SimpleNamespace(size=MAX_IMAGE_BYTES + 1, name="large.png")
         with self.assertRaisesRegex(ValueError, "10 MB processing limit"):
             image_to_data_url(upload)
+
+    def test_image_pixel_limit_is_rejected(self):
+        upload = BytesIO(b"image")
+        upload.name = "pixel-heavy.png"
+        fake_image = SimpleNamespace(size=(MAX_IMAGE_PIXELS + 1, 1), convert=lambda *_: fake_image, load=lambda: None)
+        with patch("input_processing.Image.open", return_value=fake_image):
+            with self.assertRaisesRegex(ValueError, "too many pixels"):
+                image_to_data_url(upload)
 
     def test_oversized_pdf_is_rejected_before_parse(self):
         upload = SimpleNamespace(size=MAX_PDF_BYTES + 1, name="large.pdf")
