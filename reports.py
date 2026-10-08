@@ -78,7 +78,6 @@ def make_pdf_report(result, mode):
     styles = getSampleStyleSheet()
     dark = colors.HexColor("#111113")
     muted = colors.HexColor("#5f6270")
-    gold = colors.HexColor("#a77b28")
     light_gold = colors.HexColor("#fbf4df")
     line = colors.HexColor("#d9d9e2")
     green = colors.HexColor("#188a4b")
