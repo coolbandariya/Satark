@@ -1,9 +1,11 @@
 """Unit tests for SATARK normalization helpers."""
 import unittest
+from io import BytesIO
 
 from satark_utils import safe_text, clean_json_text, normalize_check_value, check_class
+from input_processing import MAX_IMAGE_PIXELS, image_to_data_url
 from reports import make_pdf_report
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 from url_security import is_public_url, VisibleTextParser
 
 class TextNormalizationTests(unittest.TestCase):
@@ -41,6 +43,15 @@ class TextNormalizationTests(unittest.TestCase):
         self.assertEqual(normalize_check_value(50), "Medium")
         self.assertEqual(normalize_check_value(10), "Low")
         self.assertEqual(normalize_check_value(""), "Needs review")
+
+    def test_image_pixel_limit_is_enforced(self):
+        upload = BytesIO(b"image")
+        upload.name = "large.png"
+        fake_image = Mock()
+        fake_image.size = (MAX_IMAGE_PIXELS + 1, 1)
+        with patch("input_processing.Image.open", return_value=fake_image):
+            with self.assertRaises(ValueError):
+                image_to_data_url(upload)
 
     def test_pdf_report_handles_malformed_confidence(self):
         result = {"risk_score": 42, "confidence": "not-a-number", "threat_analysis": {}}
