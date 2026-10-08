@@ -53,9 +53,7 @@ def build_final_conclusion(result):
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
-from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, KeepTogether
-)
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 
 
 def _safe_text(value, default=""):
@@ -80,8 +78,8 @@ def make_pdf_report(result, mode):
     styles = getSampleStyleSheet()
     dark = colors.HexColor("#111113")
     muted = colors.HexColor("#5f6270")
-    violet = colors.HexColor("#6656d9")
-    light_violet = colors.HexColor("#f0edff")
+    gold = colors.HexColor("#a77b28")
+    light_gold = colors.HexColor("#fbf4df")
     line = colors.HexColor("#d9d9e2")
     green = colors.HexColor("#188a4b")
     red = colors.HexColor("#c92a4d")
@@ -118,7 +116,7 @@ def make_pdf_report(result, mode):
     story.append(Paragraph("Final Verdict", h2))
     verdict_data=[[Paragraph(pdf_escape(result.get('verdict','Manual review recommended.')), verdict_style)]]
     vt=Table(verdict_data,colWidths=[175*mm])
-    vt.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,-1),light_violet),('BOX',(0,0),(-1,-1),0.7,colors.HexColor('#b6adff')),('LEFTPADDING',(0,0),(-1,-1),10),('RIGHTPADDING',(0,0),(-1,-1),10),('TOPPADDING',(0,0),(-1,-1),10),('BOTTOMPADDING',(0,0),(-1,-1),10)]))
+    vt.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,-1),light_gold),('BOX',(0,0),(-1,-1),0.7,colors.HexColor('#d8bb78')),('LEFTPADDING',(0,0),(-1,-1),10),('RIGHTPADDING',(0,0),(-1,-1),10),('TOPPADDING',(0,0),(-1,-1),10),('BOTTOMPADDING',(0,0),(-1,-1),10)]))
     story.append(vt)
 
     story.append(Paragraph("What SATARK Found", h2))
@@ -151,7 +149,7 @@ def make_pdf_report(result, mode):
         value=_safe_text(threat_analysis.get(check,'Needs review'),'Needs review')
         threat_data.append([Paragraph(pdf_escape(check),body),Paragraph(pdf_escape(value),body)])
     tt=Table(threat_data,colWidths=[95*mm,80*mm],repeatRows=1)
-    ts=[('BACKGROUND',(0,0),(-1,0),colors.HexColor('#eeeaff')),('TEXTCOLOR',(0,0),(-1,0),dark),('GRID',(0,0),(-1,-1),0.5,line),('VALIGN',(0,0),(-1,-1),'TOP'),('LEFTPADDING',(0,0),(-1,-1),7),('RIGHTPADDING',(0,0),(-1,-1),7),('TOPPADDING',(0,0),(-1,-1),6),('BOTTOMPADDING',(0,0),(-1,-1),6)]
+    ts=[('BACKGROUND',(0,0),(-1,0),colors.HexColor('#f4ecd8')),('TEXTCOLOR',(0,0),(-1,0),dark),('GRID',(0,0),(-1,-1),0.5,line),('VALIGN',(0,0),(-1,-1),'TOP'),('LEFTPADDING',(0,0),(-1,-1),7),('RIGHTPADDING',(0,0),(-1,-1),7),('TOPPADDING',(0,0),(-1,-1),6),('BOTTOMPADDING',(0,0),(-1,-1),6)]
     for row_idx in range(1,len(threat_data)):
         value=_safe_text(threat_analysis.get(THREAT_CHECKS[row_idx-1],''))
         cls=check_class(value)
