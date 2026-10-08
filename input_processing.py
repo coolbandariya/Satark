@@ -30,7 +30,10 @@ def extract_pdf_text(uploaded_file):
     size = _uploaded_size(uploaded_file)
     if size is not None and size > MAX_PDF_BYTES:
         raise ValueError("This PDF is larger than SATARK's 25 MB processing limit.")
-    reader = PdfReader(uploaded_file)
+    try:
+        reader = PdfReader(uploaded_file)
+    except Exception as exc:
+        raise ValueError("SATARK could not read this PDF. It may be corrupted, encrypted, or unsupported.") from exc
     pages = []
     for page in reader.pages[:30]:
         try:
@@ -59,7 +62,11 @@ def image_to_data_url(uploaded_file):
         uploaded_file.seek(0)
     except Exception:
         pass
-    image = Image.open(uploaded_file).convert("RGB")
+    try:
+        image = Image.open(uploaded_file).convert("RGB")
+        image.load()
+    except Exception as exc:
+        raise ValueError("SATARK could not read this image. Use a valid PNG, JPG or WEBP file.") from exc
     max_side = 900
     if max(image.size) > max_side:
         scale = max_side / max(image.size)
