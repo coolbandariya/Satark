@@ -9,21 +9,21 @@ import streamlit as st
 SC_CSS = """
 <style>
 :root {
-  --bg:#0a0b10;
-  --surface:#15161d;
-  --surface2:#1c1e28;
-  --line:rgba(255,255,255,.10);
-  --line2:rgba(255,255,255,.18);
-  --text:#f7f8fb;
-  --soft:#e4e5ee;
-  --muted:#9ea1b4;
-  --violet:#a48bff;
-  --violet2:rgba(164,139,255,.16);
-  --cyan:#5eead4;
-  --gold:#f2c879;
-  --safe:#3ee08a;
-  --warn:#ffbe4d;
-  --danger:#ff5c5c;
+  --bg:#070808;
+  --surface:#0d0f0f;
+  --surface2:#121514;
+  --line:rgba(239,232,213,.10);
+  --line2:rgba(239,232,213,.18);
+  --text:#f5f2e9;
+  --soft:#d9d6cd;
+  --muted:#aaa79e;
+  --violet:#d7b56f;
+  --violet2:rgba(215,181,111,.08);
+  --cyan:#55d98a;
+  --gold:#d7b56f;
+  --safe:#55d98a;
+  --warn:#e9b85f;
+  --danger:#ff6b61;
 }
 *{box-sizing:border-box}
 html,body,[class*="css"]{font-family:"Manrope","Segoe UI",sans-serif;}
@@ -32,10 +32,10 @@ h1,h2,h3,h4,h5,h6{color:#f7f7fb!important;}
 .stApp{
   min-height:100vh;
   background:
-    radial-gradient(circle at 12% -8%, rgba(164,139,255,.16), transparent 32rem),
-    radial-gradient(circle at 90% 10%, rgba(94,234,212,.10), transparent 28rem),
-    radial-gradient(circle at 50% 110%, rgba(242,200,121,.07), transparent 34rem),
-    linear-gradient(180deg,#0a0b10 0%,#0d0e15 55%,#0a0b10 100%);
+    radial-gradient(circle at 12% -8%, rgba(215,181,111,.08), transparent 32rem),
+    radial-gradient(circle at 90% 10%, rgba(85,217,138,.05), transparent 28rem),
+    radial-gradient(circle at 50% 110%, rgba(215,181,111,.05), transparent 34rem),
+    linear-gradient(180deg,#070808 0%,#0c0f0e 55%,#070808 100%);
 }
 .block-container{max-width:1200px;padding:1.2rem clamp(1rem,3vw,3rem) 4rem;}
 .section-title{
@@ -54,7 +54,7 @@ div[data-testid="stButton"]>button:hover{
 }
 div[data-testid="stButton"]>button[kind="primary"]{
   border-color:rgba(164,139,255,.7);
-  background:linear-gradient(135deg,#40376b,#1b1c27);
+  background:linear-gradient(135deg,#7b6439,#171914);
 }
 /* ============================================================
    SCAM CHALLENGE — game system
@@ -78,8 +78,8 @@ div[data-testid="stButton"]>button[kind="primary"]{
   border:1px solid var(--line2);
   border-radius:20px;
   background:
-    radial-gradient(circle at 12% 0%, rgba(164,139,255,.16), transparent 55%),
-    radial-gradient(circle at 92% 105%, rgba(94,234,212,.10), transparent 50%),
+    radial-gradient(circle at 12% 0%, rgba(215,181,111,.08), transparent 55%),
+    radial-gradient(circle at 92% 105%, rgba(85,217,138,.05), transparent 50%),
     linear-gradient(145deg,rgba(28,30,40,.94),rgba(13,14,20,.97));
   box-shadow:0 20px 55px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.05);
 }
@@ -137,7 +137,7 @@ div[data-testid="stButton"]>button[kind="primary"]{
 .sc-progresswrap{margin-top:16px;}
 .sc-progresslabel{display:flex;justify-content:space-between;font-size:.74rem;color:#d3d4e0;font-weight:700;margin-bottom:6px;}
 .sc-bar{height:12px;border-radius:999px;background:#23252f;overflow:hidden;border:1px solid var(--line);}
-.sc-bar>div{height:100%;border-radius:inherit;background:linear-gradient(90deg,#a48bff,#5eead4);transition:width .4s ease;}
+.sc-bar>div{height:100%;border-radius:inherit;background:linear-gradient(90deg,#d7b56f,#55d98a);transition:width .4s ease;}
 .sc-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-top:18px;}
 .sc-stat{padding:12px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.045);text-align:center;}
 .sc-stat-v{font-family:Sora,sans-serif;font-size:1.3rem;font-weight:800;color:#f7f7fb;}
