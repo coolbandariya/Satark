@@ -8,7 +8,14 @@ def render_sidebar(get_client, discover_models, choose_model, text_preferences, 
         st.markdown('<div class="side-label">Workspace</div>', unsafe_allow_html=True)
         pages=[("Home","🏠 Overview"),("Analyze","🔎 Analyze"),("History","🕘 History"),("Challenge","🎯 Scam Challenge"),("Academy","🎓 Academy"),("Classroom","👨‍🏫 Classroom")]
         for page,label in pages:
-            if st.button(label,key=f"nav_{page}",use_container_width=True): st.session_state.page=page; st.rerun()
+            if st.button(
+                label,
+                key=f"nav_{page}",
+                use_container_width=True,
+                type="primary" if st.session_state.get("page") == page else "secondary",
+            ):
+                st.session_state.page=page
+                st.rerun()
         st.markdown('<div class="side-label">AI connection</div>', unsafe_allow_html=True)
         env_key=os.getenv("GROQ_API_KEY","")
         api_key=st.text_input("🔑 Groq API key",value=env_key,type="password",placeholder="Paste your Groq API key",help="Used only for the current Streamlit session; SATARK does not intentionally write it to disk.")
