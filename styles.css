@@ -150,6 +150,28 @@ button,[role="button"],input,textarea,select{font:inherit}
 }
 .hero p strong{color:#eeeae0}
 
+/* Reference-inspired editorial home */
+.home-intro--editorial{max-width:1080px;margin:1rem auto 1.1rem;text-align:left;padding:clamp(1.5rem,4vw,3rem);border:1px solid rgba(115,174,255,.16);border-radius:24px;background:linear-gradient(135deg,rgba(58,82,150,.22),rgba(12,16,20,.72) 52%,rgba(55,214,151,.07));box-shadow:0 26px 80px rgba(0,0,0,.28),inset 0 1px rgba(255,255,255,.045)}
+.home-kicker{color:#79e2bd;font-size:.62rem;font-weight:850;letter-spacing:.18em}
+.home-intro--editorial .home-intro-title{margin-top:1rem;font-size:clamp(2.2rem,6vw,5rem);line-height:.96;letter-spacing:-.07em}
+.home-intro--editorial .home-intro-title span{color:#b7c9ff}
+.home-intro--editorial .home-intro-copy{max-width:720px;margin-top:1.1rem;font-size:.9rem;color:#b8becb}
+.home-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));max-width:1080px;margin:0 auto 1.2rem;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.home-stats>div{padding:1rem 1.1rem;border-right:1px solid var(--line)}
+.home-stats>div:last-child{border-right:0}
+.home-stats strong{display:block;color:#f3f4f6;font-size:1.25rem;letter-spacing:-.04em}
+.home-stats span{display:block;margin-top:.2rem;color:#777f8e;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase}
+.home-card-meta{margin-top:1.15rem;color:#687384;font-size:.58rem;font-weight:800;letter-spacing:.14em}
+.home-focus{max-width:1080px;margin:1.2rem auto 1.5rem;padding:1rem 1.2rem;display:grid;grid-template-columns:minmax(0,.75fr) minmax(0,1.25fr);gap:1.2rem;align-items:center;border:1px solid rgba(121,226,189,.14);border-radius:16px;background:linear-gradient(90deg,rgba(121,226,189,.055),rgba(255,255,255,.012))}
+.home-focus-label{color:#79e2bd;font-size:.58rem;font-weight:850;letter-spacing:.16em}
+.home-focus-title{margin-top:.3rem;color:#f2f4f6;font-size:1.35rem;font-weight:850;letter-spacing:-.04em}
+.home-focus-copy{color:#969eaa;font-size:.76rem;line-height:1.65}
+@media(max-width:768px){
+  .home-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .home-stats>div:nth-child(2){border-right:0}
+  .home-focus{grid-template-columns:1fr}
+}
+
 /* Home */
 .home-intro{max-width:880px;margin:0 auto 1.2rem;text-align:center}
 .home-intro-title{
