@@ -5,14 +5,14 @@
 
 **Understand suspicious content. Recognize digital threats. Build safer online habits.**
 
-SATARK is an AI-assisted security-awareness application for exploring suspicious messages, links, images, QR codes, PDFs, and supported videos. It combines guided analysis with practical learning features.
+SATARK is an AI-assisted security-awareness workspace for exploring suspicious messages, links, images, QR codes, PDFs, and supported videos. It combines guided analysis with practical learning features.
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/Interface-Streamlit-FF4B4B?logo=streamlit&logoColor=white)
 ![AI](https://img.shields.io/badge/AI-Groq-111827)
 ![Project status](https://img.shields.io/badge/status-active%20development-8b5cf6)
-![CodeQL](https://github.com/coolbandariya/Satark/actions/workflows/codeql.yml/badge.svg)
-![CI](https://github.com/coolbandariya/Satark/actions/workflows/ci.yml/badge.svg)
+![CodeQL](https://github.com/kaustubhdua/Satark/actions/workflows/codeql.yml/badge.svg)
+![CI](https://github.com/kaustubhdua/Satark/actions/workflows/ci.yml/badge.svg)
 
 </div>
 
@@ -38,7 +38,7 @@ SATARK is an AI-assisted security-awareness application for exploring suspicious
 
 SATARK provides a single workspace to examine potentially risky digital content and learn about common online scams. Depending on the selected workflow and available dependencies, it can analyze text, URLs, images/QR codes, PDFs, and videos. Results may include a threat category, risk score, confidence value, indicators, and suggested next steps.
 
-The app also includes interactive learning experiences such as **Scam Challenge**, **SATARK Academy**, and **Classroom Mode**.
+The app also includes **Scam Challenge**, **SATARK Academy**, and **Classroom Mode** for security-awareness learning.
 
 ## Features
 
@@ -97,7 +97,7 @@ The repository separates the analysis, input-processing, finding-model, security
 Clone the repository and enter its directory:
 
 ```bash
-git clone https://github.com/coolbandariya/Satark.git
+git clone https://github.com/kaustubhdua/Satark.git
 cd Satark
 python -m venv .venv
 ```
