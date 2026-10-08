@@ -43,7 +43,7 @@ jobs:
         run: |
           python -m compileall -q \
             satark.py ai_provider.py scam_challenge.py video_processing.py reports.py \
-            satark_utils.py url_security.py radar_background.py stepper_component.py tests
+            satark_utils.py url_security.py radar_background.py stepper_component.py ui tests
 
       - name: Run unit tests
         run: python -m unittest discover -s tests -v
@@ -87,7 +87,7 @@ jobs:
 
       - name: Validate UI stylesheet
         run: |
-          python -c "from pathlib import Path; css=Path('styles.css').read_text(encoding='utf-8'); assert css.count('{') == css.count('}'), 'Unbalanced CSS braces'; required=['.hero{','.scanner{','.home-grid{','.home-actions{','.sr-only{','@media(max-width:768px)','prefers-reduced-motion:reduce','overflow-x:hidden']; missing=[x for x in required if x not in css]; assert not missing, f'Missing UI selectors: {missing}'"
+          python -c "from pathlib import Path; css=Path('styles.css').read_text(encoding='utf-8'); assert css.count('{') == css.count('}'), 'Unbalanced CSS braces'; required=['.hero{','.scanner{','.home-grid{','.home-actions{','.sr-only{','.st-key-result_report','@media(max-width:768px)','prefers-reduced-motion:reduce','overflow-x:hidden']; missing=[x for x in required if x not in css]; assert not missing, f'Missing UI selectors: {missing}'"
 
       - name: Validate required project assets
         run: |
