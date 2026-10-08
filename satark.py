@@ -376,8 +376,6 @@ Not detected, Low, Medium, High.
             continue
 
     detail = "Provider requests failed for the configured models. Check the server logs and provider status for diagnostics."
-    kind = "image/QR/video" if image_data_urls else "text"
-
     if image_data_urls:
         hint = (
             "\n\nThis looks like a Groq rate-limit (tokens-per-minute) issue on the free/on-demand "
