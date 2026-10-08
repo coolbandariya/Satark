@@ -412,7 +412,13 @@ def render_result(result):
     label, css = risk_label(score, result.get("threat_category", ""))
     indicators = result.get("key_indicators", [])
     recs = result.get("recommendations", [])
-    confidence = float(result.get("confidence", 70.0))
+    try:
+        confidence = float(result.get("confidence", 70.0))
+        if not math.isfinite(confidence):
+            confidence = 0.0
+    except (TypeError, ValueError, OverflowError):
+        confidence = 0.0
+    confidence = max(0.0, min(100.0, confidence))
     conf_css = confidence_css_class(confidence)
     category = html.escape(safe_text(result.get("threat_category", "Needs review")))
     verdict = html.escape(safe_text(result.get("verdict", "Manual review recommended.")))
