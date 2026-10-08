@@ -165,7 +165,13 @@ If the app offers a sidebar key field, it can also be used for local experimenta
 │   ├── test_satark_utils_urls.py    # Verification URL safety tests
 │   ├── test_scam_challenge.py       # Game-engine regression tests
 │   └── test_video_processing.py     # Video helper tests
-├── satark.py                    # Streamlit entry point and app workflows
+├── satark.py                    # Streamlit entry point and app orchestration
+├── ui/                          # Navigation, home, results, history and learning surfaces
+│   ├── home.py
+│   ├── navigation.py
+│   ├── results.py
+│   ├── history.py
+│   └── learning.py
 ├── ai_provider.py               # Groq client and model-selection helpers
 ├── scam_challenge.py             # Scam Challenge game and rendering
 ├── video_processing.py           # Video frame and audio helpers
