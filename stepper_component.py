@@ -1,10 +1,9 @@
 """Reliable CSS/HTML onboarding stepper for the Streamlit home page.
 
-The previous implementation loaded React and Motion from esm.sh inside an
-iframe. That was visually fragile on restricted networks and duplicated
-application styling. The onboarding path is intentionally static now: it
-communicates the workflow clearly without making the home page depend on a
-second frontend runtime.
+The previous implementation loaded a second browser runtime inside an iframe.
+That was visually fragile on restricted networks and duplicated application
+styling. The onboarding path is intentionally static now: it communicates the
+workflow clearly without making the home page depend on another frontend runtime.
 """
 
 import streamlit as st
