@@ -192,7 +192,7 @@ def make_pdf_report(result, mode):
     def add_page(canvas, doc):
         canvas.saveState()
         width,height=A4
-        canvas.setFillColor(violet)
+        canvas.setFillColor(colors.HexColor('#a77b28'))
         canvas.rect(0,height-5*mm,width,5*mm,fill=1,stroke=0)
         canvas.setFillColor(muted)
         canvas.setFont('Helvetica',7.5)
