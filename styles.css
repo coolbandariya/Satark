@@ -477,6 +477,11 @@ textarea:focus-visible,
   .home-grid{grid-template-columns:1fr}
   .workflow-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+@media(max-width:768px){
+  .home-grid{grid-template-columns:1fr}
+  .workflow-grid{grid-template-columns:1fr}
+  .home-actions,.st-key-home-actions{grid-template-columns:1fr}
+}
 @media(max-width:680px){
   .block-container{padding:.65rem .6rem 3rem}
   .hero{padding:2.3rem .9rem 2rem;border-radius:20px}
