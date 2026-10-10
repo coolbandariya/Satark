@@ -129,12 +129,16 @@ class UIContractTests(unittest.TestCase):
             "st.html(",
             "unsafe_allow_javascript=True",
             "const doc = window.document;",
-            'setAttribute("role", "status")',
-            'setAttribute("aria-live", "polite")',
+            'setAttribute("role", "dialog")',
+            'setAttribute("aria-modal", "true")',
+            'role="status" aria-live="polite"',
             "prefers-reduced-motion: reduce",
             "Skip intro",
             "overlay.remove()",
-            "window.setTimeout(dismiss, reduceMotion ? 550 : 950)",
+            "window.setTimeout(dismiss, reduceMotion ? 650 : 1300)",
+            'event.key === "Escape"',
+            'skipButton.focus({preventScroll: true})',
+            "previousFocus.focus({preventScroll: true})",
         ):
             self.assertIn(expected, LOADING)
         self.assertIn('st.session_state.get("_satark_intro_seen", False)', LOADING)
