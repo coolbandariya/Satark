@@ -177,10 +177,12 @@ If the app offers a sidebar key field, it can also be used for local experimenta
 │   │   ├── bug_report.yml
 │   │   └── feature_request.yml
 │   ├── workflows/
-│   │   ├── ci.yml               # Unit + browser regression checks
-│   │   └── codeql.yml           # Static security analysis
+│   │   ├── ci.yml
+│   │   └── codeql.yml
 │   ├── PULL_REQUEST_TEMPLATE.md
-│   └── dependabot.yml           # Scheduled dependency updates
+│   └── dependabot.yml
+├── .streamlit/
+│   └── config.toml
 ├── assets/
 │   └── satark-banner.svg
 ├── docs/
@@ -201,6 +203,7 @@ If the app offers a sidebar key field, it can also be used for local experimenta
 │   ├── test_satark_utils.py
 │   ├── test_satark_utils_urls.py
 │   ├── test_scam_challenge.py
+│   ├── test_ui_contracts.py
 │   ├── test_url_security.py
 │   └── test_video_processing.py
 ├── ui/
@@ -211,15 +214,21 @@ If the app offers a sidebar key field, it can also be used for local experimenta
 │   ├── learning.py
 │   ├── demo.py
 │   └── firstlight.py
+├── analysis_engine.py
+├── ai_provider.py
+├── config.py
+├── evidence_engine.py
+├── findings.py
 ├── firstlight_engine.py
 ├── firstlight_ingest.py
-├── satark.py
-├── ai_provider.py
-├── analysis_engine.py
-├── config.py
 ├── input_processing.py
+├── radar_background.py
 ├── reports.py
+├── review_engine.py
+├── scam_challenge.py
+├── satark.py
 ├── satark_utils.py
+├── stepper_component.py
 ├── url_security.py
 ├── video_processing.py
 ├── styles.css
@@ -227,6 +236,7 @@ If the app offers a sidebar key field, it can also be used for local experimenta
 ├── CONTRIBUTING.md
 ├── README.md
 └── SECURITY.md
+```
 
 ## Tests and checks
 
