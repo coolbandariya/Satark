@@ -29,8 +29,6 @@ def render_verification_sources(result, default_sources=None):
     table='<table class="report-table"><caption class="sr-only">Official sources for independently verifying high-impact findings</caption><thead><tr><th scope="col">Source</th><th scope="col">Purpose</th><th scope="col">Official Website</th></tr></thead><tbody>'+''.join(rows)+'</tbody></table>'
     st.markdown(f'<section class="report-section"><h3>📚 Verify independently</h3>{table}</section>',unsafe_allow_html=True)
 
-
-
 def render_evidence_ledger(evidence, mode=""):
     """Show deterministic observations separately from the model's assessment."""
     evidence = evidence if isinstance(evidence, list) else []
