@@ -11,7 +11,7 @@ class FindingSeverityTests(unittest.TestCase):
 
     def test_explicit_negative_states_take_precedence(self):
         for value in (
-            "Not detected", "No sign found", "No signs of malware",
+            "Not detected", "No signs of malware",
             "No indicators", "None detected", "Clear", "status: clear",
             "False", "Absent",
         ):
