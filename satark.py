@@ -896,11 +896,11 @@ elif st.session_state.page == "Analyze":
                 "m4v"
             ],
             accept_multiple_files=False,
-            max_upload_size=200,
+            max_upload_size=50,
             help=(
                 "SATARK extracts a handful of representative "
                 "frames and, when possible, transcribes the audio. "
-                "Max 200 MB."
+                "Max 50 MB."
             ),
             key="video_input"
         )
