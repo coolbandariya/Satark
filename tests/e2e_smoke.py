@@ -14,6 +14,7 @@ def assert_layout(page, name):
     page.wait_for_timeout(1500)
     body=page.locator("body").inner_text()
     assert "Know what you're looking at." in body, f"{name}: home copy missing"
+    assert page.locator("#satark-intro-overlay").count() == 0, f"{name}: intro overlay did not dismiss"
     metrics=page.evaluate("""() => ({
         viewport: window.innerWidth,
         scrollWidth: document.documentElement.scrollWidth,
@@ -51,6 +52,7 @@ def main():
         for name,width,height in (("desktop",1440,900),("mobile",390,844)):
             page=browser.new_page(viewport={"width":width,"height":height},reduced_motion="reduce")
             page.goto(URL,wait_until="domcontentloaded",timeout=60_000)
+            page.locator("#satark-intro-overlay").wait_for(state="attached", timeout=10_000)
             assert_layout(page,name)
             if name=="desktop":
                 page.get_by_role("button",name="Start an investigation →").click()

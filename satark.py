@@ -57,6 +57,7 @@ from analysis_engine import (
 )
 from ui.home import render_home
 from ui.firstlight import render_firstlight
+from ui.loading import render_intro_loader
 from ui.navigation import render_sidebar
 from ui.results import render_threat_analysis, render_verification_sources, render_evidence_ledger, render_evidence_review, render_investigation_timeline
 from evidence_engine import extract_deterministic_evidence
@@ -576,6 +577,7 @@ def init_state():
         if k not in st.session_state: st.session_state[k]=v
 init_state()
 sc_init_state()  # Scam Challenge v2 session-state defaults
+render_intro_loader()  # One-time, dismissible intro; app remains usable underneath
 
 # --------------------------- Sidebar ---------------------------
 api_key, role = render_sidebar(
