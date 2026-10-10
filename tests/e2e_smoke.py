@@ -89,8 +89,8 @@ def main():
                 assert downloaded_pdf.startswith(b"%PDF"), "sample report download is not a PDF"
                 assert len(downloaded_pdf) > 500, "sample report PDF is unexpectedly small"
                 pdf_text = "\n".join(
-                    page.extract_text() or ""
-                    for page in PdfReader(BytesIO(downloaded_pdf)).pages
+                    pdf_page.extract_text() or ""
+                    for pdf_page in PdfReader(BytesIO(downloaded_pdf)).pages
                 )
                 assert "Evidence Coverage Review" in pdf_text, "PDF is missing evidence coverage review"
                 assert "Rule-Based Evidence Ledger" in pdf_text, "PDF is missing the evidence ledger"
