@@ -10,32 +10,49 @@ _SEVERITY = {
     "clear": 0,
     "unknown": 0,
 }
+_NEGATORS = re.compile(
+    r"(?:\bnot|\bnever|\bisn['’]?t|\bis\s+not|\bnot\s+considered|"
+    r"\bnot\s+classified\s+as)\s+(?:(?:a|an|the)\s+)?$"
+)
+_LABELS = (
+    ("critical", re.compile(r"\b(?:critical|severe)\b")),
+    ("high", re.compile(r"\bhigh\b")),
+    ("medium", re.compile(r"\b(?:medium|moderate)\b")),
+    ("low", re.compile(r"\blow\b")),
+)
+
+
+def _has_unnegated_label(text, pattern):
+    """Match a severity label only when it is not directly negated."""
+    for match in pattern.finditer(text):
+        prefix = text[max(0, match.start() - 32):match.start()]
+        if not _NEGATORS.search(prefix):
+            return True
+    return False
 
 
 def finding_severity(value):
     """Map a displayed check value to a conservative severity.
 
-    Explicit negative states take precedence, followed by explicit severity
-    labels. Generic words such as "detected" are only a fallback; otherwise
-    a value like "Low risk — detected" would incorrectly become High.
+    Explicit negative states take precedence, followed by unnegated severity
+    labels. Generic words such as "detected" are only a fallback; a value like
+    "Low risk — detected" therefore remains Low instead of becoming High.
     """
     text = str(value or "").strip().lower()
     if not text:
         return "unknown"
 
-    # Handle negation before any positive keyword ("not detected" contains
-    # the word "detected").
-    if re.search(r"\b(?:not detected|none|clear|no sign|absent|false)\b", text):
+    # Negation must be evaluated before positive keywords. Avoid treating
+    # "not clear" as a clear result.
+    if re.search(r"\b(?:not detected|no sign(?:s)?(?: of)?|no indicators?|none detected|absent|false)\b", text):
+        return "clear"
+    if re.fullmatch(r"(?:status\s*:\s*)?clear[.! ]*", text):
         return "clear"
 
-    if re.search(r"\b(?:critical|severe)\b", text):
-        return "critical"
-    if re.search(r"\bhigh\b", text):
-        return "high"
-    if re.search(r"\bmedium\b|\bmoderate\b", text):
-        return "medium"
-    if re.search(r"\blow\b", text):
-        return "low"
+    for severity, pattern in _LABELS:
+        if _has_unnegated_label(text, pattern):
+            return severity
+
     if re.search(r"\b(?:detected|present|confirmed)\b", text):
         return "high"
 
@@ -49,16 +66,21 @@ def build_findings(result):
         checks = {}
     findings = []
     for name, value in checks.items():
+        title = str(name)
         severity = finding_severity(value)
         findings.append({
-            "id": name.lower().replace(" ", "-"),
-            "title": name,
+            "id": re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-") or "finding",
+            "title": title,
             "status": str(value or "Needs review"),
             "severity": severity,
             "action": (
                 "Verify independently before acting."
                 if severity in {"critical", "high", "medium", "unknown"}
-                else "No meaningful indicator was detected by this check."
+                else (
+                    "This check did not report an indicator; that does not prove the item is safe."
+                    if severity == "clear"
+                    else "Review this low-severity signal in context."
+                )
             ),
         })
     findings.sort(key=lambda item: _SEVERITY.get(item["severity"], 0), reverse=True)
