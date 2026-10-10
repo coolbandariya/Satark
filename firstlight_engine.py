@@ -60,6 +60,12 @@ def create_demo_case() -> dict[str, Any]:
 
 
 def seal_evidence(event: dict[str, Any]) -> dict[str, Any]:
+    """Seal one well-formed event with a stable identity."""
+    if not isinstance(event, dict):
+        raise ValueError("Evidence event must be an object.")
+    event_id = event.get("event_id")
+    if not isinstance(event_id, str) or not event_id.strip():
+        raise ValueError("Evidence event must include a non-empty event_id.")
     record = deepcopy(event)
     return {
         "evidence_id": record["event_id"],
