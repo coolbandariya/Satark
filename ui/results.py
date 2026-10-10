@@ -31,7 +31,18 @@ def render_verification_sources(result, default_sources=None):
 
 def render_evidence_ledger(evidence, mode=""):
     """Show deterministic observations separately from the model's assessment."""
-    evidence = evidence if isinstance(evidence, list) else []
+    evidence = (
+        [
+            item for item in evidence
+            if isinstance(item, dict)
+            and any(
+                safe_text(item.get(field))
+                for field in ("title", "observation", "evidence")
+            )
+        ]
+        if isinstance(evidence, list)
+        else []
+    )
     st.markdown(
         '<section class="report-section evidence-ledger">'
         '<h3>🧾 Evidence ledger</h3>'
