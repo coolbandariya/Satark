@@ -90,6 +90,17 @@ def verify_evidence(item: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _timeline_sort_key(value: Any) -> datetime:
+    """Sort ISO timestamps by instant, treating naive values as UTC."""
+    try:
+        parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except (TypeError, ValueError, OverflowError):
+        return datetime.max.replace(tzinfo=timezone.utc)
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
 def make_audit_entry(action: str, actor: str, payload: dict[str, Any], previous_hash: str) -> dict[str, Any]:
     entry = {
         "audit_id": str(uuid.uuid4()),
@@ -122,8 +133,17 @@ def append_audit(entries: list[dict[str, Any]], action: str, actor: str, payload
 
 def investigate_case(case: dict[str, Any], evidence: list[dict[str, Any]]) -> dict[str, Any]:
     """Deterministic agent workflow; every finding cites evidence IDs."""
-    by_id = {item["evidence_id"]: item for item in evidence}
-    valid_ids = [item["evidence_id"] for item in evidence if verify_evidence(item)["valid"]]
+    evidence = [item for item in evidence if isinstance(item, dict)]
+    by_id = {
+        str(item.get("evidence_id")): item
+        for item in evidence
+        if item.get("evidence_id") is not None
+    }
+    valid_ids = [
+        str(item.get("evidence_id"))
+        for item in evidence
+        if item.get("evidence_id") is not None and verify_evidence(item)["valid"]
+    ]
     findings = []
 
     def finding(fid: str, title: str, explanation: str, severity: str, refs: list[str], confidence: str) -> None:
@@ -149,6 +169,7 @@ def investigate_case(case: dict[str, Any], evidence: list[dict[str, Any]]) -> di
     for item in evidence:
         checked = verify_evidence(item)
         record = item.get("record", {})
+        record = record if isinstance(record, dict) else {}
         timeline.append({
             "timestamp": record.get("timestamp", ""),
             "event_id": item.get("evidence_id", ""),
@@ -157,7 +178,7 @@ def investigate_case(case: dict[str, Any], evidence: list[dict[str, Any]]) -> di
             "integrity": checked["status"],
             "evidence_ids": [item.get("evidence_id", "")] if checked["valid"] else [],
         })
-    timeline.sort(key=lambda event: event["timestamp"])
+    timeline.sort(key=lambda event: _timeline_sort_key(event["timestamp"]))
 
     return {
         "case_id": case["case_id"],
