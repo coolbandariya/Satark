@@ -2,7 +2,7 @@
 import math
 import unittest
 
-from reports import make_pdf_report
+from io import BytesIO\nfrom pypdf import PdfReader\n\nfrom reports import make_pdf_report
 
 
 class ReportGenerationTests(unittest.TestCase):
@@ -29,6 +29,10 @@ class ReportGenerationTests(unittest.TestCase):
         )
         self.assertTrue(data.startswith(b"%PDF"))
         self.assertGreater(len(data), 500)
+        extracted = "\\n".join(page.extract_text() or "" for page in PdfReader(BytesIO(data)).pages)
+        self.assertIn("Urgency language", extracted)
+        self.assertIn("account will be blocked today", extracted)
+        self.assertIn("Rule-Based Evidence Ledger", extracted)
 
     def test_malformed_numeric_fields_are_safe(self):
         data = make_pdf_report(
