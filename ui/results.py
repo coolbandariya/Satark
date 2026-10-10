@@ -28,3 +28,56 @@ def render_verification_sources(result, default_sources=None):
         rows.append(f'<tr><td>{source}</td><td>{purpose}</td><td><a class="source-link" href="{safe_href}" target="_blank" rel="noopener noreferrer">{html.escape(website)}</a></td></tr>')
     table='<table class="report-table"><caption class="sr-only">Official sources for independently verifying high-impact findings</caption><thead><tr><th scope="col">Source</th><th scope="col">Purpose</th><th scope="col">Official Website</th></tr></thead><tbody>'+''.join(rows)+'</tbody></table>'
     st.markdown(f'<section class="report-section"><h3>📚 Verify independently</h3>{table}</section>',unsafe_allow_html=True)
+
+
+
+def render_evidence_ledger(evidence, mode=""):
+    """Show deterministic observations separately from the model's assessment."""
+    evidence = evidence if isinstance(evidence, list) else []
+    st.markdown(
+        '<section class="report-section evidence-ledger">'
+        '<h3>🧾 Evidence ledger</h3>'
+        '<p class="ledger-intro">These observations were extracted by local, deterministic rules '
+        'from the supplied text. They are separate from the AI assessment; a signal is not proof '
+        'of fraud, and no signal does not prove content is safe.</p>'
+        '</section>',
+        unsafe_allow_html=True,
+    )
+
+    if not evidence:
+        if str(mode).lower() in {"image", "qr"}:
+            message = "This image-based workflow did not produce a text-only evidence ledger. Review the visual analysis and verify important claims independently."
+        else:
+            message = "No supported text signals were extracted by the current rule set. This is not a safety clearance."
+        st.info(message)
+        return
+
+    rows = []
+    for item in evidence[:20]:
+        if not isinstance(item, dict):
+            continue
+        title = html.escape(safe_text(item.get("title"), "Observation"))
+        observation = html.escape(safe_text(item.get("observation")))
+        excerpt = html.escape(safe_text(item.get("evidence")))
+        method = html.escape(safe_text(item.get("method"), "Deterministic pattern"))
+        source = html.escape(safe_text(item.get("source"), "Submitted text"))
+        rows.append(
+            '<article class="ledger-item">'
+            '<div class="ledger-item-top">'
+            f'<span class="ledger-tag">{title}</span>'
+            f'<span class="ledger-method">{method}</span>'
+            '</div>'
+            f'<p class="ledger-observation">{observation}</p>'
+            f'<blockquote class="ledger-quote">{excerpt}</blockquote>'
+            f'<div class="ledger-source">Source: {source}</div>'
+            '</article>'
+        )
+
+    if rows:
+        st.markdown(
+            '<div class="ledger-grid">' + "".join(rows) + '</div>',
+            unsafe_allow_html=True,
+        )
+    st.caption(
+        f"{len(rows)} rule-based observation(s). Rules are intentionally conservative and may miss or misinterpret context."
+    )
