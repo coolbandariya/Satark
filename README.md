@@ -57,7 +57,9 @@ The app also includes **Scam Challenge**, **SATARK Academy**, and **Classroom Mo
 | PDF analysis | Extract text from supported PDF documents and analyze it. |
 | Video analysis | Extract representative frames; optionally transcribe audio when the workflow and provider support it. |
 | AI-assisted results | Present a model-generated assessment, indicators, and suggested actions. |
-| Deterministic evidence ledger | Separately shows local pattern-based observations such as URLs, known shorteners, phone/UPI-like identifiers, urgency, credential requests, and payment language. These are review signals—not proof of fraud or safety. |\n| Evidence coverage review | Flags broad AI assessments that lack independent text-rule observations, and treats visual workflows separately. It is a coverage check—not claim-by-claim verification. |\n| Responsive investigation workspace | Focused navigation, a guided offline sample, mobile-aware layouts, and clear separation between evidence, AI interpretation and next steps. |
+| Deterministic evidence ledger | Separately shows local pattern-based observations such as URLs, known shorteners, phone/UPI-like identifiers, urgency, credential requests, and payment language. These are review signals—not proof of fraud or safety. |
+| Evidence coverage review | Flags broad AI assessments that lack independent text-rule observations, and treats visual workflows separately. It is a coverage check—not claim-by-claim verification. |
+| Responsive investigation workspace | Focused navigation, a guided offline sample, mobile-aware layouts, and clear separation between evidence, AI interpretation and next steps. |
 | PDF export | Download a report of an analysis. |
 | Session history | Revisit results held in the current app session. |
 | Learning | Practice scam recognition and explore security-awareness content. |
@@ -161,6 +163,10 @@ If the app offers a sidebar key field, it can also be used for local experimenta
 │   └── ANALYSIS_LIMITATIONS.md  # Interpretation and safe-use guidance
 ├── tests/
 │   ├── test_ai_provider.py          # Provider/model-selection tests
+│   ├── test_review_engine.py        # Evidence coverage review tests
+│   ├── test_reports.py              # PDF text/output regression tests
+│   ├── test_url_security.py         # Safe-fetch boundary tests
+│   ├── e2e_smoke.py                 # Desktop/mobile browser and PDF download checks
 │   ├── test_analysis_engine.py      # Result normalization/confidence tests
 │   ├── test_input_processing.py     # Upload validation tests
 │   ├── test_satark_utils.py         # Shared helper tests
@@ -174,7 +180,8 @@ If the app offers a sidebar key field, it can also be used for local experimenta
 │   ├── results.py
 │   ├── history.py
 │   └── learning.py
-├── ai_provider.py               # Groq client and model-selection helpers\n├── review_engine.py             # Deterministic evidence coverage review
+├── ai_provider.py               # Groq client and model-selection helpers
+├── review_engine.py             # Deterministic evidence coverage review
 ├── scam_challenge.py             # Scam Challenge game and rendering
 ├── video_processing.py           # Video frame and audio helpers
 ├── reports.py                    # PDF report generation
@@ -225,7 +232,10 @@ See [Analysis limitations](docs/ANALYSIS_LIMITATIONS.md) and the [Security polic
 - [x] Extract Groq client and model-selection helpers from the Streamlit entry point.
 - [x] Add broader workflow and end-to-end tests.
 - [x] Pin runtime dependencies and add automated CI validation.
-- [x] Keep the unit-test suite aligned with the current dependency-free UI architecture.\n- [x] Add a deterministic evidence-coverage review and export it with the PDF report.\n- [x] Prioritize the evidence-first investigation flow in the responsive workspace.\n- [x] Verify that provider model-discovery failures are not reported as successful connections.
+- [x] Keep the unit-test suite aligned with the current dependency-free UI architecture.
+- [x] Add a deterministic evidence-coverage review and export it with the PDF report.
+- [x] Prioritize the evidence-first investigation flow in the responsive workspace.
+- [x] Verify that provider model-discovery failures are not reported as successful connections.
 - [ ] Add deployment-specific security and runtime review notes for each hosting target.
 - [ ] Expand live browser coverage for every scanner workflow.
 
