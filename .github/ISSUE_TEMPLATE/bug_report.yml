@@ -1,0 +1,44 @@
+name: Bug report
+description: Report a reproducible SATARK defect without sharing sensitive evidence.
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not upload real suspicious messages, personal data, API keys, tokens, private URLs or incident evidence. Use a synthetic example.
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: Describe the unexpected behavior.
+      placeholder: A scanner selection does not update the helper text.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Give numbered steps using synthetic or public test data.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser/OS, Python version, deployment type, and commit SHA if known.
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Sanitized error details
+      description: Remove credentials, personal information, full URLs with tokens, and private content.
+    validations:
+      required: false
