@@ -57,7 +57,7 @@ from analysis_engine import (
 )
 from ui.home import render_home
 from ui.navigation import render_sidebar
-from ui.results import render_threat_analysis, render_verification_sources, render_evidence_ledger
+from ui.results import render_threat_analysis, render_verification_sources, render_evidence_ledger, render_evidence_review
 from evidence_engine import extract_deterministic_evidence
 from ui.history import render_history
 from ui.learning import render_academy, render_classroom
@@ -512,6 +512,7 @@ def render_result(result):
         # Show the observable evidence before model interpretation. This is the
         # defining SATARK workflow: evidence first, generated explanation second.
         render_evidence_ledger(result.get("deterministic_evidence", []), result.get("analysis_mode", ""))
+        render_evidence_review(result)
 
         left, right = st.columns(2)
         with left:
