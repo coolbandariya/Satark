@@ -44,14 +44,26 @@ def render_sidebar(get_client, discover_models, choose_model, text_preferences, 
                     client = get_client(api_key)
                     available = discover_models(client)
                     st.session_state.available_models = available
-                    st.session_state.text_model = choose_model(available, text_preferences)
-                    st.session_state.vision_model = choose_model(available, vision_preferences)
-                    if st.session_state.text_model and st.session_state.vision_model:
-                        st.success("Connected · text and vision ready")
-                    elif st.session_state.text_model:
-                        st.warning("Connected · text ready; vision model unavailable")
+                    if not available:
+                        # An empty model list can mean authentication, network,
+                        # permission or provider failure. Never report this as a
+                        # successful connection merely because fallback model
+                        # preferences exist.
+                        st.session_state.text_model = None
+                        st.session_state.vision_model = None
+                        st.error(
+                            "Could not verify provider access. Check the API key, "
+                            "account permissions, network and provider status."
+                        )
                     else:
-                        st.error("No supported text model is available for this key.")
+                        st.session_state.text_model = choose_model(available, text_preferences)
+                        st.session_state.vision_model = choose_model(available, vision_preferences)
+                        if st.session_state.text_model and st.session_state.vision_model:
+                            st.success("Connected · text and vision ready")
+                        elif st.session_state.text_model:
+                            st.warning("Connected · text ready; vision model unavailable")
+                        else:
+                            st.error("No supported text model is available for this key.")
                 except Exception as exc:
                     st.error(
                         f"Connection check failed ({type(exc).__name__}). "
