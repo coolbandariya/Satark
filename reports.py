@@ -81,11 +81,11 @@ def make_pdf_report(result, mode):
     styles = getSampleStyleSheet()
     dark = colors.HexColor("#111113")
     muted = colors.HexColor("#5f6270")
-    light_gold = colors.HexColor("#fbf4df")
+    light_gold = colors.HexColor("#eaf7fc")
     line = colors.HexColor("#d9d9e2")
-    green = colors.HexColor("#188a4b")
-    red = colors.HexColor("#c92a4d")
-    amber = colors.HexColor("#9a6500")
+    green = colors.HexColor("#147d64")
+    red = colors.HexColor("#b42345")
+    amber = colors.HexColor("#8a5a00")
 
     title = ParagraphStyle("SATARKTitle", parent=styles["Title"], fontName="Helvetica-Bold", fontSize=22, leading=26, textColor=dark, spaceAfter=5)
     subtitle = ParagraphStyle("SATARKSubtitle", parent=styles["Normal"], fontName="Helvetica", fontSize=9, leading=13, textColor=muted, spaceAfter=12)
@@ -112,13 +112,13 @@ def make_pdf_report(result, mode):
           [Paragraph("Assessment signal", body), Paragraph(pdf_escape(label), body), Paragraph("Risk score", body), Paragraph(f"{score}/100", body)],
           [Paragraph("Pattern", body), Paragraph(pdf_escape(result.get('scam_pattern','Needs review')), body), Paragraph("Model-reported confidence", body), Paragraph(f"{confidence_value:.2f}%", conf_cell_style)]]
     meta_table=Table(meta,colWidths=[25*mm,60*mm,30*mm,60*mm],hAlign='LEFT')
-    meta_table.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,-1),colors.HexColor('#f7f6fb')),('BOX',(0,0),(-1,-1),0.7,line),('INNERGRID',(0,0),(-1,-1),0.4,line),('VALIGN',(0,0),(-1,-1),'TOP'),('LEFTPADDING',(0,0),(-1,-1),7),('RIGHTPADDING',(0,0),(-1,-1),7),('TOPPADDING',(0,0),(-1,-1),7),('BOTTOMPADDING',(0,0),(-1,-1),7)]))
+    meta_table.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,-1),colors.HexColor('#f2f8fc')),('BOX',(0,0),(-1,-1),0.7,line),('INNERGRID',(0,0),(-1,-1),0.4,line),('VALIGN',(0,0),(-1,-1),'TOP'),('LEFTPADDING',(0,0),(-1,-1),7),('RIGHTPADDING',(0,0),(-1,-1),7),('TOPPADDING',(0,0),(-1,-1),7),('BOTTOMPADDING',(0,0),(-1,-1),7)]))
     story.append(meta_table)
 
     story.append(Paragraph("Final Verdict", h2))
     verdict_data=[[Paragraph(pdf_escape(result.get('verdict','Manual review recommended.')), verdict_style)]]
     vt=Table(verdict_data,colWidths=[175*mm])
-    vt.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,-1),light_gold),('BOX',(0,0),(-1,-1),0.7,colors.HexColor('#d8bb78')),('LEFTPADDING',(0,0),(-1,-1),10),('RIGHTPADDING',(0,0),(-1,-1),10),('TOPPADDING',(0,0),(-1,-1),10),('BOTTOMPADDING',(0,0),(-1,-1),10)]))
+    vt.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,-1),light_gold),('BOX',(0,0),(-1,-1),0.7,colors.HexColor('#9bc9dc')),('LEFTPADDING',(0,0),(-1,-1),10),('RIGHTPADDING',(0,0),(-1,-1),10),('TOPPADDING',(0,0),(-1,-1),10),('BOTTOMPADDING',(0,0),(-1,-1),10)]))
     story.append(vt)
 
     story.append(Paragraph("What SATARK Found", h2))
@@ -137,6 +137,11 @@ def make_pdf_report(result, mode):
     ledger = result.get("deterministic_evidence", [])
     if not isinstance(ledger, (list, tuple)):
         ledger = []
+    ledger = [
+        item for item in ledger
+        if isinstance(item, dict)
+        and any(_safe_text(item.get(field)) for field in ("title", "observation", "evidence"))
+    ]
     if ledger:
         ledger_lines = []
         for item in ledger[:20]:
@@ -170,8 +175,8 @@ def make_pdf_report(result, mode):
         colWidths=[175*mm],
     )
     coverage_table.setStyle(TableStyle([
-        ("BACKGROUND", (0,0), (-1,-1), colors.HexColor("#f1f7fa")),
-        ("BOX", (0,0), (-1,-1), 0.7, colors.HexColor("#b8cbd6")),
+        ("BACKGROUND", (0,0), (-1,-1), colors.HexColor("#eaf7fc")),
+        ("BOX", (0,0), (-1,-1), 0.7, colors.HexColor("#9bc9dc")),
         ("LEFTPADDING", (0,0), (-1,-1), 10),
         ("RIGHTPADDING", (0,0), (-1,-1), 10),
         ("TOPPADDING", (0,0), (-1,-1), 9),
@@ -201,7 +206,7 @@ def make_pdf_report(result, mode):
         value=_safe_text(threat_analysis.get(check,'Needs review'),'Needs review')
         threat_data.append([Paragraph(pdf_escape(check),body),Paragraph(pdf_escape(value),body)])
     tt=Table(threat_data,colWidths=[95*mm,80*mm],repeatRows=1)
-    ts=[('BACKGROUND',(0,0),(-1,0),colors.HexColor('#f4ecd8')),('TEXTCOLOR',(0,0),(-1,0),dark),('GRID',(0,0),(-1,-1),0.5,line),('VALIGN',(0,0),(-1,-1),'TOP'),('LEFTPADDING',(0,0),(-1,-1),7),('RIGHTPADDING',(0,0),(-1,-1),7),('TOPPADDING',(0,0),(-1,-1),6),('BOTTOMPADDING',(0,0),(-1,-1),6)]
+    ts=[('BACKGROUND',(0,0),(-1,0),colors.HexColor('#dff3fa')),('TEXTCOLOR',(0,0),(-1,0),dark),('GRID',(0,0),(-1,-1),0.5,line),('VALIGN',(0,0),(-1,-1),'TOP'),('LEFTPADDING',(0,0),(-1,-1),7),('RIGHTPADDING',(0,0),(-1,-1),7),('TOPPADDING',(0,0),(-1,-1),6),('BOTTOMPADDING',(0,0),(-1,-1),6)]
     for row_idx in range(1,len(threat_data)):
         value=_safe_text(threat_analysis.get(THREAT_CHECKS[row_idx-1],''))
         cls=check_class(value)
@@ -231,7 +236,7 @@ def make_pdf_report(result, mode):
             website = ""
         source_data.append([Paragraph(pdf_escape(item.get('source')),body),Paragraph(pdf_escape(item.get('purpose')),body),Paragraph(f'<link href="{html.escape(website,quote=True)}" color="#4d3dcc"><u>{pdf_escape(website)}</u></link>',body)])
     stbl=Table(source_data,colWidths=[42*mm,75*mm,58*mm],repeatRows=1)
-    stbl.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,0),colors.HexColor('#eeeaff')),('GRID',(0,0),(-1,-1),0.5,line),('VALIGN',(0,0),(-1,-1),'TOP'),('LEFTPADDING',(0,0),(-1,-1),7),('RIGHTPADDING',(0,0),(-1,-1),7),('TOPPADDING',(0,0),(-1,-1),6),('BOTTOMPADDING',(0,0),(-1,-1),6)]))
+    stbl.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,0),colors.HexColor('#e7f6f5')),('GRID',(0,0),(-1,-1),0.5,line),('VALIGN',(0,0),(-1,-1),'TOP'),('LEFTPADDING',(0,0),(-1,-1),7),('RIGHTPADDING',(0,0),(-1,-1),7),('TOPPADDING',(0,0),(-1,-1),6),('BOTTOMPADDING',(0,0),(-1,-1),6)]))
     story.append(stbl)
 
     story.append(Paragraph("Final Conclusion", h2))
@@ -245,7 +250,7 @@ def make_pdf_report(result, mode):
     def add_page(canvas, doc):
         canvas.saveState()
         width,height=A4
-        canvas.setFillColor(colors.HexColor('#a77b28'))
+        canvas.setFillColor(colors.HexColor('#278eac'))
         canvas.rect(0,height-5*mm,width,5*mm,fill=1,stroke=0)
         canvas.setFillColor(muted)
         canvas.setFont('Helvetica',7.5)
