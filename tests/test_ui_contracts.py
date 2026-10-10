@@ -56,6 +56,9 @@ class UIContractTests(unittest.TestCase):
 
     def test_evidence_coverage_review_is_integrated(self):
         self.assertIn("render_evidence_review(result)", APP)
+        self.assertIn("render_investigation_timeline(result)", APP)
+        self.assertIn("def render_investigation_timeline", (ROOT / "ui/results.py").read_text(encoding="utf-8"))
+        self.assertIn("investigation-stages", POLISH_CSS)
         self.assertIn("build_evidence_review", (ROOT / "ui/results.py").read_text(encoding="utf-8"))
         self.assertIn("evidence-review", CSS)
 
