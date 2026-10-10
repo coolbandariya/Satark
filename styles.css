@@ -908,3 +908,100 @@ textarea:focus-visible,
   .evidence-review-head{align-items:flex-start;flex-direction:column;gap:.6rem}
   .evidence-review-count{align-self:flex-start}
 }
+
+/* Final design-system pass: one consistent navy / ice / mint language.
+   Keep this layer last so older component styles cannot reintroduce the
+   previous gold/near-black palette on the investigation screens. */
+.stApp{
+  background:
+    radial-gradient(ellipse at 72% -12%,rgba(125,211,252,.075),transparent 34rem),
+    radial-gradient(ellipse at 8% 38%,rgba(94,224,176,.035),transparent 28rem),
+    var(--bg)!important;
+}
+[data-testid="stSidebar"]{
+  background:linear-gradient(180deg,#0a1220 0%,#080e18 100%)!important;
+}
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p{color:#9aacc2!important}
+.brand-mark{
+  display:grid;place-items:center;width:38px;height:38px;margin-bottom:.75rem;
+  border:1px solid rgba(125,211,252,.24);border-radius:12px;
+  background:linear-gradient(145deg,rgba(125,211,252,.13),rgba(94,224,176,.07));
+  color:#e5f7ff;font-size:1.05rem;font-weight:900;
+  box-shadow:inset 0 1px rgba(255,255,255,.04);
+}
+.brand-mark span{color:var(--safe)}
+.section-title{
+  color:#eef5ff!important;
+  letter-spacing:-.045em!important;
+}
+.section-copy{color:#93a6bd!important}
+.scanner{
+  background:linear-gradient(150deg,rgba(17,29,46,.96),rgba(10,18,30,.98))!important;
+  border-color:rgba(177,199,230,.14)!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.025);
+}
+.scanner:hover{
+  border-color:rgba(125,211,252,.42)!important;
+  background:linear-gradient(150deg,rgba(20,39,58,.98),rgba(10,18,30,.98))!important;
+}
+.scanner.active{
+  border-color:rgba(125,211,252,.62)!important;
+  background:linear-gradient(145deg,rgba(125,211,252,.11),rgba(94,224,176,.045))!important;
+  box-shadow:0 0 0 1px rgba(125,211,252,.09),inset 3px 0 var(--accent)!important;
+}
+.scanner-title{color:#eaf4ff!important}
+.scanner-copy{color:#91a5be!important}
+div[data-testid="stButton"]>button{
+  background:rgba(17,29,46,.86)!important;
+  border-color:rgba(177,199,230,.17)!important;
+  color:#e4eefb!important;
+}
+div[data-testid="stButton"]>button:hover{
+  border-color:rgba(125,211,252,.42)!important;
+  background:rgba(125,211,252,.07)!important;
+}
+div[data-testid="stButton"]>button[kind="primary"]{
+  background:linear-gradient(100deg,#8dddf8,#8ce4c7)!important;
+  color:#07131c!important;border-color:rgba(178,238,255,.45)!important;
+}
+div[data-testid="stButton"]>button[kind="primary"] p{color:#07131c!important}
+[data-testid="stTextArea"] label,[data-testid="stTextInput"] label,
+[data-testid="stFileUploader"] label,[data-testid="stSelectbox"] label{
+  color:#dbe8f8!important;font-weight:700!important;
+}
+[data-testid="stTextArea"] textarea,[data-testid="stTextInput"] input{
+  background:#0a1321!important;border-color:rgba(177,199,230,.2)!important;
+  color:#eff6ff!important;
+}
+[data-testid="stTextArea"] textarea::placeholder,[data-testid="stTextInput"] input::placeholder{
+  color:#6f839d!important;opacity:1!important;
+}
+[data-testid="stFileUploaderDropzone"]{
+  background:linear-gradient(140deg,rgba(15,28,45,.88),rgba(10,18,30,.88))!important;
+  border-color:rgba(125,211,252,.3)!important;
+}
+.metric,.evidence,.action,.info-card,.challenge-card,.report-section{
+  box-shadow:0 10px 28px rgba(0,0,0,.1),inset 0 1px rgba(255,255,255,.018)!important;
+}
+.metric-label{color:#8fa4bd!important}
+.metric-value{color:#eef6ff!important}
+.report-section h3{color:#eaf4ff!important}
+.report-table th{color:#dceeff!important}
+.report-table td{color:#c3d1e2!important}
+.verdict,.conclusion-card{color:#dce8f8!important}
+[data-testid="stAlert"]{border-radius:12px!important}
+[data-testid="stExpander"]{
+  border-color:rgba(177,199,230,.13)!important;border-radius:13px!important;
+}
+[data-testid="stExpander"] summary{color:#dce8f8!important}
+a:focus-visible,button:focus-visible,[role="button"]:focus-visible,
+input:focus-visible,textarea:focus-visible{
+  outline:2px solid var(--accent)!important;outline-offset:3px!important;
+}
+@media(max-width:680px){
+  .section-title{margin-top:1.1rem!important}
+  .scanner{min-height:112px!important;padding:.8rem .55rem!important}
+  .scanner-copy{font-size:.66rem!important}
+  [data-testid="stTextArea"] textarea{font-size:16px!important}
+}
+
