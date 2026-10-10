@@ -134,6 +134,8 @@ def ingest_event_artifact(data: bytes, filename: str = "events.json") -> dict[st
             document = json.loads(decoded)
         except json.JSONDecodeError as exc:
             raise IngestError(f"invalid JSON: {exc.msg}") from exc
+        except RecursionError as exc:
+            raise IngestError("JSON nesting is too deep to process safely") from exc
         if isinstance(document, dict):
             rows = document.get("events")
         else:
