@@ -111,7 +111,7 @@ def main():
                 page.get_by_role("button", name="Run investigation workflow").click()
                 page.get_by_text("Coordinated investigation").wait_for(timeout=30_000)
                 page.get_by_text("Findings", exact=True).wait_for(timeout=30_000)
-                assert page.get_by_role("button", name="Export FIRSTLIGHT incident report (JSON)").is_visible()
+                page.get_by_text("Evidence gaps", exact=True).wait_for(timeout=30_000)
 
                 # Approval remains explicitly simulated; verify the action log
                 # and audit trail after one approval.
