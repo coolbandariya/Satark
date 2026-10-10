@@ -71,10 +71,18 @@ def seal_evidence(event: dict[str, Any]) -> dict[str, Any]:
 
 
 def verify_evidence(item: dict[str, Any]) -> dict[str, Any]:
+    if not isinstance(item, dict):
+        return {
+            "evidence_id": "unknown",
+            "expected_sha256": "",
+            "actual_sha256": "",
+            "valid": False,
+            "status": "HASH MISMATCH — POSSIBLE TAMPERING",
+        }
     record = item.get("record", {})
     try:
         actual = sha256_record(record)
-    except (TypeError, ValueError, RecursionError):
+    except (TypeError, ValueError, RecursionError, UnicodeError, OverflowError):
         actual = ""
     expected = str(item.get("sha256", ""))
     evidence_id = item.get("evidence_id", "unknown")
@@ -118,14 +126,22 @@ def make_audit_entry(action: str, actor: str, payload: dict[str, Any], previous_
 
 
 def verify_audit_chain(entries: list[dict[str, Any]]) -> bool:
+    """Return False for malformed or non-canonicalizable audit data."""
+    if not isinstance(entries, list):
+        return False
     previous = "GENESIS"
     for entry in entries:
         if not isinstance(entry, dict) or entry.get("previous_hash") != previous:
             return False
         without_hash = {key: value for key, value in entry.items() if key != "entry_hash"}
-        if sha256_record(without_hash) != entry.get("entry_hash"):
+        try:
+            actual_hash = sha256_record(without_hash)
+        except (TypeError, ValueError, RecursionError, UnicodeError, OverflowError):
             return False
-        previous = entry["entry_hash"]
+        entry_hash = entry.get("entry_hash")
+        if not isinstance(entry_hash, str) or actual_hash != entry_hash:
+            return False
+        previous = entry_hash
     return True
 
 
