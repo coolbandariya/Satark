@@ -27,6 +27,7 @@ def _init_firstlight_state() -> None:
         "firstlight_demo_seeded": False,
         "firstlight_import_result": None,
         "firstlight_import_findings": [],
+        "firstlight_import_report_json": None,
     }
     for key, value in defaults.items():
         if key not in st.session_state:
@@ -82,6 +83,7 @@ def render_firstlight() -> None:
         if upload is not None and st.button("Validate and analyze import", type="primary", key="fl_import_run"):
             st.session_state.firstlight_import_result = None
             st.session_state.firstlight_import_findings = []
+            st.session_state.firstlight_import_report_json = None
             try:
                 imported = ingest_event_artifact(upload.getvalue(), upload.name)
                 st.session_state.firstlight_import_result = imported
@@ -118,21 +120,28 @@ def render_firstlight() -> None:
                 st.markdown("#### Normalization warnings")
                 for warning in imported["warnings"]:
                     st.warning(warning)
-            if imported["errors"]:
+            if imported["errors"] and st.checkbox(
+                f"Show rejected records ({imported['rejected_count']})",
+                key="fl_show_rejected_rows",
+            ):
                 st.markdown("#### Rejected records")
                 st.dataframe(imported["errors"], use_container_width=True, hide_index=True)
-            st.markdown("#### Normalized events")
-            st.dataframe([
-                {
-                    "Event ID": event["event_id"],
-                    "Timestamp (UTC)": event["timestamp"],
-                    "Source": event["source"],
-                    "Kind": event["kind"],
-                    "Summary": event["summary"],
-                    "Normalized record SHA-256": sha256_record(event),
-                }
-                for event in imported["events"]
-            ], use_container_width=True, hide_index=True)
+            if st.checkbox(
+                f"Show normalized event inventory ({imported['record_count']} records)",
+                key="fl_show_normalized_events",
+            ):
+                st.markdown("#### Normalized events")
+                st.dataframe([
+                    {
+                        "Event ID": event["event_id"],
+                        "Timestamp (UTC)": event["timestamp"],
+                        "Source": event["source"],
+                        "Kind": event["kind"],
+                        "Summary": event["summary"],
+                        "Normalized record SHA-256": sha256_record(event),
+                    }
+                    for event in imported["events"]
+                ], use_container_width=True, hide_index=True)
             st.markdown("#### Explainable detections")
             findings = st.session_state.firstlight_import_findings
             if findings:
@@ -143,22 +152,25 @@ def render_firstlight() -> None:
                         st.caption(f"Rule: {finding['rule_id']} · Severity: {finding['severity']} · Confidence: {finding['confidence']} · Evidence: {', '.join(finding['evidence_ids'])}")
             else:
                 st.info("No configured rule matched this artifact. This does not establish that the events are benign.")
-            import_report = {
-                "provenance": {key: imported[key] for key in ("filename", "format", "artifact_sha256", "artifact_bytes", "record_count", "rejected_count")},
-                "events": imported["events"],
-                "normalized_record_sha256": {event["event_id"]: sha256_record(event) for event in imported["events"]},
-                "findings": findings,
-                "errors": imported["errors"],
-                "warnings": imported["warnings"],
-                "limitations": "Deterministic prototype rules only; no claim of completeness or proof of malicious activity.",
-            }
-            st.download_button(
-                "Export imported evidence and findings (JSON)",
-                data=json.dumps(import_report, indent=2, ensure_ascii=False),
-                file_name="firstlight-import-report.json",
-                mime="application/json",
-                key="fl_import_export",
-            )
+            if st.button("Prepare import report", key="fl_prepare_import_report"):
+                import_report = {
+                    "provenance": {key: imported[key] for key in ("filename", "format", "artifact_sha256", "artifact_bytes", "record_count", "rejected_count")},
+                    "events": imported["events"],
+                    "normalized_record_sha256": {event["event_id"]: sha256_record(event) for event in imported["events"]},
+                    "findings": findings,
+                    "errors": imported["errors"],
+                    "warnings": imported["warnings"],
+                    "limitations": "Deterministic prototype rules only; no claim of completeness or proof of malicious activity.",
+                }
+                st.session_state.firstlight_import_report_json = json.dumps(import_report, indent=2, ensure_ascii=False)
+            if st.session_state.firstlight_import_report_json:
+                st.download_button(
+                    "Download prepared import report (JSON)",
+                    data=st.session_state.firstlight_import_report_json,
+                    file_name="firstlight-import-report.json",
+                    mime="application/json",
+                    key="fl_import_export",
+                )
 
 
     case = st.session_state.firstlight_case
