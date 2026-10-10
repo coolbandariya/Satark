@@ -65,9 +65,9 @@ class UIContractTests(unittest.TestCase):
         self.assertIn("evidence-review", CSS)
 
     def test_home_prioritizes_the_core_product_without_vanity_metrics(self):
-        self.assertIn("Know what you", HOME)
+        self.assertIn("Pause the panic.", HOME)
         self.assertIn("guided sample report", HOME)
-        self.assertIn("observable signals", HOME)
+        self.assertIn("OBSERVABLE SIGNALS", HOME)
         self.assertNotIn("home-stats", HOME)
 
     def test_native_streamlit_theme_matches_custom_design_system(self):
