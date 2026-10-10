@@ -158,6 +158,13 @@ def append_audit(entries: list[dict[str, Any]], action: str, actor: str, payload
 
 def investigate_case(case: dict[str, Any], evidence: list[dict[str, Any]]) -> dict[str, Any]:
     """Deterministic agent workflow; every finding cites evidence IDs."""
+    if not isinstance(case, dict):
+        raise ValueError("Case must be an object.")
+    case_id = case.get("case_id")
+    if not isinstance(case_id, str) or not case_id.strip():
+        raise ValueError("Case must include a non-empty case_id.")
+    if not isinstance(evidence, list):
+        raise ValueError("Evidence must be a list.")
     evidence = [item for item in evidence if isinstance(item, dict)]
     by_id = {
         str(item.get("evidence_id")): item
@@ -206,7 +213,7 @@ def investigate_case(case: dict[str, Any], evidence: list[dict[str, Any]]) -> di
     timeline.sort(key=lambda event: _timeline_sort_key(event["timestamp"]))
 
     return {
-        "case_id": case["case_id"],
+        "case_id": case_id,
         "orchestrator": {"status": "completed", "strategy": "Preserve → detect → correlate → verify → propose response"},
         "agents": [
             {"name": "Evidence Agent", "status": "completed", "summary": f"Reviewed {len(evidence)} evidence records; {len(valid_ids)} passed integrity verification."},
