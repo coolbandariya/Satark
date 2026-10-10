@@ -35,6 +35,21 @@ class FirstlightEngineTests(unittest.TestCase):
         self.assertFalse(result["valid"])
         self.assertFalse(verify_evidence(None)["valid"])
 
+    def test_investigate_case_rejects_malformed_case_and_evidence_container(self):
+        for malformed_case in (None, [], {}, {"case_id": ""}, {"case_id": None}):
+            with self.subTest(case=malformed_case):
+                with self.assertRaises(ValueError):
+                    investigate_case(malformed_case, self.evidence)
+        for malformed_evidence in (None, {}, "not-a-list"):
+            with self.subTest(evidence=malformed_evidence):
+                with self.assertRaises(ValueError):
+                    investigate_case(self.case, malformed_evidence)
+
+    def test_investigate_case_ignores_malformed_items_inside_evidence_list(self):
+        result = investigate_case(self.case, [None, "bad-record", *self.evidence])
+        self.assertEqual(result["case_id"], self.case["case_id"])
+        self.assertTrue(result["timeline"])
+
     def test_findings_reference_evidence(self):
         result = investigate_case(self.case, self.evidence)
         self.assertGreaterEqual(len(result["findings"]), 3)
