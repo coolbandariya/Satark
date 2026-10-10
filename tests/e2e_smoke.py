@@ -79,6 +79,7 @@ def main():
                 # The offline sample must open without a provider key and expose
                 # the evidence ledger plus the deterministic coverage check.
                 page.get_by_role("button",name="Open the guided sample report").click()
+                page.get_by_text("Investigation workflow").wait_for(timeout=30_000)
                 page.get_by_text("Evidence ledger").wait_for(timeout=30_000)
                 page.get_by_text("INDEPENDENT COVERAGE CHECK").wait_for(timeout=30_000)
 
@@ -94,6 +95,7 @@ def main():
                     pdf_page.extract_text() or ""
                     for pdf_page in PdfReader(BytesIO(downloaded_pdf)).pages
                 )
+                assert "Investigation Workflow" in pdf_text, "PDF is missing the investigation workflow"
                 assert "Evidence Coverage Review" in pdf_text, "PDF is missing evidence coverage review"
                 assert "Rule-Based Evidence Ledger" in pdf_text, "PDF is missing the evidence ledger"
                 page.screenshot(path=str(ARTIFACTS / f"{name}-pages.png"),full_page=True)
