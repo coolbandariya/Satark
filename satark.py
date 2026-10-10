@@ -1230,13 +1230,47 @@ elif st.session_state.page == "Analyze":
 
 
                 # ==================================================
+                # COLLECT INDEPENDENT EVIDENCE BEFORE AI INTERPRETATION
+                # ==================================================
+
+                # These local observations are extracted before the model call.
+                # They are supplied as context, then retained separately so the
+                # report can distinguish observed signals from generated claims.
+                if mode in {"Text", "URL", "PDF", "Video"}:
+                    evidence_source = (
+                        f"Submitted URL: {content}\n\nFetched page text:\n{prepared}"
+                        if mode == "URL"
+                        else prepared
+                    )
+                    deterministic_evidence = extract_deterministic_evidence(
+                        evidence_source
+                    )
+                else:
+                    # Image/QR workflows use vision analysis; do not imply that
+                    # text-only local rules independently verified visual claims.
+                    deterministic_evidence = []
+
+                evidence_context = json.dumps(
+                    deterministic_evidence,
+                    ensure_ascii=False,
+                    separators=(",", ":"),
+                )
+
+                # ==================================================
                 # BUILD PROMPT
                 # ==================================================
 
                 prompt = (
                     f"User profile: {role}\n"
                     f"Scanner mode: {mode}\n\n"
-                    f"{prepared}"
+                    f"Submitted content and extracted content:\n{prepared}\n\n"
+                    "Independent local rule observations (JSON; observations, not verdicts):\n"
+                    f"{evidence_context}\n\n"
+                    "Use these observations as a separate evidence source. Do not claim that "
+                    "an observation proves fraud. Do not invent corroboration when the list is "
+                    "empty. Clearly distinguish direct observations, inference, and unknowns. "
+                    "For visual scans, reason only from the supplied image(s) and state what "
+                    "cannot be verified from the image alone."
                 )
 
 
@@ -1253,21 +1287,9 @@ elif st.session_state.page == "Analyze":
                     available
                 )
 
-                # Keep deterministic observations separate from AI interpretation.
-                # Image/QR workflows rely on vision analysis and do not have extracted
-                # source text here, so do not manufacture a text evidence ledger.
+                # Preserve the independent evidence and scanner type in the report.
                 result["analysis_mode"] = mode
-                if mode in {"Text", "URL", "PDF", "Video"}:
-                    evidence_source = (
-                        f"Submitted URL: {content}\n\nFetched page text:\n{prepared}"
-                        if mode == "URL"
-                        else prepared
-                    )
-                    result["deterministic_evidence"] = extract_deterministic_evidence(
-                        evidence_source
-                    )
-                else:
-                    result["deterministic_evidence"] = []
+                result["deterministic_evidence"] = deterministic_evidence
 
 
             # ======================================================
