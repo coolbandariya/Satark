@@ -82,7 +82,7 @@ def main():
                 assert_no_overlap(page, ".capability-card", f"{name}-capability-card")
                 assert_no_overlap(page, ".ih-method-step", f"{name}-method-step")
                 assert page.get_by_role("button",name="Select Text").is_visible()
-                page.get_by_role("button",name="Select Text").click()
+                page.get_by_role("button", name="Select Text").last.click()
                 page.get_by_text("Security Analysis").wait_for(timeout=30_000)
                 page.get_by_text("Messages & text").wait_for(timeout=30_000)
                 page.get_by_text("Ready for input").wait_for(timeout=30_000)
@@ -103,7 +103,7 @@ def main():
                     page.get_by_text(marker).wait_for(timeout=30_000)
                 # Restore Text so the following navigation/sample checks start
                 # from a deterministic state.
-                page.get_by_role("button", name="Select Text").click()
+                page.get_by_role("button", name="Select Text").last.click()
                 page.get_by_text("SELECTED WORKFLOW · TEXT").wait_for(timeout=30_000)
 
                 # Exercise every top-level navigation surface without requiring
