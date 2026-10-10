@@ -11,15 +11,15 @@ ARTIFACTS.mkdir(parents=True,exist_ok=True)
 def assert_layout(page, name):
     page.wait_for_timeout(1500)
     body=page.locator("body").inner_text()
-    assert "Make uncertainty visible." in body, f"{name}: home copy missing"
+    assert "Know what you're looking at." in body, f"{name}: home copy missing"
     metrics=page.evaluate("""() => ({
         viewport: window.innerWidth,
         scrollWidth: document.documentElement.scrollWidth,
-        key: [...document.querySelectorAll('.hero,.home-grid,.st-key-home-actions,.home-how-title')].map(el => {
+        key: [...document.querySelectorAll('.workspace-hero,.workspace-capabilities,.st-key-home-actions,.workspace-method')].map(el => {
             const r=el.getBoundingClientRect();
             return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};
         }),
-        workflowSteps: document.querySelectorAll(".workflow-step").length,
+        workflowSteps: document.querySelectorAll(".method-step").length,
         scanners: document.querySelectorAll(".scanner").length
     })""")
     assert metrics["scrollWidth"] <= metrics["viewport"] + 2, f"{name}: horizontal overflow {metrics}"
@@ -54,8 +54,8 @@ def main():
                 page.get_by_role("button",name="Start an investigation →").click()
                 page.get_by_text("What do you want to check?").wait_for(timeout=30_000)
                 assert_no_overlap(page, ".scanner", f"{name}-scanner")
-                assert_no_overlap(page, ".home-card", f"{name}-home-card")
-                assert_no_overlap(page, ".workflow-step", f"{name}-workflow-step")
+                assert_no_overlap(page, ".capability-card", f"{name}-capability-card")
+                assert_no_overlap(page, ".method-step", f"{name}-method-step")
                 assert page.get_by_role("button",name="Select Text").is_visible()
                 page.get_by_role("button",name="Select Text").click()
                 page.get_by_text("Security Analysis").wait_for(timeout=30_000)
@@ -63,14 +63,18 @@ def main():
                 # Exercise every top-level navigation surface without requiring
                 # an external provider key.
                 for label, marker in (
-                    ("History", "Analysis history"),
-                    ("Scam Challenge", "Scam Challenge"),
-                    ("Academy", "SATARK Academy"),
-                    ("Classroom", "Classroom Mode"),
+                    ("Session history", "Analysis history"),
+                    ("Overview", "Know what you're looking at."),
+                    ("Investigate", "What do you want to check?"),
                 ):
                     page.locator('[data-testid="stSidebar"] button').filter(has_text=label).click()
                     page.get_by_text(marker).wait_for(timeout=30_000)
 
+                # The offline sample must open without a provider key and expose
+                # the evidence ledger plus the deterministic coverage check.
+                page.get_by_role("button",name="Open the guided sample report").click()
+                page.get_by_text("Evidence ledger").wait_for(timeout=30_000)
+                page.get_by_text("INDEPENDENT COVERAGE CHECK").wait_for(timeout=30_000)
                 page.screenshot(path=str(ARTIFACTS / f"{name}-pages.png"),full_page=True)
             else:
                 # Exercise the main scan workflow on a narrow viewport too.
