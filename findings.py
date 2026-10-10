@@ -12,8 +12,13 @@ _SEVERITY = {
 }
 _NEGATORS = re.compile(
     r"(?:\bnot\s+considered|\bnot\s+classified\s+as|"
-    r"\bnever\s+considered|\bnot|\bno|\bnever|\bisn['’]?t|\bis\s+not)"
+    r"\bnever\s+considered|\bno\s+(?:evidence|indication|signs?|indicators?)"
+    r"(?:\s+of)?|\bwithout|\bnot|\bno|\bnever|\bisn['’]?t|\bis\s+not)"
     r"\s+(?:(?:a|an|the)\s+)?$"
+)
+_LABEL_NEGATION_AFTER = re.compile(
+    r"^\s*(?:risk\s+)?(?:was\s+)?(?:not\s+(?:detected|present|confirmed|found)|"
+    r"absent|ruled\s+out)\b"
 )
 _LABELS = (
     ("critical", re.compile(r"\b(?:critical|severe)\b")),
@@ -26,8 +31,9 @@ _LABELS = (
 def _has_unnegated_label(text, pattern):
     """Match a severity label only when it is not directly negated."""
     for match in pattern.finditer(text):
-        prefix = text[max(0, match.start() - 32):match.start()]
-        if not _NEGATORS.search(prefix):
+        prefix = text[max(0, match.start() - 64):match.start()]
+        suffix = text[match.end():match.end() + 40]
+        if not _NEGATORS.search(prefix) and not _LABEL_NEGATION_AFTER.search(suffix):
             return True
     return False
 
