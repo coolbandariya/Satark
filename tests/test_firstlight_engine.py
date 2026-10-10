@@ -74,6 +74,20 @@ class FirstlightEngineTests(unittest.TestCase):
         chain[0]["payload"]["case"] = "altered"
         self.assertFalse(verify_audit_chain(chain))
 
+    def test_audit_append_rejects_corrupted_chain_and_invalid_inputs(self):
+        chain = append_audit([], "created", "tester", {"case": "demo"})
+        corrupted = [dict(chain[0], entry_hash="tampered")]
+        for entries, action, actor, payload in (
+            (corrupted, "next", "tester", {}),
+            (None, "next", "tester", {}),
+            ([], "", "tester", {}),
+            ([], "next", "", {}),
+            ([], "next", "tester", []),
+        ):
+            with self.subTest(entries=entries, action=action, actor=actor, payload=payload):
+                with self.assertRaises(ValueError):
+                    append_audit(entries, action, actor, payload)
+
     def test_response_is_simulated_and_requires_explicit_approval(self):
         result = investigate_case(self.case, self.evidence)
         proposals, rejected = apply_simulated_response(result["response_proposals"], "ACT-001", False, "reviewer")
