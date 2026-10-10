@@ -36,15 +36,14 @@ User input
 The URL scanner can cause the application server to make outbound requests, so it is treated as an SSRF boundary. The application:
 
 - permits only HTTP(S)
-- rejects URL credentials
-- rejects localhost names
-- resolves hostnames and requires every resolved address to be globally routable
-- validates redirects individually
-- limits redirect count
-- limits response bytes
-- validates the final URL again
+- rejects URL credentials and local hostnames
+- resolves hostnames and requires every answer to be globally routable
+- connects to an IP address from that validated resolution rather than letting the HTTP client resolve the hostname again
+- preserves the original hostname for HTTPS certificate validation and SNI
+- validates every redirect independently, limits redirect count, and blocks HTTPS-to-HTTP downgrade redirects
+- limits response bytes and rejects unsupported content types
 
-This does not eliminate DNS-rebinding or infrastructure-level egress risk. A production deployment should use network-level controls and, for high-assurance environments, an HTTP client that connects to a validated destination address.
+The DNS-validation-to-connection gap is mitigated by pinning the TCP connection to the selected validated IP. This is not a substitute for infrastructure egress controls: deploy with network-level restrictions that prevent access to cloud metadata services and internal networks, and retest the behavior in the actual hosting environment.
 
 ## AI threat model
 
