@@ -425,7 +425,7 @@ def render_result(result):
 
     with st.container(border=True, key="result_report"):
         st.markdown(
-            '<div class="result-head">🛡️ SATARK Security Report</div>'
+            '<div class="result-head">SATARK <span class="result-head-divider">/</span> Investigation report</div>'
             '<div class="eyebrow">Evidence-first AI assessment • advisory, not a guarantee</div>',
             unsafe_allow_html=True,
         )
@@ -451,7 +451,7 @@ def render_result(result):
             )
         with d:
             st.markdown(
-                f'<div class="metric"><div class="metric-label">Model confidence</div>'
+                f'<div class="metric"><div class="metric-label">Model-reported confidence</div>'
                 f'<div class="metric-value {conf_css}">{confidence:.2f}%</div></div>',
                 unsafe_allow_html=True,
             )
@@ -463,8 +463,8 @@ def render_result(result):
             unsafe_allow_html=True,
         )
         st.caption(
-            "The risk score is a heuristic summary, not a probability. "
-            "A low score or missing signal does not guarantee that content is safe."
+            "Risk is a heuristic summary, not a probability. Model-reported confidence is not "
+            "independently calibrated. A low score or missing signal does not guarantee safety."
         )
 
         if confidence < 50:
@@ -509,19 +509,21 @@ def render_result(result):
             for item in recommendation_values
         ) or '<div class="action-item">Review the content manually before acting.</div>'
 
+        # Show the observable evidence before model interpretation. This is the
+        # defining SATARK workflow: evidence first, generated explanation second.
+        render_evidence_ledger(result.get("deterministic_evidence", []), result.get("analysis_mode", ""))
+
         left, right = st.columns(2)
         with left:
             st.markdown(
-                f'<div class="evidence"><strong>🤖 AI-reported indicators</strong>{evidence_items}</div>',
+                f'<div class="evidence"><strong>AI interpretation</strong>{evidence_items}</div>',
                 unsafe_allow_html=True,
             )
         with right:
             st.markdown(
-                f'<div class="evidence"><strong>🧭 What to do now</strong>{action_items}</div>',
+                f'<div class="evidence"><strong>Recommended next steps</strong>{action_items}</div>',
                 unsafe_allow_html=True,
             )
-
-        render_evidence_ledger(result.get("deterministic_evidence", []), result.get("analysis_mode", ""))
         render_threat_analysis(result, THREAT_CHECKS)
         render_verification_sources(result, OFFICIAL_VERIFICATION_SOURCES)
 
