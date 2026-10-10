@@ -1034,3 +1034,22 @@ input:focus-visible,textarea:focus-visible{
   .selected-workflow-state{grid-column:2;justify-self:start}
 }
 
+
+
+/* FIRSTLIGHT experience layer — motion is purposeful, quiet and accessible. */
+:root{--fl-ink:#eef4ff;--fl-muted:#9baac0;--fl-line:rgba(158,184,220,.16);--fl-blue:#8bb8ff;--fl-mint:#7ee5c1}
+@keyframes fl-enter{from{opacity:0;transform:translate3d(0,9px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+.workspace-hero,.workspace-preview,.workspace-method,.workspace-capabilities,.workspace-disclaimer,.home-intro--editorial{animation:fl-enter .48s cubic-bezier(.2,.7,.25,1) both}
+.workspace-preview{animation-delay:70ms}.workspace-method{animation-delay:100ms}.workspace-capabilities{animation-delay:130ms}
+.stApp [data-testid="stVerticalBlockBorderWrapper"]{border-color:var(--fl-line)!important;border-radius:16px!important;transition:border-color .2s ease,box-shadow .2s ease,background-color .2s ease}
+.stApp [data-testid="stVerticalBlockBorderWrapper"]:hover{border-color:rgba(139,184,255,.28)!important}
+.stApp [data-testid="stButton"]>button,.stApp [data-testid="stDownloadButton"]>button{transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease,background-color .16s ease}
+.stApp [data-testid="stButton"]>button:focus-visible,.stApp [data-testid="stDownloadButton"]>button:focus-visible,.stApp input:focus-visible,.stApp textarea:focus-visible,.stApp [role="combobox"]:focus-visible{outline:2px solid var(--fl-blue)!important;outline-offset:3px!important}
+.stApp [data-testid="stButton"]>button:hover,.stApp [data-testid="stDownloadButton"]>button:hover{transform:translateY(-1px)}
+.stApp [data-testid="stMetric"]{padding:.8rem .9rem;border:1px solid var(--fl-line);border-radius:14px;background:linear-gradient(145deg,rgba(139,184,255,.055),rgba(255,255,255,.012))}
+.stApp [data-testid="stMetricLabel"]{color:var(--fl-muted)!important}.stApp [data-testid="stMetricValue"]{letter-spacing:-.045em}
+.stApp [data-testid="stDataFrame"]{border:1px solid var(--fl-line);border-radius:12px;overflow:hidden}
+.stApp [data-testid="stFileUploader"] section{border-color:rgba(139,184,255,.28)!important;border-radius:14px!important;background:linear-gradient(130deg,rgba(139,184,255,.045),rgba(126,229,193,.025))!important}
+.stApp [data-testid="stAlert"]{border-radius:12px}.stApp hr{border-color:var(--fl-line)!important}
+@media(max-width:760px){.block-container{padding-top:.65rem!important;padding-left:.8rem!important;padding-right:.8rem!important}.stApp [data-testid="stMetric"]{padding:.65rem .7rem}.stApp [data-testid="stMetricValue"]{font-size:1.25rem!important}.stApp [data-testid="stDataFrame"]{max-width:100%;overflow-x:auto}.workspace-hero,.workspace-preview,.workspace-method,.workspace-capabilities,.workspace-disclaimer,.home-intro--editorial{animation-duration:.28s}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
