@@ -225,14 +225,34 @@ def investigate_case(case: dict[str, Any], evidence: list[dict[str, Any]]) -> di
 
 def apply_simulated_response(proposals: list[dict[str, Any]], action_id: str, approved: bool, approver: str) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     """Enforce explicit approval and simulate, never execute real response actions."""
+    if not isinstance(proposals, list):
+        raise ValueError("Response proposals must be a list.")
     updated = deepcopy(proposals)
-    target = next((item for item in updated if item["action_id"] == action_id), None)
+    target = next(
+        (
+            item for item in updated
+            if isinstance(item, dict) and item.get("action_id") == action_id
+        ),
+        None,
+    )
     if target is None:
         raise ValueError("Unknown response action.")
     # Require the actual boolean True. Truthy strings/integers from untrusted
     # callers must never cross the simulated approval gate.
+    safe_approver = str(approver or "unknown")[:128]
     if approved is not True:
         target["status"] = "rejected"
-        return updated, {"action_id": action_id, "status": "rejected", "approver": approver, "simulated": True}
+        return updated, {
+            "action_id": action_id,
+            "status": "rejected",
+            "approver": safe_approver,
+            "simulated": True,
+        }
     target["status"] = "approved_simulated"
-    return updated, {"action_id": action_id, "status": "simulated_success", "approver": approver, "simulated": True, "message": "No real host, account, network or process was changed."}
+    return updated, {
+        "action_id": action_id,
+        "status": "simulated_success",
+        "approver": safe_approver,
+        "simulated": True,
+        "message": "No real host, account, network or process was changed.",
+    }
