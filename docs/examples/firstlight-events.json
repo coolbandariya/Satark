@@ -1,0 +1,60 @@
+[
+  {
+    "event_id": "SAMPLE-001",
+    "timestamp": "2026-10-10T09:00:00Z",
+    "source": "identity",
+    "kind": "authentication",
+    "summary": "Successful login from a new source",
+    "details": {
+      "account": "analyst@example.test",
+      "result": "success",
+      "novel_source": true
+    }
+  },
+  {
+    "event_id": "SAMPLE-002",
+    "timestamp": "2026-10-10T09:04:00Z",
+    "source": "endpoint",
+    "kind": "process",
+    "summary": "Script interpreter launched by an email client",
+    "details": {
+      "host": "WS-DEMO-01",
+      "process": "powershell.exe",
+      "parent": "outlook.exe"
+    }
+  },
+  {
+    "event_id": "SAMPLE-003",
+    "timestamp": "2026-10-10T09:12:00Z",
+    "source": "network",
+    "kind": "connection",
+    "summary": "Endpoint made an outbound connection",
+    "details": {
+      "host": "WS-DEMO-01",
+      "destination": "example.invalid",
+      "port": 443
+    }
+  },
+  {
+    "event_id": "SAMPLE-004",
+    "timestamp": "2026-10-10T09:15:00Z",
+    "source": "filesystem",
+    "kind": "file",
+    "summary": "Archive created in temporary directory",
+    "details": {
+      "host": "WS-DEMO-01",
+      "path": "C:/Temp/demo-archive.zip"
+    }
+  },
+  {
+    "event_id": "SAMPLE-005",
+    "timestamp": "2026-10-10T09:18:00Z",
+    "source": "identity",
+    "kind": "session",
+    "summary": "New account session issued",
+    "details": {
+      "account": "analyst@example.test",
+      "session": "SESSION-DEMO-2"
+    }
+  }
+]
