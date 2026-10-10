@@ -282,40 +282,40 @@ def render_firstlight() -> None:
         st.markdown("### Human approval gate")
         st.write("Every action below is simulated. Approval is checked server-side in the workflow function; no real system is touched.")
         if not investigation:
-        st.info("Run the investigation first to load response proposals.")
+            st.info("Run the investigation first to load response proposals.")
         else:
-        for proposal in investigation["response_proposals"]:
-            with st.container(border=True):
-                st.markdown(f"**{proposal['action_id']} · {proposal['title']}**")
-                st.write(proposal["impact"])
-                st.caption(f"Risk: {proposal['risk']} · Status: {proposal['status']}")
-                approver = st.text_input("Approver / reviewer", value="Demo analyst", key=f"fl_approver_{proposal['action_id']}")
-                approve_col, reject_col = st.columns(2)
-                with approve_col:
-                    if st.button("Approve & simulate", key=f"fl_approve_{proposal['action_id']}", type="primary", use_container_width=True):
-                        updated, log = apply_simulated_response(investigation["response_proposals"], proposal["action_id"], True, approver.strip() or "Unnamed reviewer")
-                        investigation["response_proposals"] = updated
-                        st.session_state.firstlight_action_log.append(log)
-                        st.session_state.firstlight_audit = append_audit(st.session_state.firstlight_audit, "response_approved_and_simulated", approver.strip() or "Unnamed reviewer", log)
-                        st.rerun()
-                with reject_col:
-                    if st.button("Reject action", key=f"fl_reject_{proposal['action_id']}", use_container_width=True):
-                        updated, log = apply_simulated_response(investigation["response_proposals"], proposal["action_id"], False, approver.strip() or "Unnamed reviewer")
-                        investigation["response_proposals"] = updated
-                        st.session_state.firstlight_action_log.append(log)
-                        st.session_state.firstlight_audit = append_audit(st.session_state.firstlight_audit, "response_rejected", approver.strip() or "Unnamed reviewer", log)
-                        st.rerun()
-        if st.session_state.firstlight_action_log:
-            st.markdown("#### Response action log")
-            st.dataframe(st.session_state.firstlight_action_log, use_container_width=True, hide_index=True)
+            for proposal in investigation["response_proposals"]:
+                with st.container(border=True):
+                    st.markdown(f"**{proposal['action_id']} · {proposal['title']}**")
+                    st.write(proposal["impact"])
+                    st.caption(f"Risk: {proposal['risk']} · Status: {proposal['status']}")
+                    approver = st.text_input("Approver / reviewer", value="Demo analyst", key=f"fl_approver_{proposal['action_id']}")
+                    approve_col, reject_col = st.columns(2)
+                    with approve_col:
+                        if st.button("Approve & simulate", key=f"fl_approve_{proposal['action_id']}", type="primary", use_container_width=True):
+                            updated, log = apply_simulated_response(investigation["response_proposals"], proposal["action_id"], True, approver.strip() or "Unnamed reviewer")
+                            investigation["response_proposals"] = updated
+                            st.session_state.firstlight_action_log.append(log)
+                            st.session_state.firstlight_audit = append_audit(st.session_state.firstlight_audit, "response_approved_and_simulated", approver.strip() or "Unnamed reviewer", log)
+                            st.rerun()
+                    with reject_col:
+                        if st.button("Reject action", key=f"fl_reject_{proposal['action_id']}", use_container_width=True):
+                            updated, log = apply_simulated_response(investigation["response_proposals"], proposal["action_id"], False, approver.strip() or "Unnamed reviewer")
+                            investigation["response_proposals"] = updated
+                            st.session_state.firstlight_action_log.append(log)
+                            st.session_state.firstlight_audit = append_audit(st.session_state.firstlight_audit, "response_rejected", approver.strip() or "Unnamed reviewer", log)
+                            st.rerun()
+            if st.session_state.firstlight_action_log:
+                st.markdown("#### Response action log")
+                st.dataframe(st.session_state.firstlight_action_log, use_container_width=True, hide_index=True)
 
 
     if active_workspace == "Audit Trail":
         st.markdown("### Hash-chained audit trail")
         chain_valid = verify_audit_chain(st.session_state.firstlight_audit)
         if chain_valid:
-        st.success("Audit chain verifies against its first entry.")
+            st.success("Audit chain verifies against its first entry.")
         else:
-        st.error("Audit chain verification failed. The chain may have been altered.")
+            st.error("Audit chain verification failed. The chain may have been altered.")
         st.dataframe(st.session_state.firstlight_audit, use_container_width=True, hide_index=True)
         st.caption("This in-process demo demonstrates tamper-evident chaining, not durable or externally anchored storage. Production deployment requires protected persistence and access controls.")
