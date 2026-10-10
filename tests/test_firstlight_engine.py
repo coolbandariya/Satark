@@ -42,6 +42,15 @@ class FirstlightEngineTests(unittest.TestCase):
             self.assertTrue(set(finding["evidence_ids"]).issubset(known))
             self.assertIn("explanation", finding)
 
+    def test_timeline_sorts_by_instant_across_timezones(self):
+        events = [dict(event) for event in self.case["events"]]
+        events[0]["timestamp"] = "2026-10-10T09:00:00+02:00"
+        events[1]["timestamp"] = "2026-10-10T08:00:00Z"
+        evidence = [seal_evidence(event) for event in events]
+        timeline = investigate_case(self.case, evidence)["timeline"]
+        self.assertEqual(timeline[0]["event_id"], "EV-001")
+        self.assertEqual(timeline[1]["event_id"], "EV-002")
+
     def test_audit_chain_detects_modification(self):
         chain = append_audit([], "created", "tester", {"case": "demo"})
         chain = append_audit(chain, "collected", "tester", {"evidence": "EV-001"})
