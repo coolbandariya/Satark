@@ -145,7 +145,7 @@ Streamlit will print a local address in the terminal. Open it in your browser.
 
 ## Configure Groq
 
-Set `GROQ_API_KEY` in your environment before starting the app.
+Set `GROQ_API_KEY` in your environment before starting the app. On Streamlit Community Cloud, add it under **App settings → Secrets** as `GROQ_API_KEY = "your-key"`; SATARK reads Streamlit-managed secrets first and falls back to the environment variable.
 
 **Windows PowerShell**
 ```powershell
@@ -250,6 +250,7 @@ See [Analysis limitations](docs/ANALYSIS_LIMITATIONS.md), the [Security policy](
 - [x] Exercise all six scanner-selection states and contextual guidance in the browser smoke suite without requiring provider credentials.
 - [ ] Add deployment-specific live tests for provider-backed analysis and file-processing workflows; these require configured secrets and a target-host environment.
 - [x] Hide hosted exception details and align the video byte limit with the 50 MB Streamlit upload cap.
+- [x] Read `GROQ_API_KEY` from Streamlit Community Cloud secrets as well as environment variables.
 - [x] Add a release-readiness runbook with explicit go/no-go criteria and deployment verification steps.
 
 ## Contributing
