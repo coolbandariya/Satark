@@ -15,7 +15,7 @@ from typing import Any
 
 
 def _canonical(value: Any) -> bytes:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False).encode("utf-8")
 
 
 def sha256_record(record: dict[str, Any]) -> str:
@@ -72,7 +72,10 @@ def seal_evidence(event: dict[str, Any]) -> dict[str, Any]:
 
 def verify_evidence(item: dict[str, Any]) -> dict[str, Any]:
     record = item.get("record", {})
-    actual = sha256_record(record if isinstance(record, dict) else {})
+    try:
+        actual = sha256_record(record)
+    except (TypeError, ValueError, RecursionError):
+        actual = ""
     expected = str(item.get("sha256", ""))
     evidence_id = item.get("evidence_id", "unknown")
     # The envelope ID is used to join findings and timeline entries. Bind it
@@ -80,7 +83,7 @@ def verify_evidence(item: dict[str, Any]) -> dict[str, Any]:
     # reference while keeping an otherwise valid record hash.
     record_id = record.get("event_id") if isinstance(record, dict) else None
     id_matches = bool(record_id) and evidence_id == record_id
-    valid = bool(expected) and actual == expected and id_matches
+    valid = bool(expected) and bool(actual) and actual == expected and id_matches
     return {
         "evidence_id": evidence_id,
         "expected_sha256": expected,
