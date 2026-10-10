@@ -76,6 +76,15 @@ class UIContractTests(unittest.TestCase):
         self.assertIn('backgroundColor = "#080d17"', config)
         self.assertIn('secondaryBackgroundColor = "#0d1523"', config)
         self.assertIn('textColor = "#edf4ff"', config)
+        self.assertIn('showErrorDetails = "none"', config)
+        self.assertIn("maxUploadSize = 50", config)
+
+    def test_video_limit_matches_host_upload_budget(self):
+        config = (ROOT / "config.py").read_text(encoding="utf-8")
+        video = (ROOT / "video_processing.py").read_text(encoding="utf-8")
+        self.assertIn("MAX_UPLOAD_SIZE_MB = 50", config)
+        self.assertIn("MAX_UPLOAD_BYTES = MAX_UPLOAD_SIZE_MB * 1024 * 1024", config)
+        self.assertIn("MAX_VIDEO_BYTES = MAX_UPLOAD_BYTES", video)
 
     def test_active_scanner_has_a_distinct_native_control_state(self):
         self.assertIn('type="primary" if active else "secondary"', APP)
