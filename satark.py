@@ -45,6 +45,7 @@ from satark_utils import safe_text, clean_json_text, normalize_check_value, chec
 from radar_background import render_radar_background
 from stepper_component import render_stepper
 from config import MAX_HISTORY_ITEMS, MAX_TEXT_INPUT_CHARS, MAX_ANALYSES_PER_MINUTE
+from rate_limiter import consume_analysis_slot
 from analysis_engine import (
     clamp_score,
     is_scam_claim,
@@ -56,8 +57,11 @@ from analysis_engine import (
     normalize_result,
 )
 from ui.home import render_home
+from ui.firstlight import render_firstlight
+from ui.loading import render_intro_loader
 from ui.navigation import render_sidebar
-from ui.results import render_threat_analysis, render_verification_sources
+from ui.results import render_threat_analysis, render_verification_sources, render_evidence_ledger, render_evidence_review, render_investigation_timeline
+from evidence_engine import extract_deterministic_evidence
 from ui.history import render_history
 from ui.learning import render_academy, render_classroom
 
@@ -198,10 +202,10 @@ from input_processing import (
 # ============================================================
 
 st.set_page_config(
-    page_title="SATARK — AI Threat Analyzer",
+    page_title="SATARK + FIRSTLIGHT — Incident Response",
     page_icon="◈",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="auto",
 )
 
 # ----------------------------- CSS ----------------------------
@@ -298,7 +302,13 @@ Not detected, Low, Medium, High.
     for model in candidates:
         try:
             response = call(model)
-            raw = response.choices[0].message.content or ""
+            choices = getattr(response, "choices", None) or []
+            if not choices:
+                raise RuntimeError("The AI provider returned no choices.")
+            message = getattr(choices[0], "message", None)
+            if message is None:
+                raise RuntimeError("The AI provider returned an incomplete response.")
+            raw = getattr(message, "content", "") or ""
 
             # Groq normally returns a string. Be defensive if an SDK version
             # exposes structured content instead.
@@ -337,7 +347,10 @@ Not detected, Low, Medium, High.
                 finally:
                     user_prompt = original_prompt
 
-                repaired = repair_response.choices[0].message.content or ""
+                repair_choices = getattr(repair_response, "choices", None) or []
+                if not repair_choices or getattr(repair_choices[0], "message", None) is None:
+                    raise RuntimeError("The AI provider returned no usable JSON repair response.")
+                repaired = getattr(repair_choices[0].message, "content", "") or ""
                 if not isinstance(repaired, str):
                     repaired = str(repaired)
                 repaired = repaired.strip()
@@ -367,8 +380,6 @@ Not detected, Low, Medium, High.
             continue
 
     detail = "Provider requests failed for the configured models. Check the server logs and provider status for diagnostics."
-    kind = "image/QR/video" if image_data_urls else "text"
-
     if image_data_urls:
         hint = (
             "\n\nThis looks like a Groq rate-limit (tokens-per-minute) issue on the free/on-demand "
@@ -399,56 +410,134 @@ def confidence_css_class(confidence):
 
 
 def render_result(result):
-    score = clamp_score(result.get("risk_score",50))
+    score = clamp_score(result.get("risk_score", 50))
     label, css = risk_label(score, result.get("threat_category", ""))
     indicators = result.get("key_indicators", [])
     recs = result.get("recommendations", [])
-    confidence = float(result.get("confidence",70.0))
+    try:
+        confidence = float(result.get("confidence", 70.0))
+        if not math.isfinite(confidence):
+            confidence = 0.0
+    except (TypeError, ValueError, OverflowError):
+        confidence = 0.0
+    confidence = max(0.0, min(100.0, confidence))
     conf_css = confidence_css_class(confidence)
-    category = html.escape(result.get("threat_category","Needs review"))
-    verdict = html.escape(result.get("verdict","Manual review recommended."))
-    pattern = html.escape(result.get("scam_pattern", category))
+    category = html.escape(safe_text(result.get("threat_category", "Needs review")))
+    verdict = html.escape(safe_text(result.get("verdict", "Manual review recommended.")))
+    pattern = html.escape(safe_text(result.get("scam_pattern", category)))
 
-    st.markdown('<div class="result">', unsafe_allow_html=True)
-    st.markdown('<div class="result-head">🛡️ SATARK Security Report</div><div class="eyebrow">Evidence-first AI assessment • advisory, not a guarantee</div>', unsafe_allow_html=True)
-    a,b,c,d = st.columns(4)
-    with a: st.markdown(f'<div class="metric"><div class="metric-label">Threat level</div><div class="metric-value {css}">{label}</div></div>',unsafe_allow_html=True)
-    with b: st.markdown(f'<div class="metric"><div class="metric-label">Risk score</div><div class="metric-value">{score}/100</div></div>',unsafe_allow_html=True)
-    with c: st.markdown(f'<div class="metric"><div class="metric-label">Pattern</div><div class="metric-value" style="font-size:1rem">{pattern}</div></div>',unsafe_allow_html=True)
-    with d: st.markdown(f'<div class="metric"><div class="metric-label">AI confidence</div><div class="metric-value {conf_css}">{confidence:.2f}%</div></div>',unsafe_allow_html=True)
-    st.markdown(f'<div class="bar"><div style="width:{score}%"></div></div>',unsafe_allow_html=True)
-    if confidence < 50:
-        st.info("ℹ️ Confidence is low — the evidence found was limited or ambiguous. Treat this result as a starting point, not a final answer, and verify manually.")
-    st.markdown(f'<div class="verdict"><strong>Final verdict</strong><br>{verdict}</div>',unsafe_allow_html=True)
+    with st.container(border=True, key="result_report"):
+        st.markdown(
+            '<div class="result-head">SATARK <span class="result-head-divider">/</span> Investigation report</div>'
+            '<div class="eyebrow">Evidence-first AI assessment • advisory, not a guarantee</div>',
+            unsafe_allow_html=True,
+        )
 
-    if result.get("summary"):
-        st.markdown("### 🔎 What SATARK found")
-        st.markdown(f'<p style="color:#e4e4ea;line-height:1.8">{html.escape(result["summary"])}</p>', unsafe_allow_html=True)
+        a, b, c, d = st.columns(4)
+        with a:
+            st.markdown(
+                f'<div class="metric"><div class="metric-label">Assessment signal</div>'
+                f'<div class="metric-value {css}">{label}</div></div>',
+                unsafe_allow_html=True,
+            )
+        with b:
+            st.markdown(
+                f'<div class="metric"><div class="metric-label">Risk score · heuristic</div>'
+                f'<div class="metric-value">{score}/100</div></div>',
+                unsafe_allow_html=True,
+            )
+        with c:
+            st.markdown(
+                f'<div class="metric"><div class="metric-label">Pattern</div>'
+                f'<div class="metric-value metric-value-compact">{pattern}</div></div>',
+                unsafe_allow_html=True,
+            )
+        with d:
+            st.markdown(
+                f'<div class="metric"><div class="metric-label">Model-reported confidence</div>'
+                f'<div class="metric-value {conf_css}">{confidence:.2f}%</div></div>',
+                unsafe_allow_html=True,
+            )
 
-    left,right = st.columns(2)
-    with left:
-        st.markdown('<div class="evidence"><strong>🧩 Evidence detected</strong>',unsafe_allow_html=True)
-        if indicators:
-            for item in indicators:
-                st.markdown(f'<div class="evidence-item">⚠️ {html.escape(item)}</div>',unsafe_allow_html=True)
+        st.markdown(
+            f'<div class="bar" role="progressbar" aria-label="Risk score" '
+            f'aria-valuemin="0" aria-valuemax="100" aria-valuenow="{score}">'
+            f'<div style="width:{score}%"></div></div>',
+            unsafe_allow_html=True,
+        )
+        st.caption(
+            "Risk is a heuristic summary, not a probability. Model-reported confidence is not "
+            "independently calibrated. A low score or missing signal does not guarantee safety."
+        )
+
+        if confidence < 50:
+            st.info(
+                "Confidence is low — the evidence found was limited or ambiguous. "
+                "Treat this result as a starting point, not a final answer, and verify manually."
+            )
+
+        st.markdown(
+            f'<div class="verdict"><strong>Final verdict</strong><br>{verdict}</div>',
+            unsafe_allow_html=True,
+        )
+
+        if result.get("summary"):
+            st.markdown("### 🔎 What SATARK found")
+            st.markdown(
+                f'<p class="result-summary">{html.escape(safe_text(result["summary"]))}</p>',
+                unsafe_allow_html=True,
+            )
+
+        indicator_values = []
+        if isinstance(indicators, (list, tuple)):
+            indicator_values = [safe_text(item) for item in indicators if safe_text(item)]
         else:
-            st.markdown('<div class="evidence-item">No specific indicators were returned.</div>',unsafe_allow_html=True)
-        st.markdown('</div>',unsafe_allow_html=True)
-    with right:
-        st.markdown('<div class="evidence"><strong>🧭 What to do now</strong>',unsafe_allow_html=True)
-        if recs:
-            for item in recs:
-                st.markdown(f'<div class="action-item"><span>✓</span><span>{html.escape(item)}</span></div>',unsafe_allow_html=True)
+            value = safe_text(indicators)
+            indicator_values = [value] if value else []
+
+        recommendation_values = []
+        if isinstance(recs, (list, tuple)):
+            recommendation_values = [safe_text(item) for item in recs if safe_text(item)]
         else:
-            st.markdown('<div class="action-item">Review the content manually before acting.</div>',unsafe_allow_html=True)
-        st.markdown('</div>',unsafe_allow_html=True)
-    st.markdown('</div>',unsafe_allow_html=True)
+            value = safe_text(recs)
+            recommendation_values = [value] if value else []
 
-    render_threat_analysis(result)
-    render_verification_sources(result)
+        evidence_items = "".join(
+            f'<div class="evidence-item">⚠️ {html.escape(item)}</div>'
+            for item in indicator_values
+        ) or '<div class="evidence-item">No specific indicators were returned.</div>'
 
-    conclusion = html.escape(build_final_conclusion(result))
-    st.markdown(f'<section class="report-section"><h3>💡 Final Conclusion</h3><div class="conclusion-card">{conclusion}</div></section>', unsafe_allow_html=True)
+        action_items = "".join(
+            f'<div class="action-item"><span>✓</span><span>{html.escape(item)}</span></div>'
+            for item in recommendation_values
+        ) or '<div class="action-item">Review the content manually before acting.</div>'
+
+        # Show the observable evidence before model interpretation. This is the
+        # defining SATARK workflow: evidence first, generated explanation second.
+        render_investigation_timeline(result)
+        render_evidence_ledger(result.get("deterministic_evidence", []), result.get("analysis_mode", ""))
+        render_evidence_review(result)
+
+        left, right = st.columns(2)
+        with left:
+            st.markdown(
+                f'<div class="evidence"><strong>AI interpretation</strong>{evidence_items}</div>',
+                unsafe_allow_html=True,
+            )
+        with right:
+            st.markdown(
+                f'<div class="evidence"><strong>Recommended next steps</strong>{action_items}</div>',
+                unsafe_allow_html=True,
+            )
+        render_threat_analysis(result, THREAT_CHECKS)
+        render_verification_sources(result, OFFICIAL_VERIFICATION_SOURCES)
+
+        conclusion = html.escape(build_final_conclusion(result))
+        st.markdown(
+            f'<section class="report-section"><h3>💡 Final Conclusion</h3>'
+            f'<div class="conclusion-card">{conclusion}</div></section>',
+            unsafe_allow_html=True,
+        )
 
 
 def add_history(result, mode):
@@ -483,12 +572,13 @@ def init_state():
         "mode":"Text","result":None,"history":[],"page":"Home",
         "challenge_index":0,"challenge_score":0,"challenge_answered":False,
         "available_models":set(),"text_model":None,"vision_model":None,
-        "last_input_fingerprint":"","analysis_request_id":"","demo_mode":False,"scroll_to_scanners":False,"analysis_timestamps":[],
+        "last_input_fingerprint":"","analysis_request_id":"","demo_mode":False,"scroll_to_scanners":False,
     }
     for k,v in defaults.items():
         if k not in st.session_state: st.session_state[k]=v
 init_state()
 sc_init_state()  # Scam Challenge v2 session-state defaults
+render_intro_loader()  # One-time, dismissible intro; app remains usable underneath
 
 # --------------------------- Sidebar ---------------------------
 api_key, role = render_sidebar(
@@ -499,12 +589,16 @@ api_key, role = render_sidebar(
     VISION_MODEL_PREFERENCES,
 )
 # ---------------------------- Hero -----------------------------
-st.markdown('<section class="hero"><div class="pill">AI SECURITY • EXPLAIN • LEARN • PROTECT</div><h1><span class="hero-primary">Think it’s a scam?</span><br><span class="hero-secondary">Let <span class="hero-brand">SATARK</span> check it.</span></h1><p><strong>Paste a message, inspect a link, upload a screenshot, video, or analyze a PDF.</strong><br>SATARK explains the risk in simple language and shows the evidence behind its assessment.</p></section>',unsafe_allow_html=True)
+# The Home page has its own editorial hero. Keep Analyze/History focused on the active task.
 
 # --------------------------- Pages -----------------------------
 # --------------------------- Pages -----------------------------
 
-if st.session_state.page == "Home":
+if st.session_state.page == "FIRSTLIGHT":
+    render_firstlight()
+
+
+elif st.session_state.page == "Home":
     render_home()
 
 
@@ -559,7 +653,7 @@ elif st.session_state.page == "Analyze":
     st.markdown(
         '<div class="section-title">What do you want to check?</div>'
         '<div class="section-copy">'
-        'Choose a scanner. Seven scanners cover text, links, images, documents, QR codes and video.'
+        'Choose a scanner. Six scanners cover text, links, images, documents, QR codes and video.'
         '</div>',
         unsafe_allow_html=True
     )
@@ -601,7 +695,8 @@ elif st.session_state.page == "Analyze":
                 if st.button(
                     f"Select {name}",
                     key=f"scanner_{name}",
-                    use_container_width=True
+                    use_container_width=True,
+                    type="primary" if active else "secondary",
                 ):
                     st.session_state.mode = name
                     st.session_state.result = None
@@ -705,9 +800,28 @@ elif st.session_state.page == "Analyze":
     # SECURITY ANALYSIS INPUT
     # ==========================================================
 
+    mode_details = {
+        "Text": ("💬", "Messages & text", "Inspect urgency, credential requests, impersonation cues and embedded indicators."),
+        "URL": ("↗", "Links & websites", "Review URL structure and inspect eligible public-page text using bounded fetching."),
+        "Image": ("▧", "Images & screenshots", "Review visible claims, instructions and image context without treating appearance as proof."),
+        "PDF": ("▤", "PDF documents", "Extract supported document text for review. Scanned or image-only pages may provide limited evidence."),
+        "QR": ("▦", "QR code images", "Inspect QR-related images and visible context. Do not open an unknown destination just to verify it."),
+        "Video": ("▷", "Video & clips", "Review sampled frames and, when available, a transcript. This is not exhaustive frame-by-frame forensics."),
+    }
+    mode_icon, mode_title, mode_description = mode_details.get(
+        mode, ("◈", "Investigation", "Choose a supported input to begin.")
+    )
     st.markdown(
-        f'<div class="section-title">🔎 Security Analysis</div>'
-        f'<div class="section-copy">Selected: <strong>{mode}</strong></div>',
+        '<div class="section-title">Security Analysis</div>'
+        '<div class="selected-workflow">'
+        '<div class="selected-workflow-icon">' + mode_icon + '</div>'
+        '<div class="selected-workflow-copy">'
+        '<div class="selected-workflow-kicker">SELECTED WORKFLOW · ' + html.escape(mode.upper()) + '</div>'
+        '<div class="selected-workflow-title">' + html.escape(mode_title) + '</div>'
+        '<p>' + html.escape(mode_description) + '</p>'
+        '</div>'
+        '<div class="selected-workflow-state"><span></span> Ready for input</div>'
+        '</div>',
         unsafe_allow_html=True
     )
 
@@ -744,6 +858,7 @@ elif st.session_state.page == "Analyze":
         content = st.text_input(
             "Website URL",
             placeholder="https://example.com",
+            type="url",
             key="url_input"
         )
 
@@ -782,11 +897,11 @@ elif st.session_state.page == "Analyze":
                 "m4v"
             ],
             accept_multiple_files=False,
-            max_upload_size=200,
+            max_upload_size=50,
             help=(
                 "SATARK extracts a handful of representative "
                 "frames and, when possible, transcribes the audio. "
-                "Max 200 MB."
+                "Max 50 MB."
             ),
             key="video_input"
         )
@@ -805,7 +920,7 @@ elif st.session_state.page == "Analyze":
         )
 
         if video_file is not None:
-            st.video(video_file)
+            st.video(video_file, alt="Uploaded video preview for SATARK analysis")
 
         uploaded = None
 
@@ -923,18 +1038,14 @@ elif st.session_state.page == "Analyze":
             st.stop()
 
 
-        now_monotonic = time.monotonic()
-        recent_requests = [
-            timestamp
-            for timestamp in st.session_state.get("analysis_timestamps", [])
-            if now_monotonic - timestamp < 60
-        ]
-        if len(recent_requests) >= MAX_ANALYSES_PER_MINUTE:
-            st.session_state.analysis_timestamps = recent_requests
-            st.error("SATARK has reached the session analysis limit. Please wait about a minute before trying again.")
+        allowed, retry_after = consume_analysis_slot(MAX_ANALYSES_PER_MINUTE)
+        if not allowed:
+            wait_seconds = max(1, int(retry_after + 0.999))
+            st.error(
+                "SATARK has reached the shared per-process analysis limit. "
+                f"Please wait about {wait_seconds} seconds before trying again."
+            )
             st.stop()
-        recent_requests.append(now_monotonic)
-        st.session_state.analysis_timestamps = recent_requests
 
         try:
 
@@ -1144,13 +1255,47 @@ elif st.session_state.page == "Analyze":
 
 
                 # ==================================================
+                # COLLECT INDEPENDENT EVIDENCE BEFORE AI INTERPRETATION
+                # ==================================================
+
+                # These local observations are extracted before the model call.
+                # They are supplied as context, then retained separately so the
+                # report can distinguish observed signals from generated claims.
+                if mode in {"Text", "URL", "PDF", "Video"}:
+                    evidence_source = (
+                        f"Submitted URL: {content}\n\nFetched page text:\n{prepared}"
+                        if mode == "URL"
+                        else prepared
+                    )
+                    deterministic_evidence = extract_deterministic_evidence(
+                        evidence_source
+                    )
+                else:
+                    # Image/QR workflows use vision analysis; do not imply that
+                    # text-only local rules independently verified visual claims.
+                    deterministic_evidence = []
+
+                evidence_context = json.dumps(
+                    deterministic_evidence,
+                    ensure_ascii=False,
+                    separators=(",", ":"),
+                )
+
+                # ==================================================
                 # BUILD PROMPT
                 # ==================================================
 
                 prompt = (
                     f"User profile: {role}\n"
                     f"Scanner mode: {mode}\n\n"
-                    f"{prepared}"
+                    f"Submitted content and extracted content:\n{prepared}\n\n"
+                    "Independent local rule observations (JSON; observations, not verdicts):\n"
+                    f"{evidence_context}\n\n"
+                    "Use these observations as a separate evidence source. Do not claim that "
+                    "an observation proves fraud. Do not invent corroboration when the list is "
+                    "empty. Clearly distinguish direct observations, inference, and unknowns. "
+                    "For visual scans, reason only from the supplied image(s) and state what "
+                    "cannot be verified from the image alone."
                 )
 
 
@@ -1166,6 +1311,10 @@ elif st.session_state.page == "Analyze":
                     image_data_urls,
                     available
                 )
+
+                # Preserve the independent evidence and scanner type in the report.
+                result["analysis_mode"] = mode
+                result["deterministic_evidence"] = deterministic_evidence
 
 
             # ======================================================
@@ -1209,13 +1358,12 @@ elif st.session_state.page == "Analyze":
                 "input and model access."
             )
 
-            with st.expander(
-                "Technical details"
-            ):
-
-                st.code(
-                    str(exc)
-                )
+            # Do not echo raw provider/network exception strings into the UI:
+            # SDK errors can contain request metadata or other sensitive details.
+            st.caption(
+                "Technical details were withheld to avoid exposing provider metadata. "
+                "Check the server-side logs for the exception type and request context."
+            )
 
 
     # ==========================================================
@@ -1229,7 +1377,7 @@ elif st.session_state.page == "Analyze":
         )
 
         st.download_button(
-            "📄 Download PDF report",
+            "Download PDF report",
             make_pdf_report(
                 st.session_state.result,
                 mode

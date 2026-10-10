@@ -1,0 +1,31 @@
+<svg width="1200" height="360" viewBox="0 0 1200 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="360" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#070808"/><stop offset=".58" stop-color="#0D1110"/><stop offset="1" stop-color="#11110D"/>
+  </linearGradient>
+  <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1010 55) rotate(140) scale(410 310)">
+    <stop stop-color="#D7B56F" stop-opacity=".22"/><stop offset="1" stop-color="#D7B56F" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="line" x1="0" y1="0" x2="1200" y2="0">
+    <stop stop-color="#D7B56F" stop-opacity="0"/><stop offset=".5" stop-color="#D7B56F" stop-opacity=".35"/><stop offset="1" stop-color="#D7B56F" stop-opacity="0"/>
+  </linearGradient>
+  <filter id="blur"><feGaussianBlur stdDeviation="24"/></filter>
+</defs>
+<rect width="1200" height="360" rx="28" fill="url(#bg)"/>
+<rect width="1200" height="360" rx="28" fill="url(#glow)"/>
+<g opacity=".12" stroke="#D7B56F">
+  <path d="M0 72H1200M0 144H1200M0 216H1200M0 288H1200"/>
+  <path d="M120 0V360M240 0V360M360 0V360M480 0V360M600 0V360M720 0V360M840 0V360M960 0V360M1080 0V360"/>
+</g>
+<circle cx="1015" cy="104" r="82" stroke="#D7B56F" stroke-opacity=".22"/>
+<circle cx="1015" cy="104" r="56" stroke="#D7B56F" stroke-opacity=".28"/>
+<circle cx="1015" cy="104" r="5" fill="#D7B56F"/>
+<path d="M1015 22V186M933 104H1097" stroke="#D7B56F" stroke-opacity=".12"/>
+<rect x="74" y="72" width="8" height="146" rx="4" fill="#D7B56F"/>
+<text x="110" y="122" fill="#F5F2E9" font-family="Inter,Arial,sans-serif" font-size="62" font-weight="800" letter-spacing="3">SATARK</text>
+<text x="114" y="164" fill="#D7B56F" font-family="Inter,Arial,sans-serif" font-size="18" font-weight="700" letter-spacing="4">SMART AI THREAT ANALYSIS &amp; RISK KNOWLEDGE</text>
+<text x="114" y="210" fill="#B8B7B0" font-family="Inter,Arial,sans-serif" font-size="17">Bring the evidence. Inspect the signals. Verify before acting.</text>
+<rect x="114" y="252" width="228" height="42" rx="21" fill="#D7B56F" fill-opacity=".1" stroke="#D7B56F" stroke-opacity=".35"/>
+<text x="137" y="279" fill="#E7D09C" font-family="Inter,Arial,sans-serif" font-size="14" font-weight="700">SECURITY AWARENESS WORKSPACE</text>
+<line x1="72" y1="324" x2="1128" y2="324" stroke="url(#line)"/>
+</svg>

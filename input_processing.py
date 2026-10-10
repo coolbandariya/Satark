@@ -15,11 +15,23 @@ from satark_utils import safe_text
 
 MAX_PDF_BYTES = 25 * 1024 * 1024
 MAX_IMAGE_BYTES = 10 * 1024 * 1024
+MAX_IMAGE_PIXELS = 25_000_000
 
 def _uploaded_size(uploaded_file):
+    """Return an upload size for Streamlit uploads and file-like test inputs."""
+    raw_size = getattr(uploaded_file, "size", None)
     try:
-        return int(getattr(uploaded_file, "size"))
-    except (TypeError, ValueError):
+        if raw_size is not None:
+            return int(raw_size)
+    except (TypeError, ValueError, OverflowError):
+        pass
+    try:
+        current = uploaded_file.tell()
+        uploaded_file.seek(0, 2)
+        size = uploaded_file.tell()
+        uploaded_file.seek(current)
+        return int(size)
+    except Exception:
         pass
     try:
         return len(uploaded_file.getvalue())
@@ -30,14 +42,30 @@ def extract_pdf_text(uploaded_file):
     size = _uploaded_size(uploaded_file)
     if size is not None and size > MAX_PDF_BYTES:
         raise ValueError("This PDF is larger than SATARK's 25 MB processing limit.")
-    reader = PdfReader(uploaded_file)
+    try:
+        reader = PdfReader(uploaded_file)
+    except Exception as exc:
+        raise ValueError("SATARK could not read this PDF. It may be corrupted, encrypted, or unsupported.") from exc
+    try:
+        # Accessing the lazy page tree can fail after PdfReader construction
+        # (for example, with a damaged cross-reference table or encrypted file).
+        # Convert that failure into the same bounded, user-safe error as parse
+        # failures instead of letting it escape into the app's generic handler.
+        pages_to_read = reader.pages[:30]
+    except Exception as exc:
+        raise ValueError(
+            "SATARK could not read this PDF. It may be corrupted, encrypted, or unsupported."
+        ) from exc
+
     pages = []
-    for page in reader.pages[:30]:
+    for page in pages_to_read:
         try:
             text = page.extract_text() or ""
-            if text.strip(): pages.append(text)
+            if text.strip():
+                pages.append(text)
         except Exception:
-            pass
+            # One damaged page should not discard readable text from other pages.
+            continue
     text = "\n\n".join(pages).strip()
     if not text:
         raise ValueError("No readable text was found in this PDF. It may be scanned/image-only. Please use a screenshot/image of the relevant page for vision analysis.")
@@ -59,7 +87,19 @@ def image_to_data_url(uploaded_file):
         uploaded_file.seek(0)
     except Exception:
         pass
-    image = Image.open(uploaded_file).convert("RGB")
+    try:
+        image = Image.open(uploaded_file)
+        width, height = image.size
+        if width * height > MAX_IMAGE_PIXELS:
+            raise ValueError("This image has too many pixels for SATARK to process safely.")
+        image = image.convert("RGB")
+        image.load()
+    except ValueError:
+        raise
+    except Image.DecompressionBombError as exc:
+        raise ValueError("This image is too large to process safely.") from exc
+    except Exception as exc:
+        raise ValueError("SATARK could not read this image. Use a valid PNG, JPG or WEBP file.") from exc
     max_side = 900
     if max(image.size) > max_side:
         scale = max_side / max(image.size)

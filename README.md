@@ -3,16 +3,25 @@
 # SATARK
 ### Smart AI Threat Analysis & Risk Knowledge
 
-**Understand suspicious content. Recognize digital threats. Build safer online habits.**
+[![Live App](https://img.shields.io/badge/Live%20App-Open%20SATARK-111827?logo=streamlit&logoColor=white)](https://satark-32uppvjxwmderrchbhj7gj.streamlit.app/)
 
-SATARK is an AI-assisted security-awareness application for exploring suspicious messages, links, images, QR codes, PDFs, and supported videos. It combines guided analysis with practical learning features.
+<img src="assets/satark-banner.svg" alt="SATARK — Smart AI Threat Analysis & Risk Knowledge" width="1200">  
+[![Security](https://img.shields.io/badge/security-awareness-focused-d7b56f)](SECURITY.md)
+
+**Investigate incidents. Preserve evidence. Respond with control.**
+
+SATARK now includes **FIRSTLIGHT Incident Command** as its flagship workspace for synthetic incident investigation, evidence integrity challenges, evidence-linked timelines, and human-approved simulated response. Existing text, URL, image, QR, PDF, and video scanners remain available as secondary threat-analysis tools.
+
+SATARK is an AI-assisted security-awareness workspace for triaging suspicious messages, links, images, QR codes, PDFs, and supported videos.
+
+It is designed around a simple workflow: **bring the evidence → inspect the signals → review what is and is not corroborated → verify before acting.** The primary workspace prioritizes investigations; learning features remain available without competing with the core flow.
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/Interface-Streamlit-FF4B4B?logo=streamlit&logoColor=white)
 ![AI](https://img.shields.io/badge/AI-Groq-111827)
-![Project status](https://img.shields.io/badge/status-active%20development-8b5cf6)
-![CodeQL](https://github.com/coolbandariya/Satark/actions/workflows/codeql.yml/badge.svg)
-![CI](https://github.com/coolbandariya/Satark/actions/workflows/ci.yml/badge.svg)
+![Project status](https://img.shields.io/badge/status-active-16a34a)
+![CodeQL](https://github.com/kaustubhdua/Satark/actions/workflows/codeql.yml/badge.svg)
+![CI](https://github.com/kaustubhdua/Satark/actions/workflows/ci.yml/badge.svg)
 
 </div>
 
@@ -22,23 +31,30 @@ SATARK is an AI-assisted security-awareness application for exploring suspicious
 
 ## Contents
 
+- [FIRSTLIGHT Incident Command](#firstlight-incident-command)
 - [What SATARK does](#what-satark-does)
 - [Features](#features)
 - [How it works](#how-it-works)
 - [Technology](#technology)
+- [UI design and motion](#ui-design-and-motion)
 - [Run locally](#run-locally)
 - [Configure Groq](#configure-groq)
 - [Project structure](#project-structure)
 - [Tests and checks](#tests-and-checks)
 - [Security, privacy, and limitations](#security-privacy-and-limitations)
+- [Release readiness](docs/RELEASE_READINESS.md)
 - [Roadmap](#roadmap)
 - [Contributing](#contributing)
+
+## FIRSTLIGHT Incident Command
+
+Open FIRSTLIGHT from the sidebar to load a repeatable fictional account-compromise scenario. The prototype provides SHA-256 evidence verification, a controlled tampering challenge, a deterministic multi-step investigation workflow, evidence-linked findings, a chronological timeline, explicit evidence gaps, approval/rejection controls for simulated response actions, a hash-chained in-session audit trail, and JSON report export. No real endpoint, account, process, or network action is performed. Read [the FIRSTLIGHT scope and safety boundaries](docs/FIRSTLIGHT.md).
 
 ## What SATARK does
 
 SATARK provides a single workspace to examine potentially risky digital content and learn about common online scams. Depending on the selected workflow and available dependencies, it can analyze text, URLs, images/QR codes, PDFs, and videos. Results may include a threat category, risk score, confidence value, indicators, and suggested next steps.
 
-The app also includes interactive learning experiences such as **Scam Challenge**, **SATARK Academy**, and **Classroom Mode**.
+The app also includes **Scam Challenge**, **SATARK Academy**, and **Classroom Mode** for security-awareness learning.
 
 ## Features
 
@@ -50,19 +66,24 @@ The app also includes interactive learning experiences such as **Scam Challenge*
 | PDF analysis | Extract text from supported PDF documents and analyze it. |
 | Video analysis | Extract representative frames; optionally transcribe audio when the workflow and provider support it. |
 | AI-assisted results | Present a model-generated assessment, indicators, and suggested actions. |
+| Deterministic evidence ledger | Separately shows local pattern-based observations such as URLs, known shorteners, phone/UPI-like identifiers, urgency, credential requests, and payment language. These are review signals—not proof of fraud or safety. |
+| Evidence coverage review | Flags broad AI assessments that lack independent text-rule observations, and treats visual workflows separately. It is a coverage check—not claim-by-claim verification. |
+| Responsive investigation workspace | Focused navigation, a guided offline sample, mobile-aware layouts, and clear separation between evidence, AI interpretation and next steps. |
 | PDF export | Download a report of an analysis. |
+| FIRSTLIGHT event import | Import bounded JSON/CSV event exports, normalize timestamps, hash the original artifact, and run explainable evidence-linked rules without sending imported data to an AI provider. |
 | Session history | Revisit results held in the current app session. |
 | Learning | Practice scam recognition and explore security-awareness content. |
 
-Some workflows depend on external provider access or optional system tools. Video frame analysis uses OpenCV; video audio transcription additionally requires FFmpeg to be installed on the host. A completed analysis does not mean that a file was executed in a sandbox or exhaustively scanned.
+Some workflows depend on external provider access or optional system tools. Video uploads are capped at 50 MB to match the Streamlit server upload budget. Video frame analysis uses OpenCV; video audio transcription additionally requires FFmpeg to be installed on the host. A completed analysis does not mean that a file was executed in a sandbox or exhaustively scanned.
 
 ## How it works
 
 1. **Choose a workflow** and provide the content you want to examine.
 2. **Prepare the input.** Depending on the workflow, SATARK may extract text, inspect image content, or sample video frames.
-3. **Request an AI assessment.** Supported analysis is sent to the configured Groq service.
-4. **Review the result.** Treat the output as a clue for further investigation, not a definitive security verdict.
-5. **Learn and report.** Use the learning sections or export a PDF when useful.
+3. **Extract local signals.** For supported text inputs, SATARK records deterministic pattern matches separately from model output; this step makes no network requests and does not decide whether content is malicious.
+4. **Request an AI assessment.** Supported analysis is sent to the configured Groq service.
+5. **Review the result.** Inspect the evidence ledger, then the evidence-coverage review, AI interpretation and next steps. The coverage check does not validate every AI claim; treat the output as triage, not a definitive security verdict.
+6. **Learn and report.** Use the learning sections or export a PDF when useful.
 
 Do not submit passwords, one-time codes, private keys, or unnecessary personal information.
 
@@ -70,9 +91,8 @@ Do not submit passwords, one-time codes, private keys, or unnecessary personal i
 
 - **Python** — application logic
 - **Streamlit** — interactive web interface and session state
-- **CSS** — application styling
-- **OGL / WebGL** — React Bits-inspired radar background rendered in a Streamlit HTML component
-- **React + Motion** — React Bits-inspired Stepper onboarding rendered in a Streamlit HTML component
+- **CSS** — dependency-free visual system, responsive layout, micro-interactions and reduced-motion support
+- **Native Streamlit UI** — layout, navigation, learning and onboarding surfaces without a second browser runtime
 - **Groq** — AI model API and supported audio transcription
   - Text workflows prefer `openai/gpt-oss-120b`, with `openai/gpt-oss-20b` as fallback when available.
   - Vision workflows use `qwen/qwen3.8-27b`, subject to the API key's available models.
@@ -82,7 +102,13 @@ Do not submit passwords, one-time codes, private keys, or unnecessary personal i
 - **OpenCV** — video frame extraction
 - **FFmpeg** — optional audio-track extraction for video transcription
 
-The repository separates the analysis, input-processing, finding-model, security, provider, and major UI responsibilities into modules. The radar background is a browser-side OGL dependency loaded from esm.sh, and the onboarding Stepper loads React, ReactDOM, and Motion from esm.sh; these are browser-side dependencies and are intentionally absent from `requirements.txt`. The remaining `satark.py` code is orchestration rather than a single monolithic implementation, with further service extraction left as a deliberate roadmap item.
+The repository separates analysis, input processing, findings, security, provider, media processing, reporting and major UI responsibilities into modules. The visual layer is CSS-first and the onboarding workflow uses native Streamlit rendering, so the core interface does not depend on a second browser runtime or a third-party JavaScript CDN. `satark.py` remains the orchestration layer, while provider, processing and UI responsibilities are extracted into focused modules.
+
+## UI design and motion
+
+The interface takes inspiration from the craft and interaction principles demonstrated by [React Bits](https://github.com/DavidHDev/react-bits)—layered visual depth, restrained motion, responsive component layouts and clear interaction feedback—while adapting those principles to Streamlit instead of shipping a separate React runtime. SATARK uses its own CSS implementation; React Bits is an inspiration reference, not a runtime dependency. Animations are subtle, CSS-only and disabled for users who request reduced motion. Expensive analysis and media processing start only after an explicit user action, and uploads are bounded before processing.
+
+Design and release checks are documented in [UI design notes](docs/UI_DESIGN.md) and [release readiness](docs/RELEASE_READINESS.md).
 
 ## Run locally
 
@@ -97,7 +123,7 @@ The repository separates the analysis, input-processing, finding-model, security
 Clone the repository and enter its directory:
 
 ```bash
-git clone https://github.com/coolbandariya/Satark.git
+git clone https://github.com/kaustubhdua/Satark.git
 cd Satark
 python -m venv .venv
 ```
@@ -126,7 +152,7 @@ Streamlit will print a local address in the terminal. Open it in your browser.
 
 ## Configure Groq
 
-Set `GROQ_API_KEY` in your environment before starting the app.
+Set `GROQ_API_KEY` in your environment before starting the app. On Streamlit Community Cloud, add it under **App settings → Secrets** as `GROQ_API_KEY = "your-key"`; SATARK reads Streamlit-managed secrets first and falls back to the environment variable.
 
 **Windows PowerShell**
 ```powershell
@@ -147,27 +173,69 @@ If the app offers a sidebar key field, it can also be used for local experimenta
 ```text
 .
 ├── .github/
-│   └── workflows/
-│       └── ci.yml               # Automated validation workflow
+│   ├── ISSUE_TEMPLATE/
+│   │   ├── bug_report.yml
+│   │   └── feature_request.yml
+│   ├── workflows/
+│   │   ├── ci.yml
+│   │   └── codeql.yml
+│   ├── PULL_REQUEST_TEMPLATE.md
+│   └── dependabot.yml
+├── .streamlit/
+│   └── config.toml
+├── assets/
+│   └── satark-banner.svg
 ├── docs/
-│   └── ANALYSIS_LIMITATIONS.md  # Interpretation and safe-use guidance
+│   ├── ANALYSIS_LIMITATIONS.md
+│   ├── ARCHITECTURE.md
+│   ├── FIRSTLIGHT.md
+│   ├── UI_DESIGN.md
+│   └── RELEASE_READINESS.md
 ├── tests/
-│   ├── test_ai_provider.py      # Provider/model-selection tests
-│   ├── test_satark_utils.py     # Shared helper tests
-│   └── test_video_processing.py # Video helper tests
-├── satark.py                    # Streamlit entry point and app workflows
-├── ai_provider.py               # Groq client and model-selection helpers
-├── scam_challenge.py             # Scam Challenge game and rendering
-├── video_processing.py           # Video frame and audio helpers
-├── reports.py                    # PDF report generation
-├── satark_utils.py               # Shared text/result helpers
-├── url_security.py               # URL validation and public-page fetching
-├── styles.css                    # Application styles
-├── radar_background.py            # OGL/WebGL radar backdrop
-├── stepper_component.py           # React Bits/Motion onboarding stepper
-├── requirements.txt              # Python dependencies
+│   ├── e2e_smoke.py
+│   ├── test_ai_provider.py
+│   ├── test_analysis_engine.py
+│   ├── test_firstlight_engine.py
+│   ├── test_firstlight_ingest.py
+│   ├── test_input_processing.py
+│   ├── test_reports.py
+│   ├── test_review_engine.py
+│   ├── test_satark_utils.py
+│   ├── test_satark_utils_urls.py
+│   ├── test_scam_challenge.py
+│   ├── test_ui_contracts.py
+│   ├── test_url_security.py
+│   └── test_video_processing.py
+├── ui/
+│   ├── home.py
+│   ├── navigation.py
+│   ├── results.py
+│   ├── history.py
+│   ├── learning.py
+│   ├── demo.py
+│   └── firstlight.py
+├── analysis_engine.py
+├── ai_provider.py
+├── config.py
+├── evidence_engine.py
+├── findings.py
+├── firstlight_engine.py
+├── firstlight_ingest.py
+├── input_processing.py
+├── radar_background.py
+├── reports.py
+├── review_engine.py
+├── scam_challenge.py
+├── satark.py
+├── satark_utils.py
+├── stepper_component.py
+├── url_security.py
+├── video_processing.py
+├── styles.css
+├── requirements.txt
+├── CONTRIBUTING.md
 ├── README.md
-└── SECURITY.md                   # Security policy and deployment checklist
+└── SECURITY.md
 ```
 
 ## Tests and checks
@@ -180,7 +248,7 @@ python -m compileall -q .
 python -m unittest discover -s tests -v
 ```
 
-These checks cover dependency consistency, critical lint errors, full Python compilation, analysis normalization, URL safety, UI contracts, provider selection, media processing, and layout/source hygiene. They do **not** replace manual testing of Streamlit interactions, live Groq requests, deployment configuration, or end-to-end file processing.
+These checks cover dependency consistency, full Python compilation, analysis normalization, URL safety, evidence coverage review, PDF content, UI contracts, provider selection, media processing, and layout/source hygiene. CI also runs desktop/mobile browser smoke checks, including the offline sample and PDF download. They do **not** replace manual testing of live Groq requests, deployment configuration, or end-to-end file processing.
 
 GitHub Actions also runs CodeQL. A passing unit-test run alone does not establish production readiness, but the repository now has explicit automated gates for the highest-risk source and dependency regressions.
 
@@ -193,7 +261,7 @@ GitHub Actions also runs CodeQL. A passing unit-test run alone does not establis
 - **Do not treat session history as evidence storage.** It is not a secure, durable case-management system.
 - **Use deployment safeguards.** Restrict access where appropriate, keep secrets out of source control, set upload/request limits, and apply network egress controls.
 
-See [Analysis limitations](docs/ANALYSIS_LIMITATIONS.md) and the [Security policy](SECURITY.md) for additional guidance.
+See [Analysis limitations](docs/ANALYSIS_LIMITATIONS.md), the [Security policy](SECURITY.md), and the [Release readiness runbook](docs/RELEASE_READINESS.md) for deployment gates. The default Streamlit configuration hides exception details and caps uploads at 50 MB, but host-level concurrency, request, and network egress controls still need separate verification.
 
 ## Roadmap
 
@@ -205,9 +273,18 @@ See [Analysis limitations](docs/ANALYSIS_LIMITATIONS.md) and the [Security polic
 - [x] Extract video processing helpers.
 - [x] Add unit tests for shared helpers and video processing.
 - [x] Extract Groq client and model-selection helpers from the Streamlit entry point.
-- [ ] Add broader workflow and end-to-end tests.
-- [x] Pin runtime dependencies and add automated CI validation.\n- [x] Keep CI green on the current `main` baseline.
-- [ ] Complete a deployment-specific security and runtime review.
+- [x] Add broader workflow and end-to-end tests.
+- [x] Pin runtime dependencies and add automated CI validation.
+- [x] Keep the unit-test suite aligned with the current dependency-free UI architecture.
+- [x] Add a deterministic evidence-coverage review and export it with the PDF report.
+- [x] Prioritize the evidence-first investigation flow in the responsive workspace.
+- [x] Verify that provider model-discovery failures are not reported as successful connections.
+- [x] Document the deployment security checklist and URL-fetching threat model.
+- [x] Exercise all six scanner-selection states and contextual guidance in the browser smoke suite without requiring provider credentials.
+- [ ] Add deployment-specific live tests for provider-backed analysis and file-processing workflows; these require configured secrets and a target-host environment.
+- [x] Hide hosted exception details and align the video byte limit with the 50 MB Streamlit upload cap.
+- [x] Read `GROQ_API_KEY` from Streamlit Community Cloud secrets as well as environment variables.
+- [x] Add a release-readiness runbook with explicit go/no-go criteria and deployment verification steps.
 
 ## Contributing
 
