@@ -18,7 +18,7 @@ def assert_layout(page, name):
     metrics=page.evaluate("""() => ({
         viewport: window.innerWidth,
         scrollWidth: document.documentElement.scrollWidth,
-        key: [...document.querySelectorAll('.workspace-hero,.workspace-capabilities,.st-key-home-actions,.workspace-method')].map(el => {
+        key: [...document.querySelectorAll('.ih-hero,.ih-capability-grid,.st-key-home-actions,.ih-method')].map(el => {
             const r=el.getBoundingClientRect();
             return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};
         }),
@@ -26,10 +26,13 @@ def assert_layout(page, name):
         scanners: document.querySelectorAll(".scanner").length
     })""")
     assert metrics["scrollWidth"] <= metrics["viewport"] + 2, f"{name}: horizontal overflow {metrics}"
+    assert len(metrics["key"]) >= 3, f"{name}: primary home layout selectors were not found: {metrics}"
+    assert metrics["workflowSteps"] == 4, f"{name}: onboarding workflow is incomplete"
+    assert page.locator(".ih-hero h1").count() == 1, f"{name}: hero heading missing"
+    assert page.locator(".ih-capability-grid article").count() >= 4, f"{name}: capability cards missing"
     for rect in metrics["key"]:
         assert rect["left"] >= -2, f"{name}: element extends left of viewport: {rect}"
         assert rect["right"] <= metrics["viewport"] + 2, f"{name}: element extends right of viewport: {rect}"
-    assert metrics["workflowSteps"] == 4, f"{name}: onboarding workflow is incomplete"
     if name == "desktop":
         assert metrics["scanners"] == 0, f"{name}: scanners unexpectedly rendered on home"
     page.screenshot(path=str(ARTIFACTS / f"{name}.png"),full_page=True)
