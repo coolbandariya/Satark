@@ -1,4 +1,4 @@
-""""Regression tests for PDF report generation."""
+"""Regression tests for PDF report generation."""
 import math
 import unittest
 from io import BytesIO
