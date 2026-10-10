@@ -12,7 +12,7 @@ _SEVERITY = {
 }
 _NEGATORS = re.compile(
     r"(?:\bnot\s+considered|\bnot\s+classified\s+as|"
-    r"\bnever\s+considered|\bnot|\bnever|\bisn['’]?t|\bis\s+not)"
+    r"\bnever\s+considered|\bnot|\bno|\bnever|\bisn['’]?t|\bis\s+not)"
     r"\s+(?:(?:a|an|the)\s+)?$"
 )
 _LABELS = (
@@ -50,11 +50,18 @@ def finding_severity(value):
     if re.fullmatch(r"(?:status\s*:\s*)?clear[.! ]*", text):
         return "clear"
 
+    saw_severity_label = False
     for severity, pattern in _LABELS:
-        if _has_unnegated_label(text, pattern):
-            return severity
+        if pattern.search(text):
+            saw_severity_label = True
+            if _has_unnegated_label(text, pattern):
+                return severity
 
-    if _has_unnegated_label(text, re.compile(r"\b(?:detected|present|confirmed)\b")):
+    # Do not let a generic "detected" word override a negated severity label,
+    # as in "no high risk detected".
+    if not saw_severity_label and _has_unnegated_label(
+        text, re.compile(r"\b(?:detected|present|confirmed)\b")
+    ):
         return "high"
 
     return "unknown"
