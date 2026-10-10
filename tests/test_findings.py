@@ -49,6 +49,18 @@ class FindingSeverityTests(unittest.TestCase):
             with self.subTest(value=value):
                 self.assertEqual(finding_severity(value), expected)
 
+    def test_negation_is_scoped_to_its_clause(self):
+        cases = {
+            "No indicators of critical risk; high risk detected": "high",
+            "No evidence of fraud. High risk detected": "high",
+            "Not high, low risk": "low",
+            "No signs of malware, medium concern remains": "medium",
+            "No indicators of critical risk": "clear",
+        }
+        for value, expected in cases.items():
+            with self.subTest(value=value):
+                self.assertEqual(finding_severity(value), expected)
+
     def test_generic_detection_is_high_only_without_explicit_severity(self):
         self.assertEqual(finding_severity("Detected"), "high")
         self.assertEqual(finding_severity("Low risk — detected"), "low")
