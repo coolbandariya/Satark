@@ -885,3 +885,26 @@ textarea:focus-visible,
   .capability-card{transition:none!important}
   .capability-card:hover{transform:none!important}
 }
+
+
+/* Evidence coverage review: a visible boundary between observations and AI interpretation. */
+.evidence-review{
+  max-width:1120px;margin:1rem auto 0;padding:1rem 1.1rem;
+  border:1px solid rgba(125,211,252,.18);border-radius:15px;
+  background:linear-gradient(115deg,rgba(125,211,252,.055),rgba(14,25,40,.78));
+}
+.evidence-review--review{border-color:rgba(244,201,107,.24);background:linear-gradient(115deg,rgba(244,201,107,.055),rgba(14,25,40,.78))}
+.evidence-review--supported{border-color:rgba(94,224,176,.2);background:linear-gradient(115deg,rgba(94,224,176,.045),rgba(14,25,40,.78))}
+.evidence-review-head{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.evidence-review-kicker{color:#7f94ae;font-size:.57rem;font-weight:850;letter-spacing:.14em}
+.evidence-review h3{margin:.3rem 0 0!important;color:#e9f3ff!important;font-size:.95rem!important;letter-spacing:-.02em}
+.evidence-review--review h3{color:#f2d58f!important}
+.evidence-review--supported h3{color:#93e8c8!important}
+.evidence-review-count{flex:0 0 auto;padding:.34rem .5rem;border:1px solid rgba(177,199,230,.14);border-radius:7px;color:#a6b9d0;font-size:.6rem;font-weight:800}
+.evidence-review>p{margin:.75rem 0 0;color:#a9b9cc!important;font-size:.78rem;line-height:1.75}
+.evidence-review-foot{margin-top:.7rem;padding-top:.65rem;border-top:1px solid rgba(177,199,230,.09);color:#70839b;font-size:.62rem;line-height:1.55}
+@media(max-width:600px){
+  .evidence-review{padding:.85rem}
+  .evidence-review-head{align-items:flex-start;flex-direction:column;gap:.6rem}
+  .evidence-review-count{align-self:flex-start}
+}
