@@ -47,33 +47,26 @@ def _has_unnegated_label(text, pattern):
 def finding_severity(value):
     """Map a displayed check value to a conservative severity.
 
-    Explicit negative states take precedence, followed by unnegated severity
-    labels. Generic words such as "detected" are only a fallback; a value like
-    "Low risk — detected" therefore remains Low instead of becoming High.
+    Absence of one severity (for example, no critical risk) does not establish
+    that the item is clear. Only an unqualified negative result maps to clear.
     """
     text = str(value or "").strip().lower()
     if not text:
         return "unknown"
 
-    # Treat a negative statement as a clear result only when it describes the
-    # current clause/status, not when a later clause reports a separate signal.
-    clauses = [part.strip() for part in re.split(r"[.!?;\n]|—|–", text) if part.strip()]
-    negative_status = re.compile(
-        r"^(?:(?:status\s*:\s*)?clear|not detected|no sign(?:s)?(?: of)?\b.*|"
-        r"no indicators?\b.*|none detected|absent|false|"
-        r".+\bnot detected|.+\bnot present|.+\bruled out)[.! ]*$"
+    # Only broad, unqualified negative statuses are clear. Severity-specific
+    # negatives remain unknown unless another unnegated severity is present.
+    broad_negative = re.compile(
+        r"^(?:(?:status\s*:\s*)?clear|not detected|no signs? of (?:malware|phishing|fraud|"
+        r"threats?|suspicious activity|indicators?)|no indicators?(?: of (?:malware|phishing|"
+        r"fraud|threats?|suspicious activity))?|none detected|absent|false)[.! ]*$"
     )
-    if clauses and any(negative_status.fullmatch(clause) for clause in clauses):
-        # If another clause contains an unnegated severity, classify that
-        # positive signal rather than letting an unrelated negative dominate.
-        positive_labels = [
-            severity for severity, pattern in _LABELS
-            if _has_unnegated_label(text, pattern)
-        ]
-        if not positive_labels:
-            return "clear"
+    clauses = [part.strip() for part in re.split(r"[.!?;\n]|—|–", text) if part.strip()]
     if re.fullmatch(r"(?:status\s*:\s*)?clear[.! ]*", text):
         return "clear"
+    if clauses and any(broad_negative.fullmatch(clause) for clause in clauses):
+        if not any(_has_unnegated_label(text, pattern) for _, pattern in _LABELS):
+            return "clear"
 
     saw_severity_label = False
     for severity, pattern in _LABELS:
@@ -82,8 +75,7 @@ def finding_severity(value):
             if _has_unnegated_label(text, pattern):
                 return severity
 
-    # Do not let a generic "detected" word override a negated severity label,
-    # as in "no high risk detected".
+    # Generic detection is only a fallback when no explicit severity is stated.
     if not saw_severity_label and _has_unnegated_label(
         text, re.compile(r"\b(?:detected|present|confirmed)\b")
     ):
