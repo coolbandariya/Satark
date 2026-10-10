@@ -55,7 +55,7 @@ def render_firstlight() -> None:
     st.markdown(
         '<div class="workspace-eyebrow">SATARK / FIRSTLIGHT INCIDENT COMMAND</div>'
         '<h1 style="margin-bottom:.2rem">Every second matters. Every piece of evidence counts.</h1>'
-        '<p style="color:var(--text-secondary,#94a3b8);max-width:850px">Preserve artifacts, correlate suspicious activity, inspect evidence integrity and approve simulated response actions. This workspace uses synthetic data only.</p>',
+        '<p style="color:var(--text-secondary,#94a3b8);max-width:850px">Preserve artifacts, correlate suspicious activity, inspect evidence integrity and review simulated response actions. The sample case is fictional; optional JSON/CSV imports are parsed locally and remain session-only.</p>',
         unsafe_allow_html=True,
     )
     left, right = st.columns([1.2, 1], gap="large")
