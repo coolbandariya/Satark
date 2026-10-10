@@ -121,18 +121,24 @@ def render_firstlight() -> None:
             if imported["errors"]:
                 st.markdown("#### Rejected records")
                 st.dataframe(imported["errors"], use_container_width=True, hide_index=True)
-            st.markdown("#### Normalized events")
-            st.dataframe([
-                {
-                    "Event ID": event["event_id"],
-                    "Timestamp (UTC)": event["timestamp"],
-                    "Source": event["source"],
-                    "Kind": event["kind"],
-                    "Summary": event["summary"],
-                    "Normalized record SHA-256": sha256_record(event),
-                }
-                for event in imported["events"]
-            ], use_container_width=True, hide_index=True)
+            show_events = st.checkbox(
+                f"Show normalized event table ({len(imported['events']):,} records)",
+                value=False,
+                key="fl_show_import_events",
+                help="The table is built only when requested, which keeps large imports responsive.",
+            )
+            if show_events:
+                st.dataframe([
+                    {
+                        "Event ID": event["event_id"],
+                        "Timestamp (UTC)": event["timestamp"],
+                        "Source": event["source"],
+                        "Kind": event["kind"],
+                        "Summary": event["summary"],
+                        "Normalized record SHA-256": sha256_record(event),
+                    }
+                    for event in imported["events"]
+                ], use_container_width=True, hide_index=True)
             st.markdown("#### Explainable detections")
             findings = st.session_state.firstlight_import_findings
             if findings:
@@ -248,8 +254,8 @@ def render_firstlight() -> None:
                     st.markdown(f"**{finding['finding_id']} · {finding['title']}**")
                     st.write(finding["explanation"])
                     st.caption(f"Severity: {finding['severity']} · Confidence: {finding['confidence']} · State: {finding['state']} · Evidence: {', '.join(finding['evidence_ids']) or 'none'}")
-            st.markdown("#### Reconstructed timeline")
-            st.dataframe(investigation["timeline"], use_container_width=True, hide_index=True)
+            if st.checkbox("Show reconstructed timeline", value=True, key="fl_show_investigation_timeline"):
+                st.dataframe(investigation["timeline"], use_container_width=True, hide_index=True)
             st.markdown("#### Evidence gaps")
             for gap in investigation["gaps"]:
                 st.warning(gap)
