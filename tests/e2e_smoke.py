@@ -59,6 +59,9 @@ def choose_workspace(page, steps_down):
     """
     workspace = page.get_by_role("combobox", name="Investigation workspace")
     workspace.click()
+    # Reset to the first option before moving so this remains deterministic
+    # even if Streamlit preserves a previous selectbox value across reruns.
+    workspace.press("Home")
     for _ in range(steps_down):
         workspace.press("ArrowDown")
     workspace.press("Enter")
@@ -126,6 +129,7 @@ def main():
                 page.get_by_role("button", name="Load / reset synthetic incident").click()
                 page.get_by_text("Synthetic case loaded").wait_for(timeout=30_000)
                 choose_workspace(page, 2)
+                page.get_by_text("Coordinated investigation", exact=True).wait_for(timeout=30_000)
                 page.get_by_role("button", name="Run investigation workflow").click()
                 page.get_by_text("Coordinated investigation").wait_for(timeout=30_000)
                 page.get_by_text("Findings", exact=True).wait_for(timeout=30_000)
