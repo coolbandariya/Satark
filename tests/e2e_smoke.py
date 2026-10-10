@@ -122,7 +122,7 @@ def main():
                 # synthetic-only investigation path without provider credentials.
                 page.locator(".st-key-home-actions").get_by_role(
                     "button", name="Open FIRSTLIGHT →"
-                ).click()
+                ).last.click()
                 page.get_by_role("button", name="Load / reset synthetic incident").click()
                 page.get_by_text("Synthetic case loaded").wait_for(timeout=30_000)
                 choose_workspace(page, "Investigation")
