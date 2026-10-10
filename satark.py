@@ -57,7 +57,8 @@ from analysis_engine import (
 )
 from ui.home import render_home
 from ui.navigation import render_sidebar
-from ui.results import render_threat_analysis, render_verification_sources
+from ui.results import render_threat_analysis, render_verification_sources, render_evidence_ledger
+from evidence_engine import extract_deterministic_evidence
 from ui.history import render_history
 from ui.learning import render_academy, render_classroom
 
@@ -507,7 +508,7 @@ def render_result(result):
         left, right = st.columns(2)
         with left:
             st.markdown(
-                f'<div class="evidence"><strong>🧩 Evidence detected</strong>{evidence_items}</div>',
+                f'<div class="evidence"><strong>🤖 AI-reported indicators</strong>{evidence_items}</div>',
                 unsafe_allow_html=True,
             )
         with right:
@@ -516,6 +517,7 @@ def render_result(result):
                 unsafe_allow_html=True,
             )
 
+        render_evidence_ledger(result.get("deterministic_evidence", []), result.get("analysis_mode", ""))
         render_threat_analysis(result, THREAT_CHECKS)
         render_verification_sources(result, OFFICIAL_VERIFICATION_SOURCES)
 
@@ -1243,6 +1245,22 @@ elif st.session_state.page == "Analyze":
                     image_data_urls,
                     available
                 )
+
+                # Keep deterministic observations separate from AI interpretation.
+                # Image/QR workflows rely on vision analysis and do not have extracted
+                # source text here, so do not manufacture a text evidence ledger.
+                result["analysis_mode"] = mode
+                if mode in {"Text", "URL", "PDF", "Video"}:
+                    evidence_source = (
+                        f"Submitted URL: {content}\n\nFetched page text:\n{prepared}"
+                        if mode == "URL"
+                        else prepared
+                    )
+                    result["deterministic_evidence"] = extract_deterministic_evidence(
+                        evidence_source
+                    )
+                else:
+                    result["deterministic_evidence"] = []
 
 
             # ======================================================
