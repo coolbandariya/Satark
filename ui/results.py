@@ -79,3 +79,28 @@ def render_evidence_ledger(evidence, mode=""):
     st.caption(
         f"{len(rows)} rule-based observation(s). Rules are intentionally conservative and may miss or misinterpret context."
     )
+
+
+def render_evidence_review(result):
+    """Render the deterministic evidence-coverage check beside the report."""
+    from review_engine import build_evidence_review
+
+    review = build_evidence_review(result)
+    level = html.escape(safe_text(review.get("level", "review"), "review"))
+    status = html.escape(safe_text(review.get("status", "Needs review")))
+    message = html.escape(safe_text(review.get("message", "")))
+    evidence_count = int(review.get("evidence_count", 0))
+    indicator_count = int(review.get("indicator_count", 0))
+    st.markdown(
+        '<section class="evidence-review evidence-review--' + level + '" role="status">'
+        '<div class="evidence-review-head"><div>'
+        '<div class="evidence-review-kicker">INDEPENDENT COVERAGE CHECK</div>'
+        '<h3>' + status + '</h3></div>'
+        '<span class="evidence-review-count">' + str(evidence_count) + ' local signal(s)</span></div>'
+        '<p>' + message + '</p>'
+        '<div class="evidence-review-foot">Rule signals: ' + str(evidence_count)
+        + ' · AI-reported indicators: ' + str(indicator_count)
+        + ' · This is a coverage check, not a verdict or a claim-by-claim verifier.</div>'
+        '</section>',
+        unsafe_allow_html=True,
+    )
