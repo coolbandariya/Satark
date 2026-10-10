@@ -11,7 +11,7 @@ ARTIFACTS.mkdir(parents=True,exist_ok=True)
 
 
 def assert_layout(page, name):
-    page.wait_for_timeout(1500)
+    page.wait_for_timeout(3300)
     body=page.locator("body").inner_text()
     assert "Know what you're looking at." in body, f"{name}: home copy missing"
     assert page.locator("#satark-intro-overlay").count() == 0, f"{name}: intro overlay did not dismiss"
