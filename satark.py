@@ -433,7 +433,7 @@ def render_result(result):
         a, b, c, d = st.columns(4)
         with a:
             st.markdown(
-                f'<div class="metric"><div class="metric-label">Threat level</div>'
+                f'<div class="metric"><div class="metric-label">Assessment signal</div>'
                 f'<div class="metric-value {css}">{label}</div></div>',
                 unsafe_allow_html=True,
             )
