@@ -1,7 +1,9 @@
 """Browser smoke and layout regression checks for the local Streamlit app."""
 from pathlib import Path
+from io import BytesIO
 import os
 from playwright.sync_api import sync_playwright
+from pypdf import PdfReader
 
 URL=os.getenv("SATARK_E2E_URL","http://127.0.0.1:8501")
 ARTIFACTS=Path(os.getenv("SATARK_E2E_ARTIFACTS","artifacts"))
@@ -77,7 +79,6 @@ def main():
                 page.get_by_role("button",name="Open the guided sample report").click()
                 page.get_by_text("Evidence ledger").wait_for(timeout=30_000)
                 page.get_by_text("INDEPENDENT COVERAGE CHECK").wait_for(timeout=30_000)
-                page.get_by_text("Evidence Coverage Review").wait_for(timeout=30_000)
 
                 # Validate the real browser download path as well as the PDF
                 # generator's unit-level text extraction checks.
@@ -87,6 +88,12 @@ def main():
                 downloaded_pdf = Path(download.path()).read_bytes()
                 assert downloaded_pdf.startswith(b"%PDF"), "sample report download is not a PDF"
                 assert len(downloaded_pdf) > 500, "sample report PDF is unexpectedly small"
+                pdf_text = "\n".join(
+                    page.extract_text() or ""
+                    for page in PdfReader(BytesIO(downloaded_pdf)).pages
+                )
+                assert "Evidence Coverage Review" in pdf_text, "PDF is missing evidence coverage review"
+                assert "Rule-Based Evidence Ledger" in pdf_text, "PDF is missing the evidence ledger"
                 page.screenshot(path=str(ARTIFACTS / f"{name}-pages.png"),full_page=True)
             else:
                 # Exercise the main scan workflow on a narrow viewport too.
