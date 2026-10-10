@@ -71,11 +71,18 @@ def seal_evidence(event: dict[str, Any]) -> dict[str, Any]:
 
 
 def verify_evidence(item: dict[str, Any]) -> dict[str, Any]:
-    actual = sha256_record(item.get("record", {}))
+    record = item.get("record", {})
+    actual = sha256_record(record if isinstance(record, dict) else {})
     expected = str(item.get("sha256", ""))
-    valid = bool(expected) and actual == expected
+    evidence_id = item.get("evidence_id", "unknown")
+    # The envelope ID is used to join findings and timeline entries. Bind it
+    # to the hashed record's event_id so an attacker cannot swap the displayed
+    # reference while keeping an otherwise valid record hash.
+    record_id = record.get("event_id") if isinstance(record, dict) else None
+    id_matches = bool(record_id) and evidence_id == record_id
+    valid = bool(expected) and actual == expected and id_matches
     return {
-        "evidence_id": item.get("evidence_id", "unknown"),
+        "evidence_id": evidence_id,
         "expected_sha256": expected,
         "actual_sha256": actual,
         "valid": valid,
