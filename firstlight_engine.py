@@ -117,7 +117,7 @@ def make_audit_entry(action: str, actor: str, payload: dict[str, Any], previous_
 def verify_audit_chain(entries: list[dict[str, Any]]) -> bool:
     previous = "GENESIS"
     for entry in entries:
-        if entry.get("previous_hash") != previous:
+        if not isinstance(entry, dict) or entry.get("previous_hash") != previous:
             return False
         without_hash = {key: value for key, value in entry.items() if key != "entry_hash"}
         if sha256_record(without_hash) != entry.get("entry_hash"):
@@ -210,7 +210,9 @@ def apply_simulated_response(proposals: list[dict[str, Any]], action_id: str, ap
     target = next((item for item in updated if item["action_id"] == action_id), None)
     if target is None:
         raise ValueError("Unknown response action.")
-    if not approved:
+    # Require the actual boolean True. Truthy strings/integers from untrusted
+    # callers must never cross the simulated approval gate.
+    if approved is not True:
         target["status"] = "rejected"
         return updated, {"action_id": action_id, "status": "rejected", "approver": approver, "simulated": True}
     target["status"] = "approved_simulated"
