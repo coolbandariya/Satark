@@ -51,9 +51,15 @@ def assert_no_overlap(page, selector, name):
 
 
 def choose_workspace(page, steps_down):
-    """Select a FIRSTLIGHT workspace using keyboard input to avoid flaky popover clicks."""
+    """Select a FIRSTLIGHT workspace from a known baseline.
+
+    The same Streamlit session can preserve the previous selectbox choice across
+    reruns. Resetting to the first option makes this helper deterministic even
+    when the current selection is not Incident.
+    """
     workspace = page.get_by_role("combobox", name="Investigation workspace")
     workspace.click()
+    workspace.press("Home")
     for _ in range(steps_down):
         workspace.press("ArrowDown")
     workspace.press("Enter")
