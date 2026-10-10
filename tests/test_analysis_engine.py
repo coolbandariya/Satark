@@ -37,6 +37,11 @@ class AnalysisEngineTests(unittest.TestCase):
         checks = build_fallback_threat_analysis(result)
         self.assertEqual(checks["Social Engineering"], "Detected")
 
+    def test_infinite_score_falls_back_to_review_range(self):
+        from analysis_engine import clamp_score
+        self.assertEqual(clamp_score(float("inf")), 50)
+        self.assertEqual(clamp_score(float("-inf")), 50)
+
     def test_risk_label_boundaries_are_stable(self):
         self.assertEqual(risk_label(0)[0],"LOWER SIGNAL")
         self.assertEqual(risk_label(34)[0],"LOWER SIGNAL")
