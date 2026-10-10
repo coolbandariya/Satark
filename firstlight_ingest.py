@@ -75,14 +75,16 @@ def _parse_details(value: Any) -> dict[str, Any]:
             details = json.loads(value)
         except json.JSONDecodeError as exc:
             raise ValueError("details must be a JSON object when supplied as text") from exc
+        except RecursionError as exc:
+            raise ValueError("details JSON nesting is too deep") from exc
     else:
         raise ValueError("details must be a JSON object")
     if not isinstance(details, dict):
         raise ValueError("details must be a JSON object")
     try:
         encoded = json.dumps(details, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    except (TypeError, ValueError) as exc:
-        raise ValueError("details must contain JSON-compatible values") from exc
+    except (TypeError, ValueError, RecursionError) as exc:
+        raise ValueError("details must contain bounded JSON-compatible values") from exc
     if len(encoded) > MAX_DETAILS_BYTES:
         raise ValueError(f"details exceeds {MAX_DETAILS_BYTES} bytes")
     return details
@@ -114,11 +116,11 @@ def ingest_event_artifact(data: bytes, filename: str = "events.json") -> dict[st
     """Parse bounded JSON or CSV into normalized UTC events with provenance."""
     if not isinstance(data, bytes):
         raise IngestError("artifact must be supplied as bytes")
-    artifact_hash = hashlib.sha256(data).hexdigest()
     if not data:
         raise IngestError("artifact is empty")
     if len(data) > MAX_ARTIFACT_BYTES:
         raise IngestError(f"artifact exceeds the {MAX_ARTIFACT_BYTES // (1024 * 1024)} MiB limit")
+    artifact_hash = hashlib.sha256(data).hexdigest()
     if not isinstance(filename, str) or len(filename) > 255:
         raise IngestError("filename is invalid")
     suffix = filename.lower().rsplit(".", 1)[-1] if "." in filename else ""
