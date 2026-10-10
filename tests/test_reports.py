@@ -41,6 +41,20 @@ class ReportGenerationTests(unittest.TestCase):
         self.assertIn("Independent text signals found", extracted)
 
 
+    def test_pdf_omits_empty_malformed_evidence_rows(self):
+        data = make_pdf_report(
+            {
+                "risk_score": 86,
+                "threat_category": "Phishing",
+                "deterministic_evidence": [{}, {"title": "", "observation": "", "evidence": ""}],
+            },
+            "Text",
+        )
+        extracted = "\\n".join(page.extract_text() or "" for page in PdfReader(BytesIO(data)).pages)
+        self.assertIn("Evidence Coverage Review", extracted)
+        self.assertIn("uncorroborated", extracted.lower())
+        self.assertNotIn("Observed text:", extracted)
+
     def test_low_score_is_not_exported_as_a_safety_guarantee(self):
         label, _ = risk_label(10, "Needs review")
         self.assertEqual(label, "LOWER SIGNAL")
