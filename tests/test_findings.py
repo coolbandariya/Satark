@@ -31,14 +31,14 @@ class FindingSeverityTests(unittest.TestCase):
             with self.subTest(value=value):
                 self.assertEqual(finding_severity(value), expected)
 
-    def test_negated_severity_does_not_become_a_positive_finding(self):
+    def test_negated_severity_does_not_become_a_positive_or_clear_finding(self):
         cases = {
             "Not high risk": "unknown",
             "No high risk detected": "unknown",
             "No evidence of high risk": "unknown",
-            "No signs of high risk": "clear",
-            "No indicators of critical risk": "clear",
-            "High risk not detected": "clear",
+            "No signs of high risk": "unknown",
+            "No indicators of critical risk": "unknown",
+            "High risk not detected": "unknown",
             "Low risk not present": "unknown",
             "This is not a high-risk event": "unknown",
             "Never considered critical": "unknown",
@@ -55,7 +55,8 @@ class FindingSeverityTests(unittest.TestCase):
             "No evidence of fraud. High risk detected": "high",
             "Not high, low risk": "low",
             "No signs of malware, medium concern remains": "medium",
-            "No indicators of critical risk": "clear",
+            "No indicators of critical risk": "unknown",
+            "No signs of malware": "clear",
         }
         for value, expected in cases.items():
             with self.subTest(value=value):
