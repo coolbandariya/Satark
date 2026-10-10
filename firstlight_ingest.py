@@ -83,7 +83,7 @@ def _parse_details(value: Any) -> dict[str, Any]:
     if not isinstance(details, dict):
         raise ValueError("details must be a JSON object")
     try:
-        encoded = json.dumps(details, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        encoded = json.dumps(details, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False).encode("utf-8")
     except (TypeError, ValueError, RecursionError) as exc:
         raise ValueError("details must contain bounded JSON-compatible values") from exc
     if len(encoded) > MAX_DETAILS_BYTES:
