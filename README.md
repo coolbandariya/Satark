@@ -236,8 +236,9 @@ See [Analysis limitations](docs/ANALYSIS_LIMITATIONS.md) and the [Security polic
 - [x] Add a deterministic evidence-coverage review and export it with the PDF report.
 - [x] Prioritize the evidence-first investigation flow in the responsive workspace.
 - [x] Verify that provider model-discovery failures are not reported as successful connections.
-- [ ] Add deployment-specific security and runtime review notes for each hosting target.
-- [ ] Expand live browser coverage for every scanner workflow.
+- [x] Document the deployment security checklist and URL-fetching threat model.
+- [x] Exercise all six scanner-selection states and contextual guidance in the browser smoke suite without requiring provider credentials.
+- [ ] Add deployment-specific live tests for provider-backed analysis and file-processing workflows; these require configured secrets and a target-host environment.
 
 ## Contributing
 
