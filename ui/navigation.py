@@ -3,6 +3,16 @@ import os
 import streamlit as st
 
 
+def configured_groq_api_key():
+    """Read the Groq key from Streamlit secrets or the process environment."""
+    try:
+        secret_key = st.secrets.get("GROQ_API_KEY", "")
+    except Exception:
+        # Streamlit raises when no secrets configuration exists.
+        secret_key = ""
+    return str(secret_key or os.getenv("GROQ_API_KEY", "")).strip()
+
+
 def render_sidebar(get_client, discover_models, choose_model, text_preferences, vision_preferences):
     with st.sidebar:
         st.markdown(
@@ -28,7 +38,7 @@ def render_sidebar(get_client, discover_models, choose_model, text_preferences, 
                 st.session_state.page = page
                 st.rerun()
 
-        env_key = os.getenv("GROQ_API_KEY", "")
+        env_key = configured_groq_api_key()
         api_key = env_key
         with st.expander("AI provider", expanded=not bool(env_key)):
             st.caption("Connect a provider to run live analysis. The offline sample works without a key.")
