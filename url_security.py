@@ -98,9 +98,17 @@ def _validated_destination(url):
             address = ipaddress.ip_address(record[4][0])
         except (ValueError, IndexError, TypeError) as exc:
             raise ValueError("The URL hostname returned an invalid address.") from exc
-        # Reject the whole hostname if any answer is non-global, not just the
-        # address selected for this connection.
-        if not address.is_global:
+        # Reject the whole hostname if any answer is non-global or not a
+        # unicast destination. Python considers some multicast addresses global,
+        # so is_global alone is not a sufficient outbound-fetch policy.
+        if (
+            not address.is_global
+            or address.is_multicast
+            or address.is_reserved
+            or address.is_unspecified
+            or address.is_loopback
+            or address.is_link_local
+        ):
             raise ValueError("The URL points to a private or unsafe network address.")
         value = str(address)
         if value not in addresses:
