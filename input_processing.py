@@ -46,13 +46,26 @@ def extract_pdf_text(uploaded_file):
         reader = PdfReader(uploaded_file)
     except Exception as exc:
         raise ValueError("SATARK could not read this PDF. It may be corrupted, encrypted, or unsupported.") from exc
+    try:
+        # Accessing the lazy page tree can fail after PdfReader construction
+        # (for example, with a damaged cross-reference table or encrypted file).
+        # Convert that failure into the same bounded, user-safe error as parse
+        # failures instead of letting it escape into the app's generic handler.
+        pages_to_read = reader.pages[:30]
+    except Exception as exc:
+        raise ValueError(
+            "SATARK could not read this PDF. It may be corrupted, encrypted, or unsupported."
+        ) from exc
+
     pages = []
-    for page in reader.pages[:30]:
+    for page in pages_to_read:
         try:
             text = page.extract_text() or ""
-            if text.strip(): pages.append(text)
+            if text.strip():
+                pages.append(text)
         except Exception:
-            pass
+            # One damaged page should not discard readable text from other pages.
+            continue
     text = "\n\n".join(pages).strip()
     if not text:
         raise ValueError("No readable text was found in this PDF. It may be scanned/image-only. Please use a screenshot/image of the relevant page for vision analysis.")
