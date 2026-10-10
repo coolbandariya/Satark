@@ -67,7 +67,8 @@ The app also includes **Scam Challenge**, **SATARK Academy**, and **Classroom Mo
 | Deterministic evidence ledger | Separately shows local pattern-based observations such as URLs, known shorteners, phone/UPI-like identifiers, urgency, credential requests, and payment language. These are review signals—not proof of fraud or safety. |
 | Evidence coverage review | Flags broad AI assessments that lack independent text-rule observations, and treats visual workflows separately. It is a coverage check—not claim-by-claim verification. |
 | Responsive investigation workspace | Focused navigation, a guided offline sample, mobile-aware layouts, and clear separation between evidence, AI interpretation and next steps. |
-| PDF export | Download a report of an analysis. |\n| FIRSTLIGHT event import | Import bounded JSON/CSV event exports, normalize timestamps, hash the original artifact, and run explainable evidence-linked rules without sending imported data to an AI provider. |
+| PDF export | Download a report of an analysis. |
+| FIRSTLIGHT event import | Import bounded JSON/CSV event exports, normalize timestamps, hash the original artifact, and run explainable evidence-linked rules without sending imported data to an AI provider. |
 | Session history | Revisit results held in the current app session. |
 | Learning | Practice scam recognition and explore security-awareness content. |
 
@@ -167,7 +168,8 @@ If the app offers a sidebar key field, it can also be used for local experimenta
 │   └── workflows/
 │       └── ci.yml               # Automated validation workflow
 ├── docs/
-│   ├── ANALYSIS_LIMITATIONS.md  # Interpretation and safe-use guidance\n│   └── FIRSTLIGHT.md           # Incident workspace scope and safety boundaries
+│   ├── ANALYSIS_LIMITATIONS.md  # Interpretation and safe-use guidance
+│   └── FIRSTLIGHT.md           # Incident workspace scope and safety boundaries
 ├── tests/
 │   ├── test_ai_provider.py          # Provider/model-selection tests
 │   ├── test_review_engine.py        # Evidence coverage review tests
