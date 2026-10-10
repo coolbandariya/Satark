@@ -64,6 +64,13 @@ class UIContractTests(unittest.TestCase):
         self.assertIn("observable signals", HOME)
         self.assertNotIn("home-stats", HOME)
 
+    def test_investigation_screen_has_contextual_workflow_guidance(self):
+        self.assertIn("mode_details = {", APP)
+        self.assertIn("selected-workflow", APP)
+        self.assertIn("Video & clips", APP)
+        self.assertIn(".selected-workflow{", CSS)
+        self.assertIn("@media(max-width:680px)", CSS)
+
     def test_provider_check_does_not_claim_success_when_discovery_fails(self):
         self.assertIn("if not available:", NAV)
         self.assertIn("Could not verify provider access", NAV)
