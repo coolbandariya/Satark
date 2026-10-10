@@ -58,6 +58,18 @@ def build_evidence_review(result):
             ),
         }
 
+    if mode == "video":
+        return {
+            "status": "Multimodal workflow",
+            "level": "info",
+            "evidence_count": 0,
+            "indicator_count": len(indicators),
+            "message": (
+                "Sampled video frames and any available transcript are not exhaustively verified by "
+                "the local text-rule layer. Review the supplied findings and verify important claims independently."
+            ),
+        }
+
     if evidence:
         return {
             "status": "Independent text signals found",
