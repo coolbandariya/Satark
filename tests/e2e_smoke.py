@@ -72,6 +72,28 @@ def main():
                     page.get_by_text(marker).wait_for(timeout=30_000)
 
                 page.screenshot(path=str(ARTIFACTS / f"{name}-pages.png"),full_page=True)
+            else:
+                # Exercise the main scan workflow on a narrow viewport too.
+                page.get_by_role("button",name="Start an investigation →").click()
+                page.get_by_text("What do you want to check?").wait_for(timeout=30_000)
+                page.get_by_role("button",name="Select Text").click()
+                page.get_by_text("Security Analysis").wait_for(timeout=30_000)
+                mobile_metrics=page.evaluate("""() => ({
+                    viewport: window.innerWidth,
+                    scrollWidth: document.documentElement.scrollWidth,
+                    scanners: [...document.querySelectorAll(".scanner")].map(el => {
+                        const r=el.getBoundingClientRect();
+                        return {left:r.left,right:r.right,width:r.width};
+                    })
+                })""")
+                assert mobile_metrics["scrollWidth"] <= mobile_metrics["viewport"] + 2, (
+                    f"mobile-analysis: horizontal overflow {mobile_metrics}"
+                )
+                for rect in mobile_metrics["scanners"]:
+                    assert rect["left"] >= -2 and rect["right"] <= mobile_metrics["viewport"] + 2, (
+                        f"mobile-analysis: scanner outside viewport {rect}"
+                    )
+                page.screenshot(path=str(ARTIFACTS / f"{name}-analysis.png"),full_page=True)
             page.close()
         browser.close()
 
