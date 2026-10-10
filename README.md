@@ -12,7 +12,7 @@
 
 SATARK is an AI-assisted security-awareness workspace for triaging suspicious messages, links, images, QR codes, PDFs, and supported videos.
 
-It is designed around a simple workflow: **bring the evidence → inspect the signals → understand the assessment → verify before acting.** The project combines practical threat triage with a polished learning workspace for scam-awareness practice.
+It is designed around a simple workflow: **bring the evidence → inspect the signals → review what is and is not corroborated → verify before acting.** The primary workspace prioritizes investigations; learning features remain available without competing with the core flow.
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/Interface-Streamlit-FF4B4B?logo=streamlit&logoColor=white)
@@ -57,7 +57,7 @@ The app also includes **Scam Challenge**, **SATARK Academy**, and **Classroom Mo
 | PDF analysis | Extract text from supported PDF documents and analyze it. |
 | Video analysis | Extract representative frames; optionally transcribe audio when the workflow and provider support it. |
 | AI-assisted results | Present a model-generated assessment, indicators, and suggested actions. |
-| Deterministic evidence ledger | Separately shows local pattern-based observations such as URLs, known shorteners, phone/UPI-like identifiers, urgency, credential requests, and payment language. These are review signals—not proof of fraud or safety. |
+| Deterministic evidence ledger | Separately shows local pattern-based observations such as URLs, known shorteners, phone/UPI-like identifiers, urgency, credential requests, and payment language. These are review signals—not proof of fraud or safety. |\n| Evidence coverage review | Flags broad AI assessments that lack independent text-rule observations, and treats visual workflows separately. It is a coverage check—not claim-by-claim verification. |\n| Responsive investigation workspace | Focused navigation, a guided offline sample, mobile-aware layouts, and clear separation between evidence, AI interpretation and next steps. |
 | PDF export | Download a report of an analysis. |
 | Session history | Revisit results held in the current app session. |
 | Learning | Practice scam recognition and explore security-awareness content. |
@@ -70,7 +70,7 @@ Some workflows depend on external provider access or optional system tools. Vide
 2. **Prepare the input.** Depending on the workflow, SATARK may extract text, inspect image content, or sample video frames.
 3. **Extract local signals.** For supported text inputs, SATARK records deterministic pattern matches separately from model output; this step makes no network requests and does not decide whether content is malicious.
 4. **Request an AI assessment.** Supported analysis is sent to the configured Groq service.
-5. **Review the result.** Compare local observations with the AI assessment. Treat both as clues for further investigation, not a definitive security verdict.
+5. **Review the result.** Inspect the evidence ledger, then the evidence-coverage review, AI interpretation and next steps. The coverage check does not validate every AI claim; treat the output as triage, not a definitive security verdict.
 6. **Learn and report.** Use the learning sections or export a PDF when useful.
 
 Do not submit passwords, one-time codes, private keys, or unnecessary personal information.
@@ -174,7 +174,7 @@ If the app offers a sidebar key field, it can also be used for local experimenta
 │   ├── results.py
 │   ├── history.py
 │   └── learning.py
-├── ai_provider.py               # Groq client and model-selection helpers
+├── ai_provider.py               # Groq client and model-selection helpers\n├── review_engine.py             # Deterministic evidence coverage review
 ├── scam_challenge.py             # Scam Challenge game and rendering
 ├── video_processing.py           # Video frame and audio helpers
 ├── reports.py                    # PDF report generation
@@ -198,7 +198,7 @@ python -m compileall -q .
 python -m unittest discover -s tests -v
 ```
 
-These checks cover dependency consistency, critical lint errors, full Python compilation, analysis normalization, URL safety, UI contracts, provider selection, media processing, and layout/source hygiene. They do **not** replace manual testing of Streamlit interactions, live Groq requests, deployment configuration, or end-to-end file processing.
+These checks cover dependency consistency, full Python compilation, analysis normalization, URL safety, evidence coverage review, PDF content, UI contracts, provider selection, media processing, and layout/source hygiene. CI also runs desktop/mobile browser smoke checks, including the offline sample and PDF download. They do **not** replace manual testing of live Groq requests, deployment configuration, or end-to-end file processing.
 
 GitHub Actions also runs CodeQL. A passing unit-test run alone does not establish production readiness, but the repository now has explicit automated gates for the highest-risk source and dependency regressions.
 
@@ -225,7 +225,7 @@ See [Analysis limitations](docs/ANALYSIS_LIMITATIONS.md) and the [Security polic
 - [x] Extract Groq client and model-selection helpers from the Streamlit entry point.
 - [x] Add broader workflow and end-to-end tests.
 - [x] Pin runtime dependencies and add automated CI validation.
-- [x] Keep the unit-test suite aligned with the current dependency-free UI architecture.
+- [x] Keep the unit-test suite aligned with the current dependency-free UI architecture.\n- [x] Add a deterministic evidence-coverage review and export it with the PDF report.\n- [x] Prioritize the evidence-first investigation flow in the responsive workspace.\n- [x] Verify that provider model-discovery failures are not reported as successful connections.
 - [ ] Add deployment-specific security and runtime review notes for each hosting target.
 - [ ] Expand live browser coverage for every scanner workflow.
 
