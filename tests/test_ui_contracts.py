@@ -64,6 +64,11 @@ class UIContractTests(unittest.TestCase):
         self.assertIn("observable signals", HOME)
         self.assertNotIn("home-stats", HOME)
 
+    def test_provider_check_does_not_claim_success_when_discovery_fails(self):
+        self.assertIn("if not available:", NAV)
+        self.assertIn("Could not verify provider access", NAV)
+        self.assertIn("st.session_state.text_model = None", NAV)
+
     def test_primary_navigation_stays_focused(self):
         self.assertIn('("Home", "Overview")', NAV)
         self.assertIn('("Analyze", "Investigate")', NAV)
