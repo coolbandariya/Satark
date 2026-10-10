@@ -193,24 +193,27 @@ def render_firstlight() -> None:
     c.metric("Integrity verified", f"{valid_count}/{len(evidence)}")
     d.metric("Audit chain", "VALID" if verify_audit_chain(audit) else "INVALID")
 
-    tab_case, tab_evidence, tab_investigation, tab_response, tab_audit = st.tabs(
-        ["Incident", "Evidence Integrity", "Investigation", "Response Center", "Audit Trail"]
+    active_workspace = st.selectbox(
+        "Investigation workspace",
+        ["Incident", "Evidence Integrity", "Investigation", "Response Center", "Audit Trail"],
+        key="fl_workspace_section",
+        help="Only the selected workspace is rendered, keeping large investigations responsive.",
     )
 
-    with tab_case:
+    if active_workspace == "Incident":
         st.markdown(f"### {case['title']}")
         st.info(case["scenario"])
         st.markdown("#### Collection priority")
         st.markdown("1. Preserve volatile endpoint and connection context where authorized.")
         st.markdown("2. Capture identity, endpoint, network and file artifacts with source timestamps.")
         st.markdown("3. Verify hashes and document gaps before interpreting the evidence.")
-        st.markdown("#### Event inventory")
-        st.dataframe([
-            {"Event ID": e["event_id"], "Time (UTC)": e["timestamp"], "Source": e["source"], "Type": e["kind"], "Summary": e["summary"]}
-            for e in case["events"]
-        ], use_container_width=True, hide_index=True)
+        if st.checkbox("Show event inventory", value=False, key="fl_show_case_inventory"):
+            st.dataframe([
+                {"Event ID": e["event_id"], "Time (UTC)": e["timestamp"], "Source": e["source"], "Type": e["kind"], "Summary": e["summary"]}
+                for e in case["events"]
+            ], use_container_width=True, hide_index=True)
 
-    with tab_evidence:
+    if active_workspace == "Evidence Integrity":
         st.markdown("### Evidence Integrity Challenge")
         st.write("Select an evidence record and deliberately alter its stored summary. Verification recalculates the hash; it does not ask the AI whether the record changed.")
         labels = [f"{item['evidence_id']} · {item['record']['summary']}" for item in evidence]
@@ -238,7 +241,7 @@ def render_firstlight() -> None:
                 st.rerun()
         st.caption("Restoring reloads the original fictional fixture and resets the demonstration's action log.")
 
-    with tab_investigation:
+    if active_workspace == "Investigation":
         st.markdown("### Coordinated investigation")
         if st.button("Run investigation workflow", type="primary", key="fl_investigate"):
             result = investigate_case(case, evidence)
@@ -257,8 +260,8 @@ def render_firstlight() -> None:
                     st.markdown(f"**{finding['finding_id']} · {finding['title']}**")
                     st.write(finding["explanation"])
                     st.caption(f"Severity: {finding['severity']} · Confidence: {finding['confidence']} · State: {finding['state']} · Evidence: {', '.join(finding['evidence_ids']) or 'none'}")
-            st.markdown("#### Reconstructed timeline")
-            st.dataframe(investigation["timeline"], use_container_width=True, hide_index=True)
+            if st.checkbox("Show reconstructed timeline", value=True, key="fl_show_investigation_timeline"):
+                st.dataframe(investigation["timeline"], use_container_width=True, hide_index=True)
             st.markdown("#### Evidence gaps")
             for gap in investigation["gaps"]:
                 st.warning(gap)
@@ -281,7 +284,7 @@ def render_firstlight() -> None:
         else:
             st.info("Run the workflow to generate evidence-linked findings, a timeline and explicit investigation gaps.")
 
-    with tab_response:
+    if active_workspace == "Response Center":
         st.markdown("### Human approval gate")
         st.write("Every action below is simulated. Approval is checked server-side in the workflow function; no real system is touched.")
         if not investigation:
@@ -313,7 +316,7 @@ def render_firstlight() -> None:
                 st.dataframe(st.session_state.firstlight_action_log, use_container_width=True, hide_index=True)
 
 
-    with tab_audit:
+    if active_workspace == "Audit Trail":
         st.markdown("### Hash-chained audit trail")
         chain_valid = verify_audit_chain(st.session_state.firstlight_audit)
         if chain_valid:
