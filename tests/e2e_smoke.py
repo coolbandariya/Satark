@@ -11,7 +11,7 @@ ARTIFACTS.mkdir(parents=True,exist_ok=True)
 
 
 def assert_layout(page, name):
-    page.wait_for_timeout(3300)
+    page.locator("#satark-intro-overlay").wait_for(state="detached", timeout=10_000)
     body=page.locator("body").inner_text()
     assert "Pause the panic." in body, f"{name}: home copy missing"
     assert page.locator("#satark-intro-overlay").count() == 0, f"{name}: intro overlay did not dismiss"
@@ -57,14 +57,6 @@ def choose_workspace(page, steps_down):
         workspace.press("ArrowDown")
     workspace.press("Enter")
 
-
-def choose_workspace(page, steps_down):
-    """Select a FIRSTLIGHT workspace using keyboard input to avoid flaky popover clicks."""
-    workspace = page.get_by_role("combobox", name="Investigation workspace")
-    workspace.click()
-    for _ in range(steps_down):
-        workspace.press("ArrowDown")
-    workspace.press("Enter")
 
 
 def main():
