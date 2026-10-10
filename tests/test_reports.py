@@ -11,6 +11,25 @@ class ReportGenerationTests(unittest.TestCase):
         self.assertTrue(data.startswith(b"%PDF"))
         self.assertGreater(len(data), 500)
 
+    def test_pdf_includes_rule_based_evidence_ledger(self):
+        data = make_pdf_report(
+            {
+                "risk_score": 62,
+                "confidence": 54,
+                "threat_category": "Needs review",
+                "deterministic_evidence": [
+                    {
+                        "title": "Urgency language",
+                        "observation": "Pressure to act quickly can reduce careful verification.",
+                        "evidence": "account will be blocked today",
+                    }
+                ],
+            },
+            "Text",
+        )
+        self.assertTrue(data.startswith(b"%PDF"))
+        self.assertGreater(len(data), 500)
+
     def test_malformed_numeric_fields_are_safe(self):
         data = make_pdf_report(
             {
