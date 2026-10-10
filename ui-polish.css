@@ -1,0 +1,92 @@
+/* SATARK polish layer — final UI pass.
+   CSS-only motion and finish; no external runtime or third-party code. */
+.workspace-hero{
+  isolation:isolate;
+  background:
+    radial-gradient(ellipse at 90% 8%,rgba(125,211,252,.08),transparent 28rem),
+    linear-gradient(125deg,rgba(20,34,55,.99),rgba(11,19,32,.99) 57%,rgba(10,25,31,.98))!important;
+}
+.workspace-hero::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background-image:
+    linear-gradient(rgba(177,199,230,.045) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(177,199,230,.045) 1px,transparent 1px);
+  background-size:42px 42px;
+  opacity:.42;
+  -webkit-mask-image:linear-gradient(105deg,transparent 4%,#000 58%,#000 100%);
+  mask-image:linear-gradient(105deg,transparent 4%,#000 58%,#000 100%);
+}
+.workspace-hero-copy,.workspace-preview{z-index:1}
+.workspace-preview{
+  border-color:rgba(177,199,230,.2);
+  box-shadow:0 22px 54px rgba(0,0,0,.28),inset 0 1px rgba(255,255,255,.055);
+  backdrop-filter:blur(12px);
+  transition:transform .24s ease,border-color .24s ease,box-shadow .24s ease;
+}
+.workspace-preview:hover{
+  transform:translateY(-2px);
+  border-color:rgba(125,211,252,.28);
+  box-shadow:0 26px 58px rgba(0,0,0,.3),inset 0 1px rgba(255,255,255,.06);
+}
+.status-dot{animation:satark-status-pulse 3s ease-in-out infinite}
+@keyframes satark-status-pulse{
+  0%,100%{box-shadow:0 0 0 4px rgba(94,224,176,.08),0 0 0 0 rgba(94,224,176,0)}
+  50%{box-shadow:0 0 0 4px rgba(94,224,176,.08),0 0 0 7px rgba(94,224,176,.035)}
+}
+.workspace-section-head{padding-top:.25rem}
+.workspace-heading{letter-spacing:-.045em}
+.capability-card{
+  overflow:hidden;
+  box-shadow:inset 0 1px rgba(255,255,255,.025);
+}
+.capability-card::before{
+  content:"";
+  position:absolute;
+  left:1rem;right:1rem;top:0;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(125,211,252,.4),transparent);
+  opacity:0;
+  transition:opacity .2s ease;
+}
+.capability-card:hover::before{opacity:1}
+.capability-icon{transition:transform .2s ease,background .2s ease}
+.capability-card:hover .capability-icon{transform:translateY(-1px) scale(1.04);background:rgba(125,211,252,.12)}
+.workspace-method{
+  background:linear-gradient(125deg,rgba(13,22,36,.86),rgba(11,19,31,.68));
+  box-shadow:inset 0 1px rgba(255,255,255,.025);
+}
+.method-step>span{transition:background .18s ease,border-color .18s ease,transform .18s ease}
+.method-step:hover>span{transform:translateY(-2px);background:rgba(125,211,252,.12);border-color:rgba(125,211,252,.36)}
+.workspace-disclaimer{background:linear-gradient(100deg,rgba(244,201,107,.04),rgba(13,22,36,.36))}
+.st-key-home-actions [data-testid="stButton"]>button{
+  min-height:52px!important;
+  border-radius:12px!important;
+  letter-spacing:-.01em;
+}
+.st-key-home-actions [data-testid="stButton"] button[kind="primary"]{
+  box-shadow:0 10px 28px rgba(85,194,211,.13),inset 0 1px rgba(255,255,255,.28)!important;
+}
+.st-key-home-actions [data-testid="stButton"] button[kind="primary"]:hover{
+  transform:translateY(-1px);
+  box-shadow:0 14px 32px rgba(85,194,211,.18),inset 0 1px rgba(255,255,255,.3)!important;
+}
+[data-testid="stFileUploaderDropzone"]:focus-within{
+  border-color:rgba(125,211,252,.55)!important;
+  box-shadow:0 0 0 3px rgba(125,211,252,.07)!important;
+}
+[data-testid="stExpander"] details summary:focus-visible{
+  outline:2px solid var(--accent)!important;outline-offset:3px!important;border-radius:8px;
+}
+@media(max-width:680px){
+  .workspace-hero::after{background-size:32px 32px;opacity:.25}
+  .workspace-preview:hover,.capability-card:hover,.method-step:hover>span{transform:none}
+}
+@media(prefers-reduced-motion:reduce){
+  .status-dot{animation:none!important}
+  .workspace-preview,.capability-icon,.method-step>span{transition:none!important}
+  .workspace-preview:hover,.capability-card:hover .capability-icon,.method-step:hover>span{transform:none!important}
+}
