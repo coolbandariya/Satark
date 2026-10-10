@@ -22,6 +22,18 @@ class FirstlightEngineTests(unittest.TestCase):
         item["record"]["summary"] += " tampered"
         self.assertFalse(verify_evidence(item)["valid"])
 
+    def test_evidence_id_cannot_be_swapped_outside_the_hashed_record(self):
+        item = dict(self.evidence[0])
+        item["evidence_id"] = "EV-SUBSTITUTED"
+        result = verify_evidence(item)
+        self.assertFalse(result["valid"])
+        self.assertIn("MISMATCH", result["status"])
+
+    def test_malformed_evidence_record_fails_closed(self):
+        item = {"evidence_id": "EV-001", "record": "not-an-object", "sha256": "abc"}
+        result = verify_evidence(item)
+        self.assertFalse(result["valid"])
+
     def test_findings_reference_evidence(self):
         result = investigate_case(self.case, self.evidence)
         self.assertGreaterEqual(len(result["findings"]), 3)
