@@ -189,13 +189,13 @@ def render_firstlight() -> None:
     )
 
     if active_workspace == "Incident":
-            st.markdown(f"### {case['title']}")
-            st.info(case["scenario"])
-            st.markdown("#### Collection priority")
-            st.markdown("1. Preserve volatile endpoint and connection context where authorized.")
-            st.markdown("2. Capture identity, endpoint, network and file artifacts with source timestamps.")
-            st.markdown("3. Verify hashes and document gaps before interpreting the evidence.")
-            st.markdown("#### Event inventory")
+        st.markdown(f"### {case['title']}")
+        st.info(case["scenario"])
+        st.markdown("#### Collection priority")
+        st.markdown("1. Preserve volatile endpoint and connection context where authorized.")
+        st.markdown("2. Capture identity, endpoint, network and file artifacts with source timestamps.")
+        st.markdown("3. Verify hashes and document gaps before interpreting the evidence.")
+        if st.checkbox("Show event inventory", value=False, key="fl_show_case_inventory"):
             st.dataframe([
                 {"Event ID": e["event_id"], "Time (UTC)": e["timestamp"], "Source": e["source"], "Type": e["kind"], "Summary": e["summary"]}
                 for e in case["events"]
