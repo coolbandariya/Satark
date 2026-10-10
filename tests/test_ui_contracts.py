@@ -6,6 +6,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 APP = (ROOT / "satark.py").read_text(encoding="utf-8")
 CSS = (ROOT / "styles.css").read_text(encoding="utf-8")
+POLISH_CSS = (ROOT / "ui-polish.css").read_text(encoding="utf-8")
 RADAR = (ROOT / "radar_background.py").read_text(encoding="utf-8")
 STEPPER = (ROOT / "stepper_component.py").read_text(encoding="utf-8")
 HISTORY = (ROOT / "ui/history.py").read_text(encoding="utf-8")
@@ -93,6 +94,13 @@ class UIContractTests(unittest.TestCase):
         self.assertIn('("History", "Session history")', NAV)
         self.assertNotIn('("Challenge",', NAV)
         self.assertNotIn('("Classroom",', NAV)
+
+    def test_visual_polish_is_local_accessible_and_motion_sensitive(self):
+        self.assertIn('with_name("ui-polish.css")', RADAR)
+        self.assertIn("prefers-reduced-motion:reduce", POLISH_CSS)
+        self.assertIn(".workspace-hero::after", POLISH_CSS)
+        self.assertIn("mask-image:", POLISH_CSS)
+        self.assertNotIn("https://", POLISH_CSS)
 
     def test_app_does_not_reference_missing_analysis_constants(self):
         self.assertIn("THREAT_CHECKS, OFFICIAL_VERIFICATION_SOURCES", APP)
