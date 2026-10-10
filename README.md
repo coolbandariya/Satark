@@ -36,6 +36,7 @@ It is designed around a simple workflow: **bring the evidence → inspect the si
 - [Features](#features)
 - [How it works](#how-it-works)
 - [Technology](#technology)
+- [UI design and motion](#ui-design-and-motion)
 - [Run locally](#run-locally)
 - [Configure Groq](#configure-groq)
 - [Project structure](#project-structure)
@@ -102,6 +103,12 @@ Do not submit passwords, one-time codes, private keys, or unnecessary personal i
 - **FFmpeg** — optional audio-track extraction for video transcription
 
 The repository separates analysis, input processing, findings, security, provider, media processing, reporting and major UI responsibilities into modules. The visual layer is CSS-first and the onboarding workflow uses native Streamlit rendering, so the core interface does not depend on a second browser runtime or a third-party JavaScript CDN. `satark.py` remains the orchestration layer, while provider, processing and UI responsibilities are extracted into focused modules.
+
+## UI design and motion
+
+The interface takes inspiration from the craft and interaction principles demonstrated by [React Bits](https://github.com/DavidHDev/react-bits)—layered visual depth, restrained motion, responsive component layouts and clear interaction feedback—while adapting those principles to Streamlit instead of shipping a separate React runtime. SATARK uses its own CSS implementation; React Bits is an inspiration reference, not a runtime dependency. Animations are subtle, CSS-only and disabled for users who request reduced motion. Expensive analysis and media processing start only after an explicit user action, and uploads are bounded before processing.
+
+Design and release checks are documented in [UI design notes](docs/UI_DESIGN.md) and [release readiness](docs/RELEASE_READINESS.md).
 
 ## Run locally
 
