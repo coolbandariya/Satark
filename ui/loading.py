@@ -12,7 +12,6 @@ def render_intro_loader() -> None:
 
     st.iframe(
         r"""<!doctype html><html><head><meta charset="utf-8"></head><body><script>
-        <script>
         (() => {
           try {
             const hostWindow = window.parent;
