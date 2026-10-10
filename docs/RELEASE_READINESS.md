@@ -13,7 +13,7 @@ This document separates a working hackathon demonstration from a service that is
 ## Before every deployment
 
 1. Record the Git commit SHA, repository, branch, Streamlit entry point and hosting target. Confirm the host deploys the intended repository and branch—not a similarly named fork or stale app.
-2. Run the exact-commit CI and CodeQL workflows. Check dependency consistency, Python compilation, unit tests, desktop/mobile browser smoke tests, report download, and the offline sample.
+2. Run the exact-commit CI and CodeQL workflows. Check dependency consistency, Python compilation, unit tests, desktop/mobile browser smoke tests, report download, and the offline sample. Review every new high/critical code-scanning alert on the changed code; do not suppress an alert without a documented, reviewed rationale.
 3. Set `GROQ_API_KEY` only in the host's secret manager. Never put real keys in `.streamlit/secrets.toml` committed to Git, source files, screenshots, issue reports or browser code. Rotate any key that may have been exposed.
 4. Keep hosted exception details hidden. The repository's Streamlit defaults set `client.showErrorDetails = "none"` and cap a single upload at 50 MB; PDF and image processing have stricter per-format limits. Confirm the host respects these settings and any platform-level request limits.
 5. Test without a provider key. The offline sample and deterministic FIRSTLIGHT demo must remain usable, and failed live-provider requests must not be presented as a safe verdict.
