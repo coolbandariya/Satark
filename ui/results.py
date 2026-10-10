@@ -54,8 +54,11 @@ def render_evidence_ledger(evidence, mode=""):
     )
 
     if not evidence:
-        if str(mode).lower() in {"image", "qr"}:
+        normalized_mode = str(mode).lower()
+        if normalized_mode in {"image", "qr"}:
             message = "This image-based workflow did not produce a text-only evidence ledger. Review the visual analysis and verify important claims independently."
+        elif normalized_mode == "video":
+            message = "This video workflow may rely on sampled frames and an optional transcript. The local text ledger does not exhaustively verify the clip; independently verify important claims."
         else:
             message = "No supported text signals were extracted by the current rule set. This is not a safety clearance."
         st.info(message)
