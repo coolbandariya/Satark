@@ -71,6 +71,10 @@ class UIContractTests(unittest.TestCase):
         self.assertIn('secondaryBackgroundColor = "#0d1523"', config)
         self.assertIn('textColor = "#edf4ff"', config)
 
+    def test_active_scanner_has_a_distinct_native_control_state(self):
+        self.assertIn('type="primary" if active else "secondary"', APP)
+        self.assertIn(".scanner.active", CSS)
+
     def test_investigation_screen_has_contextual_workflow_guidance(self):
         self.assertIn("mode_details = {", APP)
         self.assertIn("selected-workflow", APP)
