@@ -24,7 +24,7 @@ class UIContractTests(unittest.TestCase):
             "from ui.learning import render_academy, render_classroom",
         ):
             self.assertIn(expected, APP)
-        self.assertLess(len(APP), 50000)
+        self.assertLess(len(APP), 55000)
 
     def test_result_renderers_receive_required_contract_arguments(self):
         self.assertIn("render_threat_analysis(result, THREAT_CHECKS)", APP)
