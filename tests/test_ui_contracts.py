@@ -108,8 +108,10 @@ class UIContractTests(unittest.TestCase):
         self.assertIn('("Home", "Overview")', NAV)
         self.assertIn('("Analyze", "Investigate")', NAV)
         self.assertIn('("History", "Session history")', NAV)
-        self.assertNotIn('("Challenge",', NAV)
-        self.assertNotIn('("Classroom",', NAV)
+        self.assertIn('Learn & practice', NAV)
+        self.assertIn('("Challenge", "Scam Challenge")', NAV)
+        self.assertIn('("Academy", "SATARK Academy")', NAV)
+        self.assertIn('("Classroom", "Classroom Mode")', NAV)
 
     def test_visual_polish_is_local_accessible_and_motion_sensitive(self):
         self.assertIn('with_name("ui-polish.css")', RADAR)
