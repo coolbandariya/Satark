@@ -173,47 +173,60 @@ If the app offers a sidebar key field, it can also be used for local experimenta
 ```text
 .
 ├── .github/
-│   └── workflows/
-│       └── ci.yml               # Automated validation workflow
+│   ├── ISSUE_TEMPLATE/
+│   │   ├── bug_report.yml
+│   │   └── feature_request.yml
+│   ├── workflows/
+│   │   ├── ci.yml               # Unit + browser regression checks
+│   │   └── codeql.yml           # Static security analysis
+│   ├── PULL_REQUEST_TEMPLATE.md
+│   └── dependabot.yml           # Scheduled dependency updates
+├── assets/
+│   └── satark-banner.svg
 ├── docs/
-│   ├── ANALYSIS_LIMITATIONS.md  # Interpretation and safe-use guidance
-│   ├── ARCHITECTURE.md         # Runtime boundaries and threat model
-│   ├── FIRSTLIGHT.md           # Incident workspace scope and safety boundaries
-│   ├── UI_DESIGN.md            # Visual system, motion and accessibility rules
-│   └── RELEASE_READINESS.md    # Deployment go/no-go runbook
+│   ├── ANALYSIS_LIMITATIONS.md
+│   ├── ARCHITECTURE.md
+│   ├── FIRSTLIGHT.md
+│   ├── UI_DESIGN.md
+│   └── RELEASE_READINESS.md
 ├── tests/
-│   ├── test_ai_provider.py          # Provider/model-selection tests
-│   ├── test_review_engine.py        # Evidence coverage review tests
-│   ├── test_reports.py              # PDF text/output regression tests
-│   ├── test_url_security.py         # Safe-fetch boundary tests
-│   ├── e2e_smoke.py                 # Desktop/mobile browser and PDF download checks
-│   ├── test_analysis_engine.py      # Result normalization/confidence tests
-│   ├── test_input_processing.py     # Upload validation tests
-│   ├── test_satark_utils.py         # Shared helper tests
-│   ├── test_satark_utils_urls.py    # Verification URL safety tests
-│   ├── test_scam_challenge.py       # Game-engine regression tests
-│   └── test_video_processing.py     # Video helper tests
-├── satark.py                    # Streamlit entry point and app orchestration
-├── ui/                          # Navigation, home, results, history and learning surfaces
+│   ├── e2e_smoke.py
+│   ├── test_ai_provider.py
+│   ├── test_analysis_engine.py
+│   ├── test_firstlight_engine.py
+│   ├── test_firstlight_ingest.py
+│   ├── test_input_processing.py
+│   ├── test_reports.py
+│   ├── test_review_engine.py
+│   ├── test_satark_utils.py
+│   ├── test_satark_utils_urls.py
+│   ├── test_scam_challenge.py
+│   ├── test_url_security.py
+│   └── test_video_processing.py
+├── ui/
 │   ├── home.py
 │   ├── navigation.py
 │   ├── results.py
 │   ├── history.py
-│   └── learning.py
-├── ai_provider.py               # Groq client and model-selection helpers
-├── review_engine.py             # Deterministic evidence coverage review
-├── scam_challenge.py             # Scam Challenge game and rendering
-├── video_processing.py           # Video frame and audio helpers
-├── reports.py                    # PDF report generation
-├── satark_utils.py               # Shared text/result helpers
-├── url_security.py               # URL validation and public-page fetching
-├── styles.css                    # Application styles
-├── radar_background.py            # CSS-only background hook
-├── stepper_component.py           # Dependency-free onboarding workflow
-├── requirements.txt              # Python dependencies
+│   ├── learning.py
+│   ├── demo.py
+│   └── firstlight.py
+├── firstlight_engine.py
+├── firstlight_ingest.py
+├── satark.py
+├── ai_provider.py
+├── analysis_engine.py
+├── config.py
+├── input_processing.py
+├── reports.py
+├── satark_utils.py
+├── url_security.py
+├── video_processing.py
+├── styles.css
+├── requirements.txt
+├── CONTRIBUTING.md
 ├── README.md
-└── SECURITY.md                   # Security policy and deployment checklist
-```
+└── SECURITY.md
 
 ## Tests and checks
 
