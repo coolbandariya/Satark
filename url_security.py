@@ -79,7 +79,7 @@ def _validated_destination(url):
         raise ValueError("The URL points to a local or unsafe network address.")
 
     try:
-        port = parsed.port or (443 if parsed.scheme == "https" else 80)
+        port = parsed.port if parsed.port is not None else (443 if parsed.scheme == "https" else 80)
     except ValueError as exc:
         raise ValueError("The URL contains an invalid port.") from exc
     if not (1 <= port <= 65535):
