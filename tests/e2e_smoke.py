@@ -100,6 +100,33 @@ def main():
                     page.locator('[data-testid="stSidebar"] button').filter(has_text=label).click()
                     page.get_by_text(marker).wait_for(timeout=30_000)
 
+                # FIRSTLIGHT is the flagship workspace; exercise its main
+                # synthetic-only investigation path without provider credentials.
+                page.locator('[data-testid="stSidebar"] button').filter(has_text="FIRSTLIGHT").click()
+                page.get_by_role("button", name="Load / reset synthetic incident").click()
+                page.get_by_text("Synthetic case loaded").wait_for(timeout=30_000)
+                workspace = page.get_by_role("combobox", name="Investigation workspace")
+                workspace.click()
+                page.get_by_role("option", name="Investigation", exact=True).click()
+                page.get_by_role("button", name="Run investigation workflow").click()
+                page.get_by_text("Coordinated investigation").wait_for(timeout=30_000)
+                page.get_by_text("Findings", exact=True).wait_for(timeout=30_000)
+                assert page.get_by_role("button", name="Export FIRSTLIGHT incident report (JSON)").is_visible()
+
+                # Approval remains explicitly simulated; verify the action log
+                # and audit trail after one approval.
+                workspace = page.get_by_role("combobox", name="Investigation workspace")
+                workspace.click()
+                page.get_by_role("option", name="Response Center", exact=True).click()
+                page.get_by_role("button", name="Approve & simulate").first.click()
+                page.get_by_text("Response action log").wait_for(timeout=30_000)
+                workspace = page.get_by_role("combobox", name="Investigation workspace")
+                workspace.click()
+                page.get_by_role("option", name="Audit Trail", exact=True).click()
+                page.get_by_text("Hash-chained audit trail").wait_for(timeout=30_000)
+                page.get_by_text("Audit chain verifies against its first entry.").wait_for(timeout=30_000)
+                page.locator('[data-testid="stSidebar"] button').filter(has_text="Overview").click()
+
                 # The offline sample must open without a provider key and expose
                 # the evidence ledger plus the deterministic coverage check.
                 page.get_by_role("button",name="Open the guided sample report").click()
