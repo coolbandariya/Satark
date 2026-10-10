@@ -13,6 +13,7 @@ HISTORY = (ROOT / "ui/history.py").read_text(encoding="utf-8")
 LEARNING = (ROOT / "ui/learning.py").read_text(encoding="utf-8")
 HOME = (ROOT / "ui/home.py").read_text(encoding="utf-8")
 NAV = (ROOT / "ui/navigation.py").read_text(encoding="utf-8")
+FIRSTLIGHT = (ROOT / "ui/firstlight.py").read_text(encoding="utf-8")
 
 
 class UIContractTests(unittest.TestCase):
@@ -104,6 +105,13 @@ class UIContractTests(unittest.TestCase):
         self.assertIn(".workspace-hero::after", POLISH_CSS)
         self.assertIn("mask-image:", POLISH_CSS)
         self.assertNotIn("https://", POLISH_CSS)
+
+    def test_firstlight_import_tables_and_report_generation_are_opt_in(self):
+        self.assertIn("Show normalized event inventory", FIRSTLIGHT)
+        self.assertIn("Show rejected records", FIRSTLIGHT)
+        self.assertIn("Prepare import report", FIRSTLIGHT)
+        self.assertIn("firstlight_import_report_json", FIRSTLIGHT)
+        self.assertIn("Download prepared import report (JSON)", FIRSTLIGHT)
 
     def test_app_does_not_reference_missing_analysis_constants(self):
         self.assertIn("THREAT_CHECKS, OFFICIAL_VERIFICATION_SOURCES", APP)
