@@ -790,9 +790,28 @@ elif st.session_state.page == "Analyze":
     # SECURITY ANALYSIS INPUT
     # ==========================================================
 
+    mode_details = {
+        "Text": ("💬", "Messages & text", "Inspect urgency, credential requests, impersonation cues and embedded indicators."),
+        "URL": ("↗", "Links & websites", "Review URL structure and inspect eligible public-page text using bounded fetching."),
+        "Image": ("▧", "Images & screenshots", "Review visible claims, instructions and image context without treating appearance as proof."),
+        "PDF": ("▤", "PDF documents", "Extract supported document text for review. Scanned or image-only pages may provide limited evidence."),
+        "QR": ("▦", "QR code images", "Inspect QR-related images and visible context. Do not open an unknown destination just to verify it."),
+        "Video": ("▷", "Video & clips", "Review sampled frames and, when available, a transcript. This is not exhaustive frame-by-frame forensics."),
+    }
+    mode_icon, mode_title, mode_description = mode_details.get(
+        mode, ("◈", "Investigation", "Choose a supported input to begin.")
+    )
     st.markdown(
-        f'<div class="section-title">🔎 Security Analysis</div>'
-        f'<div class="section-copy">Selected: <strong>{mode}</strong></div>',
+        '<div class="section-title">Security Analysis</div>'
+        '<div class="selected-workflow">'
+        '<div class="selected-workflow-icon">' + mode_icon + '</div>'
+        '<div class="selected-workflow-copy">'
+        '<div class="selected-workflow-kicker">SELECTED WORKFLOW · ' + html.escape(mode.upper()) + '</div>'
+        '<div class="selected-workflow-title">' + html.escape(mode_title) + '</div>'
+        '<p>' + html.escape(mode_description) + '</p>'
+        '</div>'
+        '<div class="selected-workflow-state"><span></span> Ready for input</div>'
+        '</div>',
         unsafe_allow_html=True
     )
 
