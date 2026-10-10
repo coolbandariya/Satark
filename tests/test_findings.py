@@ -35,6 +35,11 @@ class FindingSeverityTests(unittest.TestCase):
         cases = {
             "Not high risk": "unknown",
             "No high risk detected": "unknown",
+            "No evidence of high risk": "unknown",
+            "No signs of high risk": "unknown",
+            "No indicators of critical risk": "unknown",
+            "High risk not detected": "unknown",
+            "Low risk not present": "unknown",
             "This is not a high-risk event": "unknown",
             "Never considered critical": "unknown",
             "Not high, medium concern": "medium",
