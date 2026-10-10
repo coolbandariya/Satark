@@ -91,6 +91,17 @@ class FirstlightEngineTests(unittest.TestCase):
     def test_unknown_action_fails_closed(self):
         with self.assertRaises(ValueError):
             apply_simulated_response([], "ACT-404", True, "reviewer")
+        with self.assertRaises(ValueError):
+            apply_simulated_response(None, "ACT-001", True, "reviewer")
+        with self.assertRaises(ValueError):
+            apply_simulated_response([None], "ACT-001", True, "reviewer")
+
+    def test_approver_label_is_bounded(self):
+        result = investigate_case(self.case, self.evidence)
+        _, outcome = apply_simulated_response(
+            result["response_proposals"], "ACT-001", True, "x" * 500
+        )
+        self.assertEqual(len(outcome["approver"]), 128)
 
 
 if __name__ == "__main__":
