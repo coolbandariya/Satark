@@ -1,6 +1,9 @@
 """Deterministic, UI-neutral finding model for SATARK results."""
 
+import re
+
 _SEVERITY = {
+    "critical": 4,
     "high": 3,
     "medium": 2,
     "low": 1,
@@ -10,15 +13,32 @@ _SEVERITY = {
 
 
 def finding_severity(value):
+    """Map a displayed check value to a conservative severity.
+
+    Explicit negative states take precedence, followed by explicit severity
+    labels. Generic words such as "detected" are only a fallback; otherwise
+    a value like "Low risk — detected" would incorrectly become High.
+    """
     text = str(value or "").strip().lower()
-    if "not detected" in text or "clear" in text:
+    if not text:
+        return "unknown"
+
+    # Handle negation before any positive keyword ("not detected" contains
+    # the word "detected").
+    if re.search(r"\b(?:not detected|none|clear|no sign|absent|false)\b", text):
         return "clear"
-    if "high" in text or "detected" in text:
+
+    if re.search(r"\b(?:critical|severe)\b", text):
+        return "critical"
+    if re.search(r"\bhigh\b", text):
         return "high"
-    if "medium" in text:
+    if re.search(r"\bmedium\b|\bmoderate\b", text):
         return "medium"
-    if "low" in text:
+    if re.search(r"\blow\b", text):
         return "low"
+    if re.search(r"\b(?:detected|present|confirmed)\b", text):
+        return "high"
+
     return "unknown"
 
 
@@ -37,7 +57,7 @@ def build_findings(result):
             "severity": severity,
             "action": (
                 "Verify independently before acting."
-                if severity in {"high", "medium", "unknown"}
+                if severity in {"critical", "high", "medium", "unknown"}
                 else "No meaningful indicator was detected by this check."
             ),
         })
