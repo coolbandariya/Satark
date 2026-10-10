@@ -272,8 +272,10 @@ def detect_event_patterns(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
     # Index network events by host and timestamp. The previous nested scan was
     # quadratic for large imports; binary search makes correlation O(n log n).
-    for host_events in network_by_host.values():
+    network_times_by_host: dict[str, list[datetime]] = {}
+    for host, host_events in network_by_host.items():
         host_events.sort(key=lambda pair: pair[0])
+        network_times_by_host[host] = [pair[0] for pair in host_events]
 
     for process_event in process_events:
         pd = process_event.get("details") if isinstance(process_event.get("details"), dict) else {}
@@ -287,8 +289,7 @@ def detect_event_patterns(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
         host_events = network_by_host.get(host, [])
         if not host_events:
             continue
-        times = [pair[0] for pair in host_events]
-        index = bisect_left(times, ptime)
+        index = bisect_left(network_times_by_host[host], ptime)
         if index < len(host_events) and (host_events[index][0] - ptime).total_seconds() <= 1800:
             network_event = host_events[index][1]
             emit("FL-COR-001", "Network activity followed a script-capable process",
