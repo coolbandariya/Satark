@@ -61,6 +61,8 @@ def main():
                 assert page.get_by_role("button",name="Select Text").is_visible()
                 page.get_by_role("button",name="Select Text").click()
                 page.get_by_text("Security Analysis").wait_for(timeout=30_000)
+                page.get_by_text("Messages & text").wait_for(timeout=30_000)
+                page.get_by_text("Ready for input").wait_for(timeout=30_000)
 
                 # Exercise every top-level navigation surface without requiring
                 # an external provider key.
