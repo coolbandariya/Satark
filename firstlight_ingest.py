@@ -104,9 +104,9 @@ def _normalize_row(row: dict[str, Any], index: int, seen_ids: set[str]) -> tuple
         raise ValueError("event_id exceeds 128 characters")
     if event_id in seen_ids:
         raise ValueError(f"duplicate event_id: {event_id}")
-    seen_ids.add(event_id)
-    normalized["event_id"] = event_id
     normalized["details"] = _parse_details(_first(row, _FIELD_ALIASES["details"]))
+    normalized["event_id"] = event_id
+    seen_ids.add(event_id)
     return normalized, assumed_utc
 
 
@@ -211,7 +211,8 @@ def detect_event_patterns(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
         parent = str(details.get("parent", "")).lower()
         if kind in {"authentication", "login", "signin", "sign-in"}:
             account = str(details.get("account", "")).lower()
-            login_by_account.setdefault(account, []).append(event)
+            if details.get("result") == "success":
+                login_by_account.setdefault(account, []).append(event)
             if details.get("result") == "success" and details.get("novel_source") is True:
                 emit("FL-ID-001", "Successful login from a novel source",
                      "The source event explicitly marks a successful login as novel. Novelty alone does not prove compromise.",
@@ -242,11 +243,13 @@ def detect_event_patterns(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
         except (KeyError, ValueError):
             continue
         host = str(pd.get("host", "")).lower()
+        if not host:
+            continue
         for network_event in ordered:
             if str(network_event.get("kind", "")).lower() not in {"connection", "network", "network_connection"}:
                 continue
             nd = network_event.get("details") if isinstance(network_event.get("details"), dict) else {}
-            if host and str(nd.get("host", "")).lower() != host:
+            if str(nd.get("host", "")).lower() != host:
                 continue
             try:
                 ntime = datetime.fromisoformat(str(network_event["timestamp"]).replace("Z", "+00:00"))
