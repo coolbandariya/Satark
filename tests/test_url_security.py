@@ -201,7 +201,7 @@ class URLSecurityTests(unittest.TestCase):
 
     def test_redirect_to_private_destination_is_revalidated_and_blocked(self):
         response = fake_response(
-            headers={"Content-Type": "text/html", "Location": "http://127.0.0.1/admin"},
+            headers={"Content-Type": "text/html", "Location": "https://127.0.0.1/admin"},
             status=302,
         )
         connection = fake_connection()
