@@ -118,3 +118,68 @@ def render_evidence_review(result):
         '</section>',
         unsafe_allow_html=True,
     )
+
+
+
+def render_investigation_timeline(result):
+    """Show the stages that actually ran for this completed investigation."""
+    result = result if isinstance(result, dict) else {}
+    mode = safe_text(result.get("analysis_mode", "Text"), "Text")
+    visual_only = mode.lower() in {"image", "qr"}
+    evidence = result.get("deterministic_evidence", [])
+    evidence = (
+        [
+            item for item in evidence
+            if isinstance(item, dict)
+            and any(safe_text(item.get(field)) for field in ("title", "observation", "evidence"))
+        ]
+        if isinstance(evidence, list)
+        else []
+    )
+    recommendations = result.get("recommendations", [])
+    has_recommendations = bool(
+        [item for item in recommendations if safe_text(item)]
+        if isinstance(recommendations, (list, tuple))
+        else safe_text(recommendations)
+    )
+    stages = [
+        ("01", "Input prepared", f"{html.escape(mode)} input passed validation and preparation.", "complete"),
+        (
+            "02",
+            "Local evidence rules",
+            "Not run for this visual workflow; image findings are reviewed separately."
+            if visual_only
+            else f"Completed · {len(evidence)} observable signal(s) extracted. Zero signals is not a safety clearance.",
+            "skipped" if visual_only else "complete",
+        ),
+        ("03", "AI interpretation", "The configured model returned an assessment for this input.", "complete"),
+        ("04", "Evidence coverage review", "The report checks whether local text observations independently cover the assessment; it does not verify every AI claim.", "complete"),
+        (
+            "05",
+            "Recommended next steps",
+            "Recommendations are available for review."
+            if has_recommendations
+            else "No specific actions were returned; manual verification is recommended.",
+            "complete" if has_recommendations else "review",
+        ),
+    ]
+    cards = []
+    for number, title, description, state in stages:
+        state_label = {"complete": "Completed", "skipped": "Not applicable", "review": "Manual review"}[state]
+        cards.append(
+            '<article class="investigation-stage investigation-stage--' + state + '">'
+            '<div class="investigation-stage-marker">' + number + '</div>'
+            '<div class="investigation-stage-content"><div class="investigation-stage-title">'
+            + html.escape(title) + '</div><p>' + description + '</p></div>'
+            '<span class="investigation-stage-state">' + state_label + '</span>'
+            '</article>'
+        )
+    st.markdown(
+        '<section class="report-section investigation-timeline">'
+        '<div class="investigation-timeline-heading"><div><h3>Investigation workflow</h3>'
+        '<p>What SATARK actually ran for this report</p></div>'
+        '<span class="investigation-timeline-badge">5 stages</span></div>'
+        '<div class="investigation-stages">' + ''.join(cards) + '</div>'
+        '</section>',
+        unsafe_allow_html=True,
+    )
