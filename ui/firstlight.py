@@ -80,6 +80,8 @@ def render_firstlight() -> None:
         st.caption("Limits: 5 MiB per artifact, 10,000 records, 4,096 characters per text field. This demo keeps imported data in the current Streamlit session only.")
         upload = st.file_uploader("Choose event file", type=["json", "csv"], key="fl_event_upload")
         if upload is not None and st.button("Validate and analyze import", type="primary", key="fl_import_run"):
+            st.session_state.firstlight_import_result = None
+            st.session_state.firstlight_import_findings = []
             try:
                 imported = ingest_event_artifact(upload.getvalue(), upload.name)
                 st.session_state.firstlight_import_result = imported
