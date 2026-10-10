@@ -11,8 +11,9 @@ _SEVERITY = {
     "unknown": 0,
 }
 _NEGATORS = re.compile(
-    r"(?:\bnot|\bnever|\bisn['’]?t|\bis\s+not|\bnot\s+considered|"
-    r"\bnot\s+classified\s+as)\s+(?:(?:a|an|the)\s+)?$"
+    r"(?:\bnot\s+considered|\bnot\s+classified\s+as|"
+    r"\bnever\s+considered|\bnot|\bnever|\bisn['’]?t|\bis\s+not)"
+    r"\s+(?:(?:a|an|the)\s+)?$"
 )
 _LABELS = (
     ("critical", re.compile(r"\b(?:critical|severe)\b")),
