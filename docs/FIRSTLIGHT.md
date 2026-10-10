@@ -26,4 +26,4 @@ Run:
 python -m unittest tests.test_firstlight_engine -v
 ```
 
-The main Streamlit app exposes the workspace through its sidebar. FIRSTLIGHT's deterministic core does not require an AI API key.
+The main Streamlit app exposes the workspace through its sidebar. JSON/CSV import and the deterministic rule checks do not require an AI API key. Imported data remains in Streamlit session state and is not durable case storage. The artifact hash identifies the exact uploaded bytes but does not authenticate the source, prove truthfulness, or establish forensic chain of custody. Detection rules are intentionally small and can miss activity or produce false positives.
