@@ -177,7 +177,10 @@ If the app offers a sidebar key field, it can also be used for local experimenta
 │       └── ci.yml               # Automated validation workflow
 ├── docs/
 │   ├── ANALYSIS_LIMITATIONS.md  # Interpretation and safe-use guidance
-│   └── FIRSTLIGHT.md           # Incident workspace scope and safety boundaries
+│   ├── ARCHITECTURE.md         # Runtime boundaries and threat model
+│   ├── FIRSTLIGHT.md           # Incident workspace scope and safety boundaries
+│   ├── UI_DESIGN.md            # Visual system, motion and accessibility rules
+│   └── RELEASE_READINESS.md    # Deployment go/no-go runbook
 ├── tests/
 │   ├── test_ai_provider.py          # Provider/model-selection tests
 │   ├── test_review_engine.py        # Evidence coverage review tests
