@@ -113,6 +113,12 @@ def main():
                 page.get_by_text("Findings", exact=True).wait_for(timeout=30_000)
                 page.get_by_text("Evidence gaps", exact=True).wait_for(timeout=30_000)
                 page.get_by_role("button", name="Export FIRSTLIGHT incident report (JSON)").wait_for(state="visible", timeout=30_000)
+                with page.expect_download(timeout=30_000) as firstlight_download:
+                    page.get_by_role("button", name="Export FIRSTLIGHT incident report (JSON)").click()
+                firstlight_json = Path(firstlight_download.value.path()).read_text(encoding="utf-8")
+                assert '"case_id": "FL-DEMO-2026-001"' in firstlight_json
+                assert '"audit_chain_valid": true' in firstlight_json
+                assert "Synthetic demonstration only" in firstlight_json
 
                 # Approval remains explicitly simulated; verify the action log
                 # and audit trail after one approval.
