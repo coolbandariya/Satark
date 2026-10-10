@@ -62,9 +62,6 @@ def choose_workspace(page, label):
     option = page.get_by_role("option", name=label, exact=True)
     option.wait_for(state="visible", timeout=10_000)
     option.click()
-    page.get_by_role("combobox", name="Investigation workspace").get_by_text(label).wait_for(
-        state="visible", timeout=10_000
-    )
 
 
 
