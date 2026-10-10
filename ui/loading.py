@@ -135,16 +135,17 @@ def render_intro_loader() -> None:
 
             const overlay = doc.createElement("div");
             overlay.id = "satark-intro-overlay";
-            overlay.setAttribute("role", "status");
-            overlay.setAttribute("aria-live", "polite");
-            overlay.setAttribute("aria-label", "SATARK is preparing your workspace");
+            overlay.setAttribute("role", "dialog");
+            overlay.setAttribute("aria-modal", "true");
+            overlay.setAttribute("aria-label", "SATARK intro");
+            const previousFocus = doc.activeElement;
             overlay.innerHTML = `
               <div class="satark-intro-inner">
                 <div class="satark-mark" aria-hidden="true">S<span style="color:#81e2c0">·</span></div>
                 <div class="satark-wordmark">SATARK</div>
                 <div class="satark-subbrand">Digital threat intelligence</div>
                 <div class="satark-loader-orbit" aria-hidden="true"><div class="satark-radar"></div></div>
-                <div class="satark-status">Preparing your workspace</div>
+                <div class="satark-status" role="status" aria-live="polite">Preparing your workspace</div>
                 <div class="satark-description">Bringing your investigation tools into focus.<br>Evidence first. Decisions with context.</div>
                 <div class="satark-progress" aria-hidden="true"><span></span></div>
                 <div class="satark-foot">FIRSTLIGHT · THREAT ANALYSIS · DIGITAL SAFETY</div>
@@ -153,19 +154,36 @@ def render_intro_loader() -> None:
             doc.body.appendChild(overlay);
 
             let dismissed = false;
+            const skipButton = overlay.querySelector(".satark-skip");
+            const onKeydown = (event) => {
+              if (event.key === "Escape") {
+                event.preventDefault();
+                dismiss();
+              } else if (event.key === "Tab") {
+                // The splash is a short-lived modal; keep keyboard focus on its only control.
+                event.preventDefault();
+                skipButton.focus();
+              }
+            };
             const dismiss = () => {
               if (dismissed) return;
               dismissed = true;
+              doc.removeEventListener("keydown", onKeydown);
               overlay.classList.add("satark-intro-leaving");
               window.setTimeout(() => {
                 overlay.remove();
                 const css = doc.getElementById("satark-intro-style");
                 if (css) css.remove();
+                if (previousFocus && previousFocus.isConnected && typeof previousFocus.focus === "function") {
+                  previousFocus.focus({preventScroll: true});
+                }
               }, 450);
             };
-            overlay.querySelector(".satark-skip").addEventListener("click", dismiss);
+            skipButton.addEventListener("click", dismiss);
+            doc.addEventListener("keydown", onKeydown);
+            skipButton.focus({preventScroll: true});
             const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-            window.setTimeout(dismiss, reduceMotion ? 550 : 950);
+            window.setTimeout(dismiss, reduceMotion ? 650 : 1300);
           } catch (error) {
             // The intro is decorative: a blocked embed must never prevent use of SATARK.
           }
