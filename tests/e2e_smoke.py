@@ -64,8 +64,10 @@ def main():
                 # an external provider key.
                 for label, marker in (
                     ("Session history", "Analysis history"),
-                    ("Overview", "Know what you're looking at."),
                     ("Investigate", "What do you want to check?"),
+                    # Return to the home page last; the offline sample action
+                    # is intentionally available there, not on the Analyze page.
+                    ("Overview", "Know what you're looking at."),
                 ):
                     page.locator('[data-testid="stSidebar"] button').filter(has_text=label).click()
                     page.get_by_text(marker).wait_for(timeout=30_000)
