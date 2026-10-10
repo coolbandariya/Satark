@@ -87,7 +87,7 @@ jobs:
 
       - name: Validate UI stylesheet
         run: |
-          python -c "from pathlib import Path; css=Path('styles.css').read_text(encoding='utf-8'); assert css.count('{') == css.count('}'), 'Unbalanced CSS braces'; required=['.hero{','.scanner{','.home-grid{','.home-actions{','.sr-only{','.st-key-result_report','@media(max-width:768px)','prefers-reduced-motion:reduce','overflow-x:hidden']; missing=[x for x in required if x not in css]; assert not missing, f'Missing UI selectors: {missing}'"
+          python -c "from pathlib import Path; css=Path('styles.css').read_text(encoding='utf-8'); assert css.count('{') == css.count('}'), 'Unbalanced CSS braces'; required=['.hero{','.scanner{','.home-grid{','.home-actions{','.sr-only{','.st-key-result_report','.ih-hero{','.ih-capability-grid{','.ih-method{','.ih-method-step{','.st-key-home-actions','@media(max-width:768px)','prefers-reduced-motion:reduce','overflow-x:hidden']; missing=[x for x in required if x not in css]; assert not missing, f'Missing UI selectors: {missing}'"
 
       - name: Validate required project assets
         run: |
