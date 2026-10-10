@@ -38,7 +38,7 @@ def render_home():
         col_primary, col_secondary = st.columns([1.2, 1], gap="small")
         with col_primary:
             if st.button(
-                "Start an investigation  →",
+                "Start an investigation →",
                 width="stretch",
                 type="primary",
                 key="goto_analyze",
