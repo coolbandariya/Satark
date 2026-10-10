@@ -106,7 +106,7 @@ jobs:
               "ui/__init__.py", "ui/home.py", "ui/navigation.py", "ui/results.py",
               "ui/history.py", "ui/learning.py", "ui/demo.py", "ui/firstlight.py",
               "tests/test_firstlight_engine.py", "tests/test_firstlight_ingest.py",
-              "tests/test_url_security.py", "tests/test_input_processing.py",
+              "tests/test_url_security.py", "tests/test_input_processing.py", "tests/test_rate_limiter.py",
               "tests/e2e_smoke.py",
           ]
           missing = [
