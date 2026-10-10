@@ -5,7 +5,7 @@ from io import BytesIO
 
 from pypdf import PdfReader
 
-from reports import make_pdf_report
+from reports import make_pdf_report, risk_label
 
 
 class ReportGenerationTests(unittest.TestCase):
@@ -37,6 +37,14 @@ class ReportGenerationTests(unittest.TestCase):
         self.assertIn("Urgency language", extracted)
         self.assertIn("account will be blocked today", extracted)
         self.assertIn("Rule-Based Evidence Ledger", extracted)
+        self.assertIn("Evidence Coverage Review", extracted)
+        self.assertIn("Independent text signals found", extracted)
+
+
+    def test_low_score_is_not_exported_as_a_safety_guarantee(self):
+        label, _ = risk_label(10, "Needs review")
+        self.assertEqual(label, "LOWER SIGNAL")
+        self.assertNotEqual(label, "SAFE")
 
     def test_malformed_numeric_fields_are_safe(self):
         data = make_pdf_report(
