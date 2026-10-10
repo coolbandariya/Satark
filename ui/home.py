@@ -18,7 +18,7 @@ def render_home():
         '<aside class="ih-console satark-spotlight-card" aria-label="Illustrative investigation signal preview">'
         '<div class="ih-console-top"><div class="ih-console-brand"><span class="ih-console-mark">S</span><div><b>SATARK</b><small>THREAT INTELLIGENCE</small></div></div><span class="ih-demo-chip">SAMPLE</span></div>'
         '<div class="spotlight-orb" aria-hidden="true"><span class="spotlight-orb-core"></span><span class="spotlight-orb-ring spotlight-orb-ring-a"></span><span class="spotlight-orb-ring spotlight-orb-ring-b"></span><span class="spotlight-orb-sweep"></span></div>'
-        '<div class="spotlight-status"><span class="spotlight-status-dot"></span><span>INVESTIGATION SIGNALS</span><span class="spotlight-status-right">ILLUSTRATIVE</span></div>'
+        '<div class="spotlight-status"><span class="spotlight-status-dot"></span><span>OBSERVABLE SIGNALS</span><span class="spotlight-status-right">ILLUSTRATIVE</span></div>'
         '<div class="spotlight-signal"><span class="spotlight-signal-index">01</span><div><b>Urgency language</b><small>Pressure to act before verifying</small></div><span class="spotlight-signal-tag">REVIEW</span></div>'
         '<div class="spotlight-signal"><span class="spotlight-signal-index">02</span><div><b>Account action requested</b><small>Destination should be checked independently</small></div><span class="spotlight-signal-tag">CHECK</span></div>'
         '<div class="spotlight-footnote">Signals are observations — not proof of fraud.</div>'
@@ -50,7 +50,7 @@ def render_home():
                 st.session_state.demo_mode = False
                 st.rerun()
         with col_tertiary:
-            if st.button("Try sample report", width="stretch", key="demo_result"):
+            if st.button("Open guided sample report", width="stretch", key="demo_result"):
                 st.session_state.result = get_demo_result()
                 st.session_state.mode = "Text"
                 st.session_state.demo_mode = True
