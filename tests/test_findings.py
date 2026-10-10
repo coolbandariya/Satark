@@ -34,6 +34,7 @@ class FindingSeverityTests(unittest.TestCase):
     def test_negated_severity_does_not_become_a_positive_finding(self):
         cases = {
             "Not high risk": "unknown",
+            "No high risk detected": "unknown",
             "This is not a high-risk event": "unknown",
             "Never considered critical": "unknown",
             "Not high, medium concern": "medium",
