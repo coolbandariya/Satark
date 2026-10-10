@@ -139,6 +139,8 @@ class UIContractTests(unittest.TestCase):
             self.assertIn(expected, LOADING)
         self.assertIn('st.session_state.get("_satark_intro_seen", False)', LOADING)
         self.assertIn('st.session_state["_satark_intro_seen"] = True', LOADING)
+        self.assertNotIn("components.html", LOADING)
+        self.assertNotIn("https://", LOADING)
 
     def test_app_does_not_reference_missing_analysis_constants(self):
         self.assertIn("THREAT_CHECKS, OFFICIAL_VERIFICATION_SOURCES", APP)
