@@ -54,7 +54,7 @@ def finding_severity(value):
         if _has_unnegated_label(text, pattern):
             return severity
 
-    if re.search(r"\b(?:detected|present|confirmed)\b", text):
+    if _has_unnegated_label(text, re.compile(r"\b(?:detected|present|confirmed)\b")):
         return "high"
 
     return "unknown"
