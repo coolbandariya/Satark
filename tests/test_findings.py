@@ -5,7 +5,7 @@ from findings import build_findings, finding_severity
 
 class FindingSeverityTests(unittest.TestCase):
     def test_empty_and_unrecognized_values_remain_unknown(self):
-        for value in ("", None, "Needs review", "Safe", "not clear"):
+        for value in ("", None, "Needs review", "Safe", "not clear", "Not confirmed", "Not present"):
             with self.subTest(value=value):
                 self.assertEqual(finding_severity(value), "unknown")
 
