@@ -44,6 +44,10 @@ class FindingSeverityTests(unittest.TestCase):
             "Never considered critical": "unknown",
             "Not high, medium concern": "medium",
             "Not high; low risk": "low",
+            "No critical threat; no high risk detected": "unknown",
+            "Critical risk ruled out; low risk remains": "low",
+            "No evidence of severe risk, but medium concern remains": "medium",
+            "No indicators of critical risk, high risk detected": "high",
         }
         for value, expected in cases.items():
             with self.subTest(value=value):
@@ -57,6 +61,8 @@ class FindingSeverityTests(unittest.TestCase):
             "No signs of malware, medium concern remains": "medium",
             "No indicators of critical risk": "unknown",
             "No signs of malware": "clear",
+            "Not detected; high risk detected": "high",
+            "Clear; low risk": "low",
         }
         for value, expected in cases.items():
             with self.subTest(value=value):
