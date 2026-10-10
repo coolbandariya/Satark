@@ -159,7 +159,6 @@ def render_firstlight() -> None:
             )
 
 
-
     case = st.session_state.firstlight_case
     if not case:
         with st.container(border=True):
