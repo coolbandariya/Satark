@@ -64,6 +64,25 @@ def main():
                 page.get_by_text("Messages & text").wait_for(timeout=30_000)
                 page.get_by_text("Ready for input").wait_for(timeout=30_000)
 
+                # Verify that every scanner selection updates the contextual
+                # workflow guidance without requiring a provider API key.
+                workflow_markers = {
+                    "Text": "Messages & text",
+                    "URL": "Links & websites",
+                    "Image": "Images & screenshots",
+                    "PDF": "PDF documents",
+                    "QR": "QR code images",
+                    "Video": "Video & clips",
+                }
+                for mode, marker in workflow_markers.items():
+                    page.get_by_role("button", name=f"Select {mode}").click()
+                    page.get_by_text(f"SELECTED WORKFLOW · {mode.upper()}").wait_for(timeout=30_000)
+                    page.get_by_text(marker).wait_for(timeout=30_000)
+                # Restore Text so the following navigation/sample checks start
+                # from a deterministic state.
+                page.get_by_role("button", name="Select Text").click()
+                page.get_by_text("SELECTED WORKFLOW · TEXT").wait_for(timeout=30_000)
+
                 # Exercise every top-level navigation surface without requiring
                 # an external provider key.
                 for label, marker in (
