@@ -110,6 +110,18 @@ class FirstlightIngestTests(unittest.TestCase):
         self.assertEqual(findings[-1]["state"], "truncated")
         self.assertIn("suppressed", findings[-1]["explanation"])
 
+    def test_non_finite_numbers_in_details_are_rejected(self):
+        payload = json.dumps([{
+            "event_id": "NAN-1",
+            "timestamp": "2026-10-10T09:00:00Z",
+            "source": "identity",
+            "kind": "authentication",
+            "summary": "test event",
+            "details": {"score": float("nan")},
+        }]).encode()
+        with self.assertRaisesRegex(IngestError, "no valid event records"):
+            ingest_event_artifact(payload, "events.json")
+
     def test_bad_rows_are_reported_and_untrusted_details_are_bounded(self):
         payload = json.dumps([
             {"timestamp": "not-a-date", "source": "x", "kind": "x", "summary": "bad"},
