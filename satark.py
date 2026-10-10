@@ -1308,13 +1308,12 @@ elif st.session_state.page == "Analyze":
                 "input and model access."
             )
 
-            with st.expander(
-                "Technical details"
-            ):
-
-                st.code(
-                    str(exc)
-                )
+            # Do not echo raw provider/network exception strings into the UI:
+            # SDK errors can contain request metadata or other sensitive details.
+            st.caption(
+                "Technical details were withheld to avoid exposing provider metadata. "
+                "Check the server-side logs for the exception type and request context."
+            )
 
 
     # ==========================================================
