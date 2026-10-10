@@ -56,6 +56,7 @@ from analysis_engine import (
     normalize_result,
 )
 from ui.home import render_home
+from ui.firstlight import render_firstlight
 from ui.navigation import render_sidebar
 from ui.results import render_threat_analysis, render_verification_sources, render_evidence_ledger, render_evidence_review, render_investigation_timeline
 from evidence_engine import extract_deterministic_evidence
@@ -199,7 +200,7 @@ from input_processing import (
 # ============================================================
 
 st.set_page_config(
-    page_title="SATARK — Digital Threat Triage",
+    page_title="SATARK + FIRSTLIGHT — Incident Response",
     page_icon="◈",
     layout="wide",
     initial_sidebar_state="auto",
@@ -590,7 +591,11 @@ api_key, role = render_sidebar(
 # --------------------------- Pages -----------------------------
 # --------------------------- Pages -----------------------------
 
-if st.session_state.page == "Home":
+if st.session_state.page == "FIRSTLIGHT":
+    render_firstlight()
+
+
+elif st.session_state.page == "Home":
     render_home()
 
 

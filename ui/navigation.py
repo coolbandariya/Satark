@@ -8,11 +8,12 @@ def render_sidebar(get_client, discover_models, choose_model, text_preferences, 
         st.markdown(
             '<div class="brand"><div class="brand-mark">S<span>·</span></div>'
             '<div><div class="brand-logo">SATARK</div>'
-            '<div class="brand-tag">Evidence-first threat investigation</div></div></div>',
+            '<div class="brand-tag">FIRSTLIGHT incident response · SATARK threat tools</div></div></div>',
             unsafe_allow_html=True,
         )
         st.markdown('<div class="side-label">Workspace</div>', unsafe_allow_html=True)
         pages = [
+            ("FIRSTLIGHT", "FIRSTLIGHT · Incident Command"),
             ("Home", "Overview"),
             ("Analyze", "Investigate"),
             ("History", "Session history"),

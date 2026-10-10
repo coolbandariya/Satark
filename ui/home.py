@@ -28,7 +28,19 @@ def render_home():
     )
 
     st.markdown(
-        '<div class="workspace-section-head"><div><div class="workspace-eyebrow">START HERE</div>'
+        '<section class="workspace-method" style="margin-top:18px">'
+        '<div class="workspace-method-heading"><div class="workspace-eyebrow">FLAGSHIP WORKSPACE · FIRSTLIGHT</div>'
+        '<div class="workspace-heading">Investigate incidents. Preserve evidence. Respond with control.</div>'
+        '<p>Coordinate evidence collection, reconstruct a timeline, challenge integrity and review response proposals before simulated execution.</p></div>'
+        '</section>',
+        unsafe_allow_html=True,
+    )
+    if st.button("Open FIRSTLIGHT Incident Command →", type="primary", use_container_width=True, key="goto_firstlight"):
+        st.session_state.page = "FIRSTLIGHT"
+        st.rerun()
+
+    st.markdown(
+        '<div class="workspace-section-head"><div><div class="workspace-eyebrow">SECONDARY TOOLS · SATARK THREAT ANALYSIS</div>'
         '<div class="workspace-heading">Choose what you need to investigate</div></div>'
         '<div class="workspace-section-note">No account required · History is session-only</div></div>',
         unsafe_allow_html=True,

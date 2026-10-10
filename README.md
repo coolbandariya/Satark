@@ -8,7 +8,9 @@
 <img src="assets/satark-banner.svg" alt="SATARK — Smart AI Threat Analysis & Risk Knowledge" width="1200">  
 [![Security](https://img.shields.io/badge/security-awareness-focused-d7b56f)](SECURITY.md)
 
-**Understand suspicious content. Recognize digital threats. Build safer online habits.**
+**Investigate incidents. Preserve evidence. Respond with control.**
+
+SATARK now includes **FIRSTLIGHT Incident Command** as its flagship workspace for synthetic incident investigation, evidence integrity challenges, evidence-linked timelines, and human-approved simulated response. Existing text, URL, image, QR, PDF, and video scanners remain available as secondary threat-analysis tools.
 
 SATARK is an AI-assisted security-awareness workspace for triaging suspicious messages, links, images, QR codes, PDFs, and supported videos.
 
@@ -29,6 +31,7 @@ It is designed around a simple workflow: **bring the evidence → inspect the si
 
 ## Contents
 
+- [FIRSTLIGHT Incident Command](#firstlight-incident-command)
 - [What SATARK does](#what-satark-does)
 - [Features](#features)
 - [How it works](#how-it-works)
@@ -40,6 +43,10 @@ It is designed around a simple workflow: **bring the evidence → inspect the si
 - [Security, privacy, and limitations](#security-privacy-and-limitations)
 - [Roadmap](#roadmap)
 - [Contributing](#contributing)
+
+## FIRSTLIGHT Incident Command
+
+Open FIRSTLIGHT from the sidebar to load a repeatable fictional account-compromise scenario. The prototype provides SHA-256 evidence verification, a controlled tampering challenge, a deterministic multi-step investigation workflow, evidence-linked findings, a chronological timeline, explicit evidence gaps, approval/rejection controls for simulated response actions, a hash-chained in-session audit trail, and JSON report export. No real endpoint, account, process, or network action is performed. Read [the FIRSTLIGHT scope and safety boundaries](docs/FIRSTLIGHT.md).
 
 ## What SATARK does
 
