@@ -137,7 +137,7 @@ class UIContractTests(unittest.TestCase):
             "const doc = hostWindow.document;",
             'setAttribute("role", "dialog")',
             'setAttribute("aria-modal", "true")',
-            'role="status" aria-live="polite"',
+            'role=\"status\" aria-live=\"polite\"',
             "prefers-reduced-motion: reduce",
             "Skip intro",
             "overlay.remove()",
