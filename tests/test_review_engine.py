@@ -48,6 +48,27 @@ class EvidenceReviewTests(unittest.TestCase):
         self.assertEqual(review["level"], "info")
         self.assertIn("visual findings", review["message"])
 
+    def test_video_without_text_signals_is_marked_multimodal_not_uncorroborated(self):
+        review = build_evidence_review({
+            "analysis_mode": "Video",
+            "risk_score": 86,
+            "threat_category": "Scam",
+            "key_indicators": ["Urgent payment request"],
+        })
+        self.assertEqual(review["level"], "info")
+        self.assertEqual(review["status"], "Multimodal workflow")
+        self.assertIn("Sampled video frames", review["message"])
+
+    def test_video_transcript_signals_can_be_reported_as_independent_evidence(self):
+        review = build_evidence_review({
+            "analysis_mode": "Video",
+            "risk_score": 86,
+            "threat_category": "Scam",
+            "deterministic_evidence": [{"title": "Urgency", "observation": "Pressure to act"}],
+        })
+        self.assertEqual(review["level"], "supported")
+        self.assertEqual(review["evidence_count"], 1)
+
     def test_empty_or_malformed_result_is_safe(self):
         review = build_evidence_review(None)
         self.assertEqual(review["level"], "review")
