@@ -82,7 +82,7 @@ def main():
                 # Validate the real browser download path as well as the PDF
                 # generator's unit-level text extraction checks.
                 with page.expect_download(timeout=30_000) as download_info:
-                    page.get_by_role("button", name="📄 Download PDF report").click()
+                    page.get_by_role("button", name="Download PDF report").click()
                 download = download_info.value
                 downloaded_pdf = Path(download.path()).read_bytes()
                 assert downloaded_pdf.startswith(b"%PDF"), "sample report download is not a PDF"
