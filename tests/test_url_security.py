@@ -145,7 +145,7 @@ class URLSecurityTests(unittest.TestCase):
         first_connection, second_connection = fake_connection(), fake_connection()
         with patch(
             "url_security._validated_destination",
-            side_effect=lambda url: (urlparse(url), ["93.184.216.34" if "example.com" in url else "1.1.1.1"]),
+            side_effect=lambda url: (urlparse(url), ["93.184.216.34" if urlparse(url).hostname == "example.com" else "1.1.1.1"]),
         ) as validate, patch(
             "url_security._open_pinned_request",
             side_effect=[(first_connection, first), (second_connection, second)],
