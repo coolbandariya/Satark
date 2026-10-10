@@ -130,6 +130,31 @@ def make_pdf_report(result, mode):
         evidence = ["No specific indicators were returned."]
     story.append(Paragraph("<br/>".join("• " + pdf_escape(x) for x in evidence), body))
 
+    story.append(Paragraph("Rule-Based Evidence Ledger (Not a Verdict)", h2))
+    ledger = result.get("deterministic_evidence", [])
+    if not isinstance(ledger, (list, tuple)):
+        ledger = []
+    if ledger:
+        ledger_lines = []
+        for item in ledger[:20]:
+            if not isinstance(item, dict):
+                continue
+            title_text = _safe_text(item.get("title"), "Observation")
+            observation_text = _safe_text(item.get("observation"))
+            excerpt_text = _safe_text(item.get("evidence"))
+            ledger_lines.append(
+                "<b>" + pdf_escape(title_text) + "</b><br/>"
+                + pdf_escape(observation_text)
+                + ("<br/><font color='#5f6270'>Observed text: " + pdf_escape(excerpt_text) + "</font>" if excerpt_text else "")
+            )
+        story.append(Paragraph("<br/><br/>".join(ledger_lines) if ledger_lines else
+                               "No supported text observations were extracted. This is not proof that the content is safe.", body))
+    else:
+        story.append(Paragraph(
+            "No supported text observations were extracted. This is not proof that the content is safe.",
+            body,
+        ))
+
     story.append(Paragraph("What To Do Now", h2))
     recs = result.get("recommendations", [])
     if not isinstance(recs, (list, tuple)):
