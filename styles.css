@@ -654,3 +654,17 @@ textarea:focus-visible,
   from{opacity:0;transform:translateY(8px)}
   to{opacity:1;transform:translateY(0)}
 }
+
+
+/* Evidence ledger — explicit separation of observations from AI interpretation */
+.evidence-ledger{margin-top:1.25rem}
+.ledger-intro{margin:.4rem 0 1rem;color:#aaa79e;font-size:.84rem;line-height:1.7}
+.ledger-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem;margin:.7rem 0 1rem}
+.ledger-item{min-width:0;padding:1rem;border:1px solid rgba(215,181,111,.16);border-radius:14px;background:linear-gradient(145deg,rgba(215,181,111,.035),rgba(255,255,255,.012));}
+.ledger-item-top{display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap}
+.ledger-tag{display:inline-flex;align-items:center;padding:.3rem .55rem;border:1px solid rgba(215,181,111,.28);border-radius:999px;background:rgba(215,181,111,.07);color:#ecd8a9;font-size:.72rem;font-weight:800}
+.ledger-method{color:#96938a;font-size:.68rem}
+.ledger-observation{margin:.7rem 0;color:#e1ded5;font-size:.82rem;line-height:1.65}
+.ledger-quote{margin:0;padding:.65rem .75rem;border-left:2px solid #d7b56f;border-radius:0 8px 8px 0;background:rgba(0,0,0,.18);color:#c7c3b9;font-size:.76rem;line-height:1.6;overflow-wrap:anywhere}
+.ledger-source{margin-top:.65rem;color:#8e8b82;font-size:.68rem}
+@media(max-width:720px){.ledger-grid{grid-template-columns:minmax(0,1fr)}.ledger-item{padding:.85rem}}
