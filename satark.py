@@ -462,6 +462,10 @@ def render_result(result):
             f'<div style="width:{score}%"></div></div>',
             unsafe_allow_html=True,
         )
+        st.caption(
+            "The risk score is a heuristic summary, not a probability. "
+            "A low score or missing signal does not guarantee that content is safe."
+        )
 
         if confidence < 50:
             st.info(
