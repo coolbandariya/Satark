@@ -27,6 +27,7 @@ def _init_firstlight_state() -> None:
         "firstlight_demo_seeded": False,
         "firstlight_import_result": None,
         "firstlight_import_findings": [],
+        "firstlight_import_report_json": None,
     }
     for key, value in defaults.items():
         if key not in st.session_state:
@@ -82,6 +83,7 @@ def render_firstlight() -> None:
         if upload is not None and st.button("Validate and analyze import", type="primary", key="fl_import_run"):
             st.session_state.firstlight_import_result = None
             st.session_state.firstlight_import_findings = []
+            st.session_state.firstlight_import_report_json = None
             try:
                 imported = ingest_event_artifact(upload.getvalue(), upload.name)
                 st.session_state.firstlight_import_result = imported
@@ -118,21 +120,28 @@ def render_firstlight() -> None:
                 st.markdown("#### Normalization warnings")
                 for warning in imported["warnings"]:
                     st.warning(warning)
-            if imported["errors"]:
+            if imported["errors"] and st.checkbox(
+                f"Show rejected records ({imported['rejected_count']})",
+                key="fl_show_rejected_rows",
+            ):
                 st.markdown("#### Rejected records")
                 st.dataframe(imported["errors"], use_container_width=True, hide_index=True)
-            st.markdown("#### Normalized events")
-            st.dataframe([
-                {
-                    "Event ID": event["event_id"],
-                    "Timestamp (UTC)": event["timestamp"],
-                    "Source": event["source"],
-                    "Kind": event["kind"],
-                    "Summary": event["summary"],
-                    "Normalized record SHA-256": sha256_record(event),
-                }
-                for event in imported["events"]
-            ], use_container_width=True, hide_index=True)
+            if st.checkbox(
+                f"Show normalized event inventory ({imported['record_count']} records)",
+                key="fl_show_normalized_events",
+            ):
+                st.markdown("#### Normalized events")
+                st.dataframe([
+                    {
+                        "Event ID": event["event_id"],
+                        "Timestamp (UTC)": event["timestamp"],
+                        "Source": event["source"],
+                        "Kind": event["kind"],
+                        "Summary": event["summary"],
+                        "Normalized record SHA-256": sha256_record(event),
+                    }
+                    for event in imported["events"]
+                ], use_container_width=True, hide_index=True)
             st.markdown("#### Explainable detections")
             findings = st.session_state.firstlight_import_findings
             if findings:
@@ -143,22 +152,25 @@ def render_firstlight() -> None:
                         st.caption(f"Rule: {finding['rule_id']} · Severity: {finding['severity']} · Confidence: {finding['confidence']} · Evidence: {', '.join(finding['evidence_ids'])}")
             else:
                 st.info("No configured rule matched this artifact. This does not establish that the events are benign.")
-            import_report = {
-                "provenance": {key: imported[key] for key in ("filename", "format", "artifact_sha256", "artifact_bytes", "record_count", "rejected_count")},
-                "events": imported["events"],
-                "normalized_record_sha256": {event["event_id"]: sha256_record(event) for event in imported["events"]},
-                "findings": findings,
-                "errors": imported["errors"],
-                "warnings": imported["warnings"],
-                "limitations": "Deterministic prototype rules only; no claim of completeness or proof of malicious activity.",
-            }
-            st.download_button(
-                "Export imported evidence and findings (JSON)",
-                data=json.dumps(import_report, indent=2, ensure_ascii=False),
-                file_name="firstlight-import-report.json",
-                mime="application/json",
-                key="fl_import_export",
-            )
+            if st.button("Prepare import report", key="fl_prepare_import_report"):
+                import_report = {
+                    "provenance": {key: imported[key] for key in ("filename", "format", "artifact_sha256", "artifact_bytes", "record_count", "rejected_count")},
+                    "events": imported["events"],
+                    "normalized_record_sha256": {event["event_id"]: sha256_record(event) for event in imported["events"]},
+                    "findings": findings,
+                    "errors": imported["errors"],
+                    "warnings": imported["warnings"],
+                    "limitations": "Deterministic prototype rules only; no claim of completeness or proof of malicious activity.",
+                }
+                st.session_state.firstlight_import_report_json = json.dumps(import_report, indent=2, ensure_ascii=False)
+            if st.session_state.firstlight_import_report_json:
+                st.download_button(
+                    "Download prepared import report (JSON)",
+                    data=st.session_state.firstlight_import_report_json,
+                    file_name="firstlight-import-report.json",
+                    mime="application/json",
+                    key="fl_import_export",
+                )
 
 
     case = st.session_state.firstlight_case
@@ -181,24 +193,27 @@ def render_firstlight() -> None:
     c.metric("Integrity verified", f"{valid_count}/{len(evidence)}")
     d.metric("Audit chain", "VALID" if verify_audit_chain(audit) else "INVALID")
 
-    tab_case, tab_evidence, tab_investigation, tab_response, tab_audit = st.tabs(
-        ["Incident", "Evidence Integrity", "Investigation", "Response Center", "Audit Trail"]
+    active_workspace = st.selectbox(
+        "Investigation workspace",
+        ["Incident", "Evidence Integrity", "Investigation", "Response Center", "Audit Trail"],
+        key="fl_workspace_section",
+        help="Only the selected workspace is rendered, keeping large investigations responsive.",
     )
 
-    with tab_case:
+    if active_workspace == "Incident":
         st.markdown(f"### {case['title']}")
         st.info(case["scenario"])
         st.markdown("#### Collection priority")
         st.markdown("1. Preserve volatile endpoint and connection context where authorized.")
         st.markdown("2. Capture identity, endpoint, network and file artifacts with source timestamps.")
         st.markdown("3. Verify hashes and document gaps before interpreting the evidence.")
-        st.markdown("#### Event inventory")
-        st.dataframe([
-            {"Event ID": e["event_id"], "Time (UTC)": e["timestamp"], "Source": e["source"], "Type": e["kind"], "Summary": e["summary"]}
-            for e in case["events"]
-        ], use_container_width=True, hide_index=True)
+        if st.checkbox("Show event inventory", value=False, key="fl_show_case_inventory"):
+            st.dataframe([
+                {"Event ID": e["event_id"], "Time (UTC)": e["timestamp"], "Source": e["source"], "Type": e["kind"], "Summary": e["summary"]}
+                for e in case["events"]
+            ], use_container_width=True, hide_index=True)
 
-    with tab_evidence:
+    if active_workspace == "Evidence Integrity":
         st.markdown("### Evidence Integrity Challenge")
         st.write("Select an evidence record and deliberately alter its stored summary. Verification recalculates the hash; it does not ask the AI whether the record changed.")
         labels = [f"{item['evidence_id']} · {item['record']['summary']}" for item in evidence]
@@ -226,7 +241,7 @@ def render_firstlight() -> None:
                 st.rerun()
         st.caption("Restoring reloads the original fictional fixture and resets the demonstration's action log.")
 
-    with tab_investigation:
+    if active_workspace == "Investigation":
         st.markdown("### Coordinated investigation")
         if st.button("Run investigation workflow", type="primary", key="fl_investigate"):
             result = investigate_case(case, evidence)
@@ -245,8 +260,8 @@ def render_firstlight() -> None:
                     st.markdown(f"**{finding['finding_id']} · {finding['title']}**")
                     st.write(finding["explanation"])
                     st.caption(f"Severity: {finding['severity']} · Confidence: {finding['confidence']} · State: {finding['state']} · Evidence: {', '.join(finding['evidence_ids']) or 'none'}")
-            st.markdown("#### Reconstructed timeline")
-            st.dataframe(investigation["timeline"], use_container_width=True, hide_index=True)
+            if st.checkbox("Show reconstructed timeline", value=True, key="fl_show_investigation_timeline"):
+                st.dataframe(investigation["timeline"], use_container_width=True, hide_index=True)
             st.markdown("#### Evidence gaps")
             for gap in investigation["gaps"]:
                 st.warning(gap)
@@ -269,7 +284,7 @@ def render_firstlight() -> None:
         else:
             st.info("Run the workflow to generate evidence-linked findings, a timeline and explicit investigation gaps.")
 
-    with tab_response:
+    if active_workspace == "Response Center":
         st.markdown("### Human approval gate")
         st.write("Every action below is simulated. Approval is checked server-side in the workflow function; no real system is touched.")
         if not investigation:
@@ -301,7 +316,7 @@ def render_firstlight() -> None:
                 st.dataframe(st.session_state.firstlight_action_log, use_container_width=True, hide_index=True)
 
 
-    with tab_audit:
+    if active_workspace == "Audit Trail":
         st.markdown("### Hash-chained audit trail")
         chain_valid = verify_audit_chain(st.session_state.firstlight_audit)
         if chain_valid:

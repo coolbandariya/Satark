@@ -76,6 +76,40 @@ class FirstlightIngestTests(unittest.TestCase):
             self.assertTrue(finding["evidence_ids"])
             self.assertIn("explanation", finding)
 
+    def test_session_correlation_requires_session_after_login(self):
+        events = [
+            {"event_id": "SESSION-OLD", "timestamp": "2026-10-10T08:59:00Z", "source": "identity", "kind": "session", "summary": "old session", "details": {"account": "analyst@example.test"}},
+            {"event_id": "LOGIN", "timestamp": "2026-10-10T09:00:00Z", "source": "identity", "kind": "authentication", "summary": "login", "details": {"account": "analyst@example.test", "result": "success"}},
+        ]
+        findings = detect_event_patterns(events)
+        self.assertNotIn("FL-ID-002", [finding["rule_id"] for finding in findings])
+
+    def test_session_correlation_uses_chronological_order_across_timezones(self):
+        events = [
+            {"event_id": "LOGIN", "timestamp": "2026-10-10T10:00:00+02:00", "source": "identity", "kind": "authentication", "summary": "login", "details": {"account": "analyst@example.test", "result": "success"}},
+            {"event_id": "SESSION", "timestamp": "2026-10-10T08:05:00Z", "source": "identity", "kind": "session", "summary": "session", "details": {"account": "analyst@example.test"}},
+        ]
+        findings = detect_event_patterns(events)
+        self.assertIn("FL-ID-002", [finding["rule_id"] for finding in findings])
+
+    def test_detection_output_is_bounded_and_reports_suppressed_matches(self):
+        events = [
+            {
+                "event_id": f"PROC-{index:04d}",
+                "timestamp": f"2026-10-10T09:{index // 60:02d}:{index % 60:02d}+00:00",
+                "source": "endpoint",
+                "kind": "process",
+                "summary": "script process",
+                "details": {"process": "powershell.exe", "parent": "outlook.exe", "host": f"WS-{index}"},
+            }
+            for index in range(800)
+        ]
+        findings = detect_event_patterns(events)
+        self.assertLessEqual(len(findings), 500)
+        self.assertEqual(findings[-1]["rule_id"], "FL-LIMIT-001")
+        self.assertEqual(findings[-1]["state"], "truncated")
+        self.assertIn("suppressed", findings[-1]["explanation"])
+
     def test_bad_rows_are_reported_and_untrusted_details_are_bounded(self):
         payload = json.dumps([
             {"timestamp": "not-a-date", "source": "x", "kind": "x", "summary": "bad"},

@@ -6,6 +6,7 @@ requests and never interprets imported text as instructions.
 from __future__ import annotations
 
 import csv
+from bisect import bisect_left
 from datetime import datetime, timezone
 import hashlib
 import io
@@ -183,16 +184,34 @@ def ingest_event_artifact(data: bytes, filename: str = "events.json") -> dict[st
     }
 
 
+MAX_DETECTION_FINDINGS = 500
+
+
+def _event_time(event: dict[str, Any]) -> datetime | None:
+    """Parse event time safely; naive timestamps are interpreted as UTC."""
+    try:
+        parsed = datetime.fromisoformat(str(event.get("timestamp", "")).replace("Z", "+00:00"))
+    except (TypeError, ValueError, OverflowError):
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
 def detect_event_patterns(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Apply small, explainable rules to normalized events; findings cite event IDs."""
-    ordered = sorted(
-        (event for event in events if isinstance(event, dict)),
-        key=lambda event: str(event.get("timestamp", "")),
-    )
+    """Apply explainable rules with bounded output and indexed temporal correlation."""
+    valid_events = [event for event in events if isinstance(event, dict)]
+    timed_events = [(event_time, event) for event in valid_events if (event_time := _event_time(event)) is not None]
+    ordered = [event for _, event in sorted(timed_events, key=lambda pair: pair[0])]
     findings: list[dict[str, Any]] = []
+    suppressed_findings = 0
 
     def emit(rule_id: str, title: str, explanation: str, severity: str, refs: list[str]) -> None:
+        nonlocal suppressed_findings
         evidence_ids = list(dict.fromkeys(ref for ref in refs if ref))
+        if len(findings) >= MAX_DETECTION_FINDINGS - 1:
+            suppressed_findings += 1
+            return
         findings.append({
             "finding_id": f"DET-{len(findings) + 1:03d}",
             "rule_id": rule_id,
@@ -206,6 +225,9 @@ def detect_event_patterns(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
     process_events: list[dict[str, Any]] = []
     login_by_account: dict[str, list[dict[str, Any]]] = {}
+    sessions_by_account: dict[str, list[dict[str, Any]]] = {}
+    network_by_host: dict[str, list[tuple[datetime, dict[str, Any]]]] = {}
+
     for event in ordered:
         details = event.get("details") if isinstance(event.get("details"), dict) else {}
         kind = str(event.get("kind", "")).lower()
@@ -213,14 +235,17 @@ def detect_event_patterns(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
         event_id = str(event.get("event_id", ""))
         process = str(details.get("process", "")).lower()
         parent = str(details.get("parent", "")).lower()
+        account = str(details.get("account", "")).lower()
+        event_time = _event_time(event)
+
         if kind in {"authentication", "login", "signin", "sign-in"}:
-            account = str(details.get("account", "")).lower()
             if details.get("result") == "success":
                 login_by_account.setdefault(account, []).append(event)
             if details.get("result") == "success" and details.get("novel_source") is True:
                 emit("FL-ID-001", "Successful login from a novel source",
                      "The source event explicitly marks a successful login as novel. Novelty alone does not prove compromise.",
                      "high", [event_id])
+
         if kind in {"process", "process_start", "process-start"}:
             process_events.append(event)
             suspicious_process = any(token in process for token in ("powershell", "wscript", "cscript", "mshta", "rundll32"))
@@ -229,6 +254,7 @@ def detect_event_patterns(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 emit("FL-END-001", "Script-capable process launched by an office application",
                      "A process and parent pair matches a high-signal heuristic; validate command line, signer and process telemetry.",
                      "high", [event_id])
+
         if kind in {"file", "file_create", "file-created", "filesystem"}:
             path = str(details.get("path", details.get("name", ""))).lower()
             if any(path.endswith(ext) for ext in (".zip", ".7z", ".rar", ".cab")) or "archive" in summary:
@@ -236,46 +262,70 @@ def detect_event_patterns(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
                      "An archive-like file event was observed. Its contents and any transfer are not established.",
                      "medium", [event_id])
 
-    # Correlate suspicious process events with later network activity on the same host.
+        if kind in {"session", "session_created", "token_issued"} and account and event_time:
+            sessions_by_account.setdefault(account, []).append(event)
+
+        if kind in {"connection", "network", "network_connection"} and event_time:
+            host = str(details.get("host", "")).lower()
+            if host:
+                network_by_host.setdefault(host, []).append((event_time, event))
+
+    # Index network events by host and timestamp. The previous nested scan was
+    # quadratic for large imports; binary search makes correlation O(n log n).
+    network_times_by_host: dict[str, list[datetime]] = {}
+    for host, host_events in network_by_host.items():
+        host_events.sort(key=lambda pair: pair[0])
+        network_times_by_host[host] = [pair[0] for pair in host_events]
+
     for process_event in process_events:
         pd = process_event.get("details") if isinstance(process_event.get("details"), dict) else {}
         process = str(pd.get("process", "")).lower()
         if not any(token in process for token in ("powershell", "wscript", "cscript", "mshta", "rundll32")):
             continue
-        try:
-            ptime = datetime.fromisoformat(str(process_event["timestamp"]).replace("Z", "+00:00"))
-        except (KeyError, ValueError):
-            continue
+        ptime = _event_time(process_event)
         host = str(pd.get("host", "")).lower()
-        if not host:
+        if ptime is None or not host:
             continue
-        for network_event in ordered:
-            if str(network_event.get("kind", "")).lower() not in {"connection", "network", "network_connection"}:
-                continue
-            nd = network_event.get("details") if isinstance(network_event.get("details"), dict) else {}
-            if str(nd.get("host", "")).lower() != host:
-                continue
-            try:
-                ntime = datetime.fromisoformat(str(network_event["timestamp"]).replace("Z", "+00:00"))
-            except (KeyError, ValueError):
-                continue
-            elapsed = (ntime - ptime).total_seconds()
-            if 0 <= elapsed <= 1800:
-                emit("FL-COR-001", "Network activity followed a script-capable process",
-                     "A connection occurred within 30 minutes of a suspicious process on the same host. This is temporal correlation, not proof of causation.",
-                     "medium", [str(process_event.get("event_id", "")), str(network_event.get("event_id", ""))])
-                break
+        host_events = network_by_host.get(host, [])
+        if not host_events:
+            continue
+        index = bisect_left(network_times_by_host[host], ptime)
+        if index < len(host_events) and (host_events[index][0] - ptime).total_seconds() <= 1800:
+            network_event = host_events[index][1]
+            emit("FL-COR-001", "Network activity followed a script-capable process",
+                 "A connection occurred within 30 minutes of a suspicious process on the same host. This is temporal correlation, not proof of causation.",
+                 "medium", [str(process_event.get("event_id", "")), str(network_event.get("event_id", ""))])
 
     for account, account_events in login_by_account.items():
         if not account:
             continue
-        session_events = [
-            event for event in ordered
-            if str(event.get("kind", "")).lower() in {"session", "session_created", "token_issued"}
-            and str((event.get("details") or {}).get("account", "")).lower() == account
-        ]
-        if account_events and session_events:
+        session_events = sessions_by_account.get(account, [])
+        if not account_events or not session_events:
+            continue
+        # Only correlate a session that occurred at or after a successful login.
+        login_times = [( _event_time(event), event) for event in account_events]
+        session_times = [( _event_time(event), event) for event in session_events]
+        login_times = [(time, event) for time, event in login_times if time is not None]
+        session_times = [(time, event) for time, event in session_times if time is not None]
+        if not login_times or not session_times:
+            continue
+        latest_login_time, latest_login = max(login_times, key=lambda pair: pair[0])
+        later_sessions = [(time, event) for time, event in session_times if time >= latest_login_time]
+        if later_sessions:
+            _, session_event = min(later_sessions, key=lambda pair: pair[0])
             emit("FL-ID-002", "Identity login followed by session issuance",
-                 "Login and session events reference the same account. Confirm session provenance and timing before response.",
-                 "medium", [str(account_events[-1].get("event_id", "")), str(session_events[-1].get("event_id", ""))])
+                 "A session event for the same account occurred at or after the latest successful login. Confirm session provenance and timing before response.",
+                 "medium", [str(latest_login.get("event_id", "")), str(session_event.get("event_id", ""))])
+
+    if suppressed_findings:
+        findings.append({
+            "finding_id": "DET-TRUNCATED",
+            "rule_id": "FL-LIMIT-001",
+            "title": "Detection output limit reached",
+            "explanation": f"Output was capped at {MAX_DETECTION_FINDINGS} findings; {suppressed_findings} additional rule matches were suppressed. Narrow the time range or split the import to review the full set.",
+            "severity": "informational",
+            "confidence": "low",
+            "evidence_ids": [],
+            "state": "truncated",
+        })
     return findings
