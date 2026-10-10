@@ -50,19 +50,21 @@ def assert_no_overlap(page, selector, name):
             assert horizontal == 0 or vertical == 0, f"{name}: {selector} elements overlap: {left} vs {right}"
 
 
-def choose_workspace(page, steps_down):
-    """Select a FIRSTLIGHT workspace from a known baseline.
+def choose_workspace(page, label):
+    """Select a FIRSTLIGHT workspace by its visible label.
 
-    The same Streamlit session can preserve the previous selectbox choice across
-    reruns. Resetting to the first option makes this helper deterministic even
-    when the current selection is not Incident.
+    Streamlit's custom selectbox keyboard handling can differ between browser
+    versions and reruns. Choosing the named option avoids relying on a stale
+    selected index or on Home/ArrowDown event behavior.
     """
     workspace = page.get_by_role("combobox", name="Investigation workspace")
     workspace.click()
-    workspace.press("Home")
-    for _ in range(steps_down):
-        workspace.press("ArrowDown")
-    workspace.press("Enter")
+    option = page.get_by_role("option", name=label, exact=True)
+    option.wait_for(state="visible", timeout=10_000)
+    option.click()
+    page.get_by_role("combobox", name="Investigation workspace").get_by_text(label).wait_for(
+        state="visible", timeout=10_000
+    )
 
 
 
@@ -124,7 +126,7 @@ def main():
                 page.get_by_role("button", name="Open FIRSTLIGHT →").click()
                 page.get_by_role("button", name="Load / reset synthetic incident").click()
                 page.get_by_text("Synthetic case loaded").wait_for(timeout=30_000)
-                choose_workspace(page, 2)
+                choose_workspace(page, "Investigation")
                 page.get_by_role("button", name="Run investigation workflow").click()
                 page.get_by_text("Coordinated investigation").wait_for(timeout=30_000)
                 page.get_by_text("Findings", exact=True).wait_for(timeout=30_000)
@@ -141,10 +143,10 @@ def main():
                 # and audit trail after one approval.
                 # Workspace selection always starts at Incident (index 0), so
                 # use absolute option indexes rather than offsets from the old state.
-                choose_workspace(page, 3)  # Response Center
+                choose_workspace(page, "Response Center")
                 page.get_by_role("button", name="Approve & simulate").first.click()
                 page.get_by_text("Response action log").wait_for(timeout=30_000)
-                choose_workspace(page, 4)  # Audit Trail
+                choose_workspace(page, "Audit Trail")
                 page.get_by_text("Hash-chained audit trail").wait_for(timeout=30_000)
                 page.get_by_text("Audit chain verifies against its first entry.").wait_for(timeout=30_000)
                 page.locator('[data-testid="stSidebar"] button').filter(has_text="Overview").click()
