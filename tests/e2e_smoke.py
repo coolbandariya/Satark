@@ -77,6 +77,16 @@ def main():
                 page.get_by_role("button",name="Open the guided sample report").click()
                 page.get_by_text("Evidence ledger").wait_for(timeout=30_000)
                 page.get_by_text("INDEPENDENT COVERAGE CHECK").wait_for(timeout=30_000)
+                page.get_by_text("Evidence Coverage Review").wait_for(timeout=30_000)
+
+                # Validate the real browser download path as well as the PDF
+                # generator's unit-level text extraction checks.
+                with page.expect_download(timeout=30_000) as download_info:
+                    page.get_by_role("button", name="📄 Download PDF report").click()
+                download = download_info.value
+                downloaded_pdf = Path(download.path()).read_bytes()
+                assert downloaded_pdf.startswith(b"%PDF"), "sample report download is not a PDF"
+                assert len(downloaded_pdf) > 500, "sample report PDF is unexpectedly small"
                 page.screenshot(path=str(ARTIFACTS / f"{name}-pages.png"),full_page=True)
             else:
                 # Exercise the main scan workflow on a narrow viewport too.
