@@ -1,8 +1,11 @@
-"""Regression tests for PDF report generation."""
+""""Regression tests for PDF report generation."""
 import math
 import unittest
+from io import BytesIO
 
-from io import BytesIO\nfrom pypdf import PdfReader\n\nfrom reports import make_pdf_report
+from pypdf import PdfReader
+
+from reports import make_pdf_report
 
 
 class ReportGenerationTests(unittest.TestCase):
@@ -10,6 +13,7 @@ class ReportGenerationTests(unittest.TestCase):
         data = make_pdf_report({}, "History")
         self.assertTrue(data.startswith(b"%PDF"))
         self.assertGreater(len(data), 500)
+        self.assertTrue(PdfReader(BytesIO(data)).pages)
 
     def test_pdf_includes_rule_based_evidence_ledger(self):
         data = make_pdf_report(
@@ -29,7 +33,7 @@ class ReportGenerationTests(unittest.TestCase):
         )
         self.assertTrue(data.startswith(b"%PDF"))
         self.assertGreater(len(data), 500)
-        extracted = "\\n".join(page.extract_text() or "" for page in PdfReader(BytesIO(data)).pages)
+        extracted = "\n".join(page.extract_text() or "" for page in PdfReader(BytesIO(data)).pages)
         self.assertIn("Urgency language", extracted)
         self.assertIn("account will be blocked today", extracted)
         self.assertIn("Rule-Based Evidence Ledger", extracted)
