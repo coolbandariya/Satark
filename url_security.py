@@ -46,7 +46,7 @@ class VisibleTextParser(HTMLParser):
             self.parts.append(data.strip())
 
     def text(self):
-        return "\\n".join(self.parts)
+        return "\n".join(self.parts)
 
 
 def _resolved_global_addresses(host, port):
@@ -114,12 +114,15 @@ def fetch_url_text(url):
     with opener.open(request, timeout=URL_FETCH_TIMEOUT_SECONDS) as response:
         content_type = response.headers.get("Content-Type", "").lower()
         declared_length = response.headers.get("Content-Length")
-        try:
-            if declared_length is not None and int(declared_length) > URL_MAX_BYTES:
+        if declared_length is not None:
+            try:
+                declared_size = int(declared_length)
+            except (TypeError, ValueError, OverflowError) as exc:
+                raise ValueError("The remote server returned an invalid content length.") from exc
+            if declared_size < 0:
+                raise ValueError("The remote server returned an invalid content length.")
+            if declared_size > URL_MAX_BYTES:
                 raise ValueError("The remote response is larger than SATARK's safety limit.")
-        except ValueError as exc:
-            if "larger than" in str(exc):
-                raise
         raw = response.read(URL_MAX_BYTES + 1)
         if len(raw) > URL_MAX_BYTES:
             raise ValueError("The remote response is larger than SATARK's safety limit.")
