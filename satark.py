@@ -1352,7 +1352,7 @@ elif st.session_state.page == "Analyze":
         )
 
         st.download_button(
-            "📄 Download PDF report",
+            "Download PDF report",
             make_pdf_report(
                 st.session_state.result,
                 mode
