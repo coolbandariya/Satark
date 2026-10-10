@@ -57,6 +57,7 @@ The app also includes **Scam Challenge**, **SATARK Academy**, and **Classroom Mo
 | PDF analysis | Extract text from supported PDF documents and analyze it. |
 | Video analysis | Extract representative frames; optionally transcribe audio when the workflow and provider support it. |
 | AI-assisted results | Present a model-generated assessment, indicators, and suggested actions. |
+| Deterministic evidence ledger | Separately shows local pattern-based observations such as URLs, known shorteners, phone/UPI-like identifiers, urgency, credential requests, and payment language. These are review signals—not proof of fraud or safety. |
 | PDF export | Download a report of an analysis. |
 | Session history | Revisit results held in the current app session. |
 | Learning | Practice scam recognition and explore security-awareness content. |
@@ -67,9 +68,10 @@ Some workflows depend on external provider access or optional system tools. Vide
 
 1. **Choose a workflow** and provide the content you want to examine.
 2. **Prepare the input.** Depending on the workflow, SATARK may extract text, inspect image content, or sample video frames.
-3. **Request an AI assessment.** Supported analysis is sent to the configured Groq service.
-4. **Review the result.** Treat the output as a clue for further investigation, not a definitive security verdict.
-5. **Learn and report.** Use the learning sections or export a PDF when useful.
+3. **Extract local signals.** For supported text inputs, SATARK records deterministic pattern matches separately from model output; this step makes no network requests and does not decide whether content is malicious.
+4. **Request an AI assessment.** Supported analysis is sent to the configured Groq service.
+5. **Review the result.** Compare local observations with the AI assessment. Treat both as clues for further investigation, not a definitive security verdict.
+6. **Learn and report.** Use the learning sections or export a PDF when useful.
 
 Do not submit passwords, one-time codes, private keys, or unnecessary personal information.
 
