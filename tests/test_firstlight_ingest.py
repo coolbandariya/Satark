@@ -88,8 +88,8 @@ class FirstlightIngestTests(unittest.TestCase):
             "timestamp": "2026-10-10T09:00:00Z", "source": "x", "kind": "x", "summary": "ok",
             "details": {"note": "x" * 17000},
         }]).encode()
-        result = ingest_event_artifact(too_large_details, "events.json")
-        self.assertEqual(result["record_count"], 0)  # all-invalid input fails closed
+        with self.assertRaisesRegex(IngestError, "no valid event records"):
+            ingest_event_artifact(too_large_details, "events.json")  # all-invalid input fails closed
 
 
 if __name__ == "__main__":
