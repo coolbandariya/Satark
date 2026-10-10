@@ -15,8 +15,8 @@ def render_sidebar(get_client, discover_models, choose_model, text_preferences, 
         pages = [
             ("FIRSTLIGHT", "FIRSTLIGHT · Incident Command"),
             ("Home", "Overview"),
-            ("Analyze", "Threat Analysis Tools"),
-            ("History", "Reports & Session History"),
+            ("Analyze", "Investigate"),
+            ("History", "Session history"),
         ]
         for page, label in pages:
             if st.button(
