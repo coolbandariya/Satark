@@ -686,7 +686,8 @@ elif st.session_state.page == "Analyze":
                 if st.button(
                     f"Select {name}",
                     key=f"scanner_{name}",
-                    use_container_width=True
+                    use_container_width=True,
+                    type="primary" if active else "secondary",
                 ):
                     st.session_state.mode = name
                     st.session_state.result = None
