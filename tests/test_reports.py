@@ -38,6 +38,8 @@ class ReportGenerationTests(unittest.TestCase):
         self.assertIn("account will be blocked today", extracted)
         self.assertIn("Rule-Based Evidence Ledger", extracted)
         self.assertIn("Evidence Coverage Review", extracted)
+        self.assertIn("Investigation Workflow", extracted)
+        self.assertIn("Local evidence rules", extracted)
         self.assertIn("Independent text signals found", extracted)
 
 
