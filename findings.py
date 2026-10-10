@@ -28,10 +28,16 @@ _LABELS = (
 )
 
 
+def _clause_prefix(text, position):
+    """Return only the current clause, so old negation cannot mask new evidence."""
+    prefix = text[max(0, position - 96):position]
+    return re.split(r"[.!?;,\n]|—|–", prefix)[-1]
+
+
 def _has_unnegated_label(text, pattern):
     """Match a severity label only when it is not directly negated."""
     for match in pattern.finditer(text):
-        prefix = text[max(0, match.start() - 64):match.start()]
+        prefix = _clause_prefix(text, match.start())
         suffix = text[match.end():match.end() + 40]
         if not _NEGATORS.search(prefix) and not _LABEL_NEGATION_AFTER.search(suffix):
             return True
@@ -49,10 +55,23 @@ def finding_severity(value):
     if not text:
         return "unknown"
 
-    # Negation must be evaluated before positive keywords. Avoid treating
-    # "not clear" as a clear result.
-    if re.search(r"\b(?:not detected|no sign(?:s)?(?: of)?|no indicators?|none detected|absent|false)\b", text):
-        return "clear"
+    # Treat a negative statement as a clear result only when it describes the
+    # current clause/status, not when a later clause reports a separate signal.
+    clauses = [part.strip() for part in re.split(r"[.!?;\n]|—|–", text) if part.strip()]
+    negative_status = re.compile(
+        r"^(?:(?:status\s*:\s*)?clear|not detected|no sign(?:s)?(?: of)?\b.*|"
+        r"no indicators?\b.*|none detected|absent|false|"
+        r".+\bnot detected|.+\bnot present|.+\bruled out)[.! ]*$"
+    )
+    if clauses and any(negative_status.fullmatch(clause) for clause in clauses):
+        # If another clause contains an unnegated severity, classify that
+        # positive signal rather than letting an unrelated negative dominate.
+        positive_labels = [
+            severity for severity, pattern in _LABELS
+            if _has_unnegated_label(text, pattern)
+        ]
+        if not positive_labels:
+            return "clear"
     if re.fullmatch(r"(?:status\s*:\s*)?clear[.! ]*", text):
         return "clear"
 
