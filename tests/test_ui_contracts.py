@@ -14,6 +14,7 @@ LEARNING = (ROOT / "ui/learning.py").read_text(encoding="utf-8")
 HOME = (ROOT / "ui/home.py").read_text(encoding="utf-8")
 NAV = (ROOT / "ui/navigation.py").read_text(encoding="utf-8")
 FIRSTLIGHT = (ROOT / "ui/firstlight.py").read_text(encoding="utf-8")
+LOADING = (ROOT / "ui/loading.py").read_text(encoding="utf-8")
 
 
 class UIContractTests(unittest.TestCase):
@@ -118,6 +119,26 @@ class UIContractTests(unittest.TestCase):
         for section in ("Incident", "Evidence Integrity", "Investigation", "Response Center", "Audit Trail"):
             self.assertIn(section, FIRSTLIGHT)
         self.assertNotIn("st.tabs(", FIRSTLIGHT)
+
+    def test_intro_loading_screen_is_branded_accessible_and_nonblocking(self):
+        self.assertIn("from ui.loading import render_intro_loader", APP)
+        self.assertLess(APP.index("render_intro_loader()"), APP.index("api_key, role = render_sidebar("))
+        for expected in (
+            "SATARK",
+            "FIRSTLIGHT",
+            "st.html(",
+            "unsafe_allow_javascript=True",
+            "const doc = window.document;",
+            'setAttribute("role", "status")',
+            'setAttribute("aria-live", "polite")',
+            "prefers-reduced-motion: reduce",
+            "Skip intro",
+            "overlay.remove()",
+            "window.setTimeout(dismiss, reduceMotion ? 550 : 950)",
+        ):
+            self.assertIn(expected, LOADING)
+        self.assertIn('st.session_state.get("_satark_intro_seen", False)', LOADING)
+        self.assertIn('st.session_state["_satark_intro_seen"] = True', LOADING)
 
     def test_app_does_not_reference_missing_analysis_constants(self):
         self.assertIn("THREAT_CHECKS, OFFICIAL_VERIFICATION_SOURCES", APP)
