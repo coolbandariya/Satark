@@ -90,3 +90,28 @@
   .workspace-preview,.capability-icon,.method-step>span{transition:none!important}
   .workspace-preview:hover,.capability-card:hover .capability-icon,.method-step:hover>span{transform:none!important}
 }
+
+
+/* Investigation result: make the real analysis path inspectable at a glance. */
+.investigation-timeline{margin:1rem 0;padding:1.05rem 1.1rem}
+.investigation-timeline-heading{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:.9rem}
+.investigation-timeline-heading h3{margin:0;color:#eaf2ff;font-size:1rem;letter-spacing:-.025em}
+.investigation-timeline-heading p{margin:.3rem 0 0;color:#879bb4;font-size:.72rem;line-height:1.5}
+.investigation-timeline-badge{padding:.3rem .5rem;border:1px solid rgba(125,211,252,.2);border-radius:8px;color:#a9e7fb;background:rgba(125,211,252,.055);font-size:.6rem;font-weight:800;white-space:nowrap}
+.investigation-stages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem}
+.investigation-stage{display:grid;grid-template-columns:32px minmax(0,1fr);gap:.65rem;align-items:start;padding:.85rem;border:1px solid rgba(177,199,230,.12);border-radius:12px;background:rgba(8,15,25,.42);min-width:0}
+.investigation-stage-marker{display:grid;place-items:center;width:30px;height:30px;border:1px solid rgba(94,224,176,.22);border-radius:9px;background:rgba(94,224,176,.07);color:#9ae7c8;font-size:.64rem;font-weight:850}
+.investigation-stage-content{min-width:0}
+.investigation-stage-title{color:#e1ebf9;font-size:.75rem;font-weight:800;letter-spacing:-.01em}
+.investigation-stage-content p{margin:.32rem 0 0;color:#8fa1b8;font-size:.66rem;line-height:1.6;overflow-wrap:anywhere}
+.investigation-stage-state{grid-column:2;justify-self:start;margin-top:.05rem;color:#8fe0bf;font-size:.57rem;font-weight:850;letter-spacing:.035em;text-transform:uppercase}
+.investigation-stage--skipped .investigation-stage-marker{border-color:rgba(125,211,252,.2);background:rgba(125,211,252,.06);color:#a6e5fb}
+.investigation-stage--skipped .investigation-stage-state{color:#9bdcf2}
+.investigation-stage--review .investigation-stage-marker{border-color:rgba(244,201,107,.22);background:rgba(244,201,107,.06);color:#f2d58f}
+.investigation-stage--review .investigation-stage-state{color:#f2d58f}
+@media(max-width:680px){
+  .investigation-timeline{padding:.85rem}
+  .investigation-timeline-heading{align-items:flex-start}
+  .investigation-stages{grid-template-columns:minmax(0,1fr)}
+  .investigation-stage{padding:.75rem}
+}
