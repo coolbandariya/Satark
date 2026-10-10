@@ -72,10 +72,10 @@ class UIContractTests(unittest.TestCase):
 
     def test_native_streamlit_theme_matches_custom_design_system(self):
         config = (ROOT / ".streamlit/config.toml").read_text(encoding="utf-8")
-        self.assertIn('primaryColor = "#7dd3fc"', config)
-        self.assertIn('backgroundColor = "#080d17"', config)
-        self.assertIn('secondaryBackgroundColor = "#0d1523"', config)
-        self.assertIn('textColor = "#edf4ff"', config)
+        self.assertIn('primaryColor = "#a9a6ff"', config)
+        self.assertIn('backgroundColor = "#080b12"', config)
+        self.assertIn('secondaryBackgroundColor = "#0e1421"', config)
+        self.assertIn('textColor = "#f2f6ff"', config)
         self.assertIn('showErrorDetails = "none"', config)
         self.assertIn("maxUploadSize = 50", config)
 
@@ -108,8 +108,10 @@ class UIContractTests(unittest.TestCase):
         self.assertIn('("Home", "Overview")', NAV)
         self.assertIn('("Analyze", "Investigate")', NAV)
         self.assertIn('("History", "Session history")', NAV)
-        self.assertNotIn('("Challenge",', NAV)
-        self.assertNotIn('("Classroom",', NAV)
+        self.assertIn('Learn & practice', NAV)
+        self.assertIn('("Challenge", "Scam Challenge")', NAV)
+        self.assertIn('("Academy", "SATARK Academy")', NAV)
+        self.assertIn('("Classroom", "Classroom Mode")', NAV)
 
     def test_visual_polish_is_local_accessible_and_motion_sensitive(self):
         self.assertIn('with_name("ui-polish.css")', RADAR)

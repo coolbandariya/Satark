@@ -18,18 +18,19 @@ def assert_layout(page, name):
     metrics=page.evaluate("""() => ({
         viewport: window.innerWidth,
         scrollWidth: document.documentElement.scrollWidth,
-        key: [...document.querySelectorAll('.ih-hero,.ih-capability-grid,.st-key-home-actions,.ih-method')].map(el => {
+        key: [...document.querySelectorAll('.satark-home-hero,.satark-firstlight-spotlight,.ih-capability-grid,.st-key-home-actions')].map(el => {
             const r=el.getBoundingClientRect();
             return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};
         }),
-        workflowSteps: document.querySelectorAll(".ih-method-step").length,
+        spotlight: document.querySelectorAll('.satark-spotlight-card .spotlight-orb').length,
+        capabilityCards: document.querySelectorAll('.ih-capability-grid article').length,
         scanners: document.querySelectorAll(".scanner").length
     })""")
     assert metrics["scrollWidth"] <= metrics["viewport"] + 2, f"{name}: horizontal overflow {metrics}"
-    assert len(metrics["key"]) >= 3, f"{name}: primary home layout selectors were not found: {metrics}"
-    assert metrics["workflowSteps"] == 4, f"{name}: onboarding workflow is incomplete"
-    assert page.locator(".ih-hero h1").count() == 1, f"{name}: hero heading missing"
-    assert page.locator(".ih-capability-grid article").count() >= 4, f"{name}: capability cards missing"
+    assert len(metrics["key"]) == 4, f"{name}: primary home layout selectors were not found: {metrics}"
+    assert metrics["spotlight"] == 1, f"{name}: spotlight visual missing"
+    assert metrics["capabilityCards"] == 4, f"{name}: expected four compact capability cards"
+    assert page.locator(".satark-home-hero h1").count() == 1, f"{name}: hero heading missing"
     for rect in metrics["key"]:
         assert rect["left"] >= -2, f"{name}: element extends left of viewport: {rect}"
         assert rect["right"] <= metrics["viewport"] + 2, f"{name}: element extends right of viewport: {rect}"
@@ -72,7 +73,6 @@ def main():
                 page.get_by_text("What do you want to check?").wait_for(timeout=30_000)
                 assert_no_overlap(page, ".scanner", f"{name}-scanner")
                 assert_no_overlap(page, ".capability-card", f"{name}-capability-card")
-                assert_no_overlap(page, ".ih-method-step", f"{name}-method-step")
                 assert page.get_by_role("button",name="Select Text").is_visible()
                 page.get_by_role("button", name="Select Text").last.click()
                 page.get_by_text("Security Analysis").wait_for(timeout=30_000)
@@ -103,6 +103,9 @@ def main():
                 for label, marker in (
                     ("Session history", "Analysis history"),
                     ("Investigate", "What do you want to check?"),
+                    ("Scam Challenge", "AI SECURITY"),
+                    ("SATARK Academy", "SATARK Academy"),
+                    ("Classroom Mode", "Classroom Mode"),
                     # Return to the home page last; the offline sample action
                     # is intentionally available there, not on the Analyze page.
                     ("Overview", "Pause the panic."),
@@ -112,7 +115,7 @@ def main():
 
                 # FIRSTLIGHT is the flagship workspace; exercise its main
                 # synthetic-only investigation path without provider credentials.
-                page.locator('[data-testid="stSidebar"] button').filter(has_text="FIRSTLIGHT").click()
+                page.get_by_role("button", name="Open FIRSTLIGHT →").click()
                 page.get_by_role("button", name="Load / reset synthetic incident").click()
                 page.get_by_text("Synthetic case loaded").wait_for(timeout=30_000)
                 choose_workspace(page, 2)
@@ -140,7 +143,7 @@ def main():
 
                 # The offline sample must open without a provider key and expose
                 # the evidence ledger plus the deterministic coverage check.
-                page.get_by_role("button",name="Open the guided sample report").click()
+                page.get_by_role("button",name="Open guided sample report").click()
                 page.get_by_text("Investigation workflow").wait_for(timeout=30_000)
                 page.get_by_text("Evidence ledger").wait_for(timeout=30_000)
                 page.get_by_text("INDEPENDENT COVERAGE CHECK").wait_for(timeout=30_000)
