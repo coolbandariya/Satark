@@ -10,6 +10,8 @@ RADAR = (ROOT / "radar_background.py").read_text(encoding="utf-8")
 STEPPER = (ROOT / "stepper_component.py").read_text(encoding="utf-8")
 HISTORY = (ROOT / "ui/history.py").read_text(encoding="utf-8")
 LEARNING = (ROOT / "ui/learning.py").read_text(encoding="utf-8")
+HOME = (ROOT / "ui/home.py").read_text(encoding="utf-8")
+NAV = (ROOT / "ui/navigation.py").read_text(encoding="utf-8")
 
 
 class UIContractTests(unittest.TestCase):
@@ -50,6 +52,24 @@ class UIContractTests(unittest.TestCase):
     def test_home_is_not_dependent_on_external_browser_runtimes(self):
         self.assertNotIn("esm.sh", RADAR)
         self.assertNotIn("esm.sh", STEPPER)
+
+    def test_evidence_coverage_review_is_integrated(self):
+        self.assertIn("render_evidence_review(result)", APP)
+        self.assertIn("build_evidence_review", (ROOT / "ui/results.py").read_text(encoding="utf-8"))
+        self.assertIn("evidence-review", CSS)
+
+    def test_home_prioritizes_the_core_product_without_vanity_metrics(self):
+        self.assertIn("Know what you", HOME)
+        self.assertIn("guided sample report", HOME)
+        self.assertIn("observable signals", HOME)
+        self.assertNotIn("home-stats", HOME)
+
+    def test_primary_navigation_stays_focused(self):
+        self.assertIn('("Home", "Overview")', NAV)
+        self.assertIn('("Analyze", "Investigate")', NAV)
+        self.assertIn('("History", "Session history")', NAV)
+        self.assertNotIn('("Challenge",', NAV)
+        self.assertNotIn('("Classroom",', NAV)
 
     def test_app_does_not_reference_missing_analysis_constants(self):
         self.assertIn("THREAT_CHECKS, OFFICIAL_VERIFICATION_SOURCES", APP)
