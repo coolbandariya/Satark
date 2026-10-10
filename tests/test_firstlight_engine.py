@@ -67,6 +67,18 @@ class FirstlightEngineTests(unittest.TestCase):
         self.assertTrue(approved["simulated"])
         self.assertIn("No real", approved["message"])
 
+    def test_non_boolean_approval_fails_closed(self):
+        result = investigate_case(self.case, self.evidence)
+        proposals, outcome = apply_simulated_response(
+            result["response_proposals"], "ACT-001", "true", "reviewer"
+        )
+        self.assertEqual(outcome["status"], "rejected")
+        self.assertEqual(proposals[0]["status"], "rejected")
+
+    def test_malformed_audit_entries_fail_closed(self):
+        self.assertFalse(verify_audit_chain([None]))
+        self.assertFalse(verify_audit_chain([{"previous_hash": "GENESIS"}]))
+
     def test_unknown_action_fails_closed(self):
         with self.assertRaises(ValueError):
             apply_simulated_response([], "ACT-404", True, "reviewer")
