@@ -19,7 +19,7 @@ from satark_utils import (
 def clamp_score(value):
     try:
         return max(0, min(100, int(float(value))))  # limits score to 0–100
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):
         return 50
 
 def is_scam_claim(category, verdict, summary=""):
@@ -110,7 +110,7 @@ def risk_label(score, category=""):
     if safe_text(category).lower() == "scam":
         return "SCAM", "critical"
     if score < 35:
-        return "SAFE", "safe"
+        return "LOWER SIGNAL", "safe"
     if score < 70:
         return "CAUTION", "caution"
     return "CRITICAL THREAT", "critical"

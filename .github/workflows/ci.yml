@@ -43,7 +43,7 @@ jobs:
         run: |
           python -m compileall -q \
             satark.py ai_provider.py scam_challenge.py video_processing.py reports.py \
-            satark_utils.py url_security.py radar_background.py stepper_component.py ui tests
+            satark_utils.py url_security.py radar_background.py stepper_component.py evidence_engine.py ui tests
 
       - name: Run unit tests
         run: python -m unittest discover -s tests -v
@@ -91,7 +91,7 @@ jobs:
 
       - name: Validate required project assets
         run: |
-          python -c "from pathlib import Path; files=[Path('requirements.txt'),Path('styles.css'),Path('satark.py'),Path('config.py'),Path('analysis_engine.py'),Path('findings.py'),Path('input_processing.py'),Path('radar_background.py'),Path('stepper_component.py'),Path('ai_provider.py'),Path('scam_challenge.py'),Path('video_processing.py'),Path('reports.py'),Path('satark_utils.py'),Path('url_security.py'),Path('ui/__init__.py'),Path('ui/home.py'),Path('ui/navigation.py'),Path('ui/results.py'),Path('ui/history.py'),Path('ui/learning.py'),Path('ui/demo.py')]; missing=[str(p) for p in files if not p.is_file() or p.stat().st_size == 0]; assert not missing, f'Missing or empty files: {missing}'"
+          python -c "from pathlib import Path; files=[Path('requirements.txt'),Path('styles.css'),Path('satark.py'),Path('config.py'),Path('analysis_engine.py'),Path('findings.py'),Path('input_processing.py'),Path('radar_background.py'),Path('stepper_component.py'),Path('ai_provider.py'),Path('scam_challenge.py'),Path('video_processing.py'),Path('reports.py'),Path('satark_utils.py'),Path('url_security.py'),Path('evidence_engine.py'),Path('ui/__init__.py'),Path('ui/home.py'),Path('ui/navigation.py'),Path('ui/results.py'),Path('ui/history.py'),Path('ui/learning.py'),Path('ui/demo.py')]; missing=[str(p) for p in files if not p.is_file() or p.stat().st_size == 0]; assert not missing, f'Missing or empty files: {missing}'"
 
       - name: Check source whitespace and accidental empty lines
         run: |

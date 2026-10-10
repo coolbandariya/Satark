@@ -1,11 +1,21 @@
-"""Lightweight background hook for SATARK.
+"""CSS-only visual layers for SATARK.
 
-The app used to mount a full-screen WebGL radar from an external CDN. That
-made the UI dependent on a third-party browser module and could produce a
-blank/slow layer on restricted networks. The visual treatment now lives in
-styles.css, so this hook intentionally does nothing.
+The app intentionally avoids a CDN/WebGL background so the UI remains fast,
+predictable, and usable on restricted networks. The base design system and
+small finishing layer are loaded locally.
 """
+from pathlib import Path
+
+import streamlit as st
+
 
 def render_radar_background() -> None:
-    """Keep the call site stable while using the CSS-only background."""
-    return None
+    """Load the local finishing layer after the main design-system stylesheet."""
+    polish_path = Path(__file__).with_name("ui-polish.css")
+    try:
+        polish_css = polish_path.read_text(encoding="utf-8")
+    except OSError:
+        # A missing optional polish layer must never prevent an investigation.
+        return
+    if polish_css.strip():
+        st.markdown(f"<style>{polish_css}</style>", unsafe_allow_html=True)

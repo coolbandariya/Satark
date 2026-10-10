@@ -1,0 +1,117 @@
+/* SATARK polish layer — final UI pass.
+   CSS-only motion and finish; no external runtime or third-party code. */
+.workspace-hero{
+  isolation:isolate;
+  background:
+    radial-gradient(ellipse at 90% 8%,rgba(125,211,252,.08),transparent 28rem),
+    linear-gradient(125deg,rgba(20,34,55,.99),rgba(11,19,32,.99) 57%,rgba(10,25,31,.98))!important;
+}
+.workspace-hero::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background-image:
+    linear-gradient(rgba(177,199,230,.045) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(177,199,230,.045) 1px,transparent 1px);
+  background-size:42px 42px;
+  opacity:.42;
+  -webkit-mask-image:linear-gradient(105deg,transparent 4%,#000 58%,#000 100%);
+  mask-image:linear-gradient(105deg,transparent 4%,#000 58%,#000 100%);
+}
+.workspace-hero-copy,.workspace-preview{z-index:1}
+.workspace-preview{
+  border-color:rgba(177,199,230,.2);
+  box-shadow:0 22px 54px rgba(0,0,0,.28),inset 0 1px rgba(255,255,255,.055);
+  backdrop-filter:blur(12px);
+  transition:transform .24s ease,border-color .24s ease,box-shadow .24s ease;
+}
+.workspace-preview:hover{
+  transform:translateY(-2px);
+  border-color:rgba(125,211,252,.28);
+  box-shadow:0 26px 58px rgba(0,0,0,.3),inset 0 1px rgba(255,255,255,.06);
+}
+.status-dot{animation:satark-status-pulse 3s ease-in-out infinite}
+@keyframes satark-status-pulse{
+  0%,100%{box-shadow:0 0 0 4px rgba(94,224,176,.08),0 0 0 0 rgba(94,224,176,0)}
+  50%{box-shadow:0 0 0 4px rgba(94,224,176,.08),0 0 0 7px rgba(94,224,176,.035)}
+}
+.workspace-section-head{padding-top:.25rem}
+.workspace-heading{letter-spacing:-.045em}
+.capability-card{
+  overflow:hidden;
+  box-shadow:inset 0 1px rgba(255,255,255,.025);
+}
+.capability-card::before{
+  content:"";
+  position:absolute;
+  left:1rem;right:1rem;top:0;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(125,211,252,.4),transparent);
+  opacity:0;
+  transition:opacity .2s ease;
+}
+.capability-card:hover::before{opacity:1}
+.capability-icon{transition:transform .2s ease,background .2s ease}
+.capability-card:hover .capability-icon{transform:translateY(-1px) scale(1.04);background:rgba(125,211,252,.12)}
+.workspace-method{
+  background:linear-gradient(125deg,rgba(13,22,36,.86),rgba(11,19,31,.68));
+  box-shadow:inset 0 1px rgba(255,255,255,.025);
+}
+.method-step>span{transition:background .18s ease,border-color .18s ease,transform .18s ease}
+.method-step:hover>span{transform:translateY(-2px);background:rgba(125,211,252,.12);border-color:rgba(125,211,252,.36)}
+.workspace-disclaimer{background:linear-gradient(100deg,rgba(244,201,107,.04),rgba(13,22,36,.36))}
+.st-key-home-actions [data-testid="stButton"]>button{
+  min-height:52px!important;
+  border-radius:12px!important;
+  letter-spacing:-.01em;
+}
+.st-key-home-actions [data-testid="stButton"] button[kind="primary"]{
+  box-shadow:0 10px 28px rgba(85,194,211,.13),inset 0 1px rgba(255,255,255,.28)!important;
+}
+.st-key-home-actions [data-testid="stButton"] button[kind="primary"]:hover{
+  transform:translateY(-1px);
+  box-shadow:0 14px 32px rgba(85,194,211,.18),inset 0 1px rgba(255,255,255,.3)!important;
+}
+[data-testid="stFileUploaderDropzone"]:focus-within{
+  border-color:rgba(125,211,252,.55)!important;
+  box-shadow:0 0 0 3px rgba(125,211,252,.07)!important;
+}
+[data-testid="stExpander"] details summary:focus-visible{
+  outline:2px solid var(--accent)!important;outline-offset:3px!important;border-radius:8px;
+}
+@media(max-width:680px){
+  .workspace-hero::after{background-size:32px 32px;opacity:.25}
+  .workspace-preview:hover,.capability-card:hover,.method-step:hover>span{transform:none}
+}
+@media(prefers-reduced-motion:reduce){
+  .status-dot{animation:none!important}
+  .workspace-preview,.capability-icon,.method-step>span{transition:none!important}
+  .workspace-preview:hover,.capability-card:hover .capability-icon,.method-step:hover>span{transform:none!important}
+}
+
+
+/* Investigation result: make the real analysis path inspectable at a glance. */
+.investigation-timeline{margin:1rem 0;padding:1.05rem 1.1rem}
+.investigation-timeline-heading{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:.9rem}
+.investigation-timeline-heading h3{margin:0;color:#eaf2ff;font-size:1rem;letter-spacing:-.025em}
+.investigation-timeline-heading p{margin:.3rem 0 0;color:#879bb4;font-size:.72rem;line-height:1.5}
+.investigation-timeline-badge{padding:.3rem .5rem;border:1px solid rgba(125,211,252,.2);border-radius:8px;color:#a9e7fb;background:rgba(125,211,252,.055);font-size:.6rem;font-weight:800;white-space:nowrap}
+.investigation-stages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem}
+.investigation-stage{display:grid;grid-template-columns:32px minmax(0,1fr);gap:.65rem;align-items:start;padding:.85rem;border:1px solid rgba(177,199,230,.12);border-radius:12px;background:rgba(8,15,25,.42);min-width:0}
+.investigation-stage-marker{display:grid;place-items:center;width:30px;height:30px;border:1px solid rgba(94,224,176,.22);border-radius:9px;background:rgba(94,224,176,.07);color:#9ae7c8;font-size:.64rem;font-weight:850}
+.investigation-stage-content{min-width:0}
+.investigation-stage-title{color:#e1ebf9;font-size:.75rem;font-weight:800;letter-spacing:-.01em}
+.investigation-stage-content p{margin:.32rem 0 0;color:#8fa1b8;font-size:.66rem;line-height:1.6;overflow-wrap:anywhere}
+.investigation-stage-state{grid-column:2;justify-self:start;margin-top:.05rem;color:#8fe0bf;font-size:.57rem;font-weight:850;letter-spacing:.035em;text-transform:uppercase}
+.investigation-stage--skipped .investigation-stage-marker{border-color:rgba(125,211,252,.2);background:rgba(125,211,252,.06);color:#a6e5fb}
+.investigation-stage--skipped .investigation-stage-state{color:#9bdcf2}
+.investigation-stage--review .investigation-stage-marker{border-color:rgba(244,201,107,.22);background:rgba(244,201,107,.06);color:#f2d58f}
+.investigation-stage--review .investigation-stage-state{color:#f2d58f}
+@media(max-width:680px){
+  .investigation-timeline{padding:.85rem}
+  .investigation-timeline-heading{align-items:flex-start}
+  .investigation-stages{grid-template-columns:minmax(0,1fr)}
+  .investigation-stage{padding:.75rem}
+}

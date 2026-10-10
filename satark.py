@@ -57,7 +57,8 @@ from analysis_engine import (
 )
 from ui.home import render_home
 from ui.navigation import render_sidebar
-from ui.results import render_threat_analysis, render_verification_sources
+from ui.results import render_threat_analysis, render_verification_sources, render_evidence_ledger, render_evidence_review, render_investigation_timeline
+from evidence_engine import extract_deterministic_evidence
 from ui.history import render_history
 from ui.learning import render_academy, render_classroom
 
@@ -424,7 +425,7 @@ def render_result(result):
 
     with st.container(border=True, key="result_report"):
         st.markdown(
-            '<div class="result-head">🛡️ SATARK Security Report</div>'
+            '<div class="result-head">SATARK <span class="result-head-divider">/</span> Investigation report</div>'
             '<div class="eyebrow">Evidence-first AI assessment • advisory, not a guarantee</div>',
             unsafe_allow_html=True,
         )
@@ -432,13 +433,13 @@ def render_result(result):
         a, b, c, d = st.columns(4)
         with a:
             st.markdown(
-                f'<div class="metric"><div class="metric-label">Threat level</div>'
+                f'<div class="metric"><div class="metric-label">Assessment signal</div>'
                 f'<div class="metric-value {css}">{label}</div></div>',
                 unsafe_allow_html=True,
             )
         with b:
             st.markdown(
-                f'<div class="metric"><div class="metric-label">Risk score</div>'
+                f'<div class="metric"><div class="metric-label">Risk score · heuristic</div>'
                 f'<div class="metric-value">{score}/100</div></div>',
                 unsafe_allow_html=True,
             )
@@ -450,7 +451,7 @@ def render_result(result):
             )
         with d:
             st.markdown(
-                f'<div class="metric"><div class="metric-label">AI confidence</div>'
+                f'<div class="metric"><div class="metric-label">Model-reported confidence</div>'
                 f'<div class="metric-value {conf_css}">{confidence:.2f}%</div></div>',
                 unsafe_allow_html=True,
             )
@@ -460,6 +461,10 @@ def render_result(result):
             f'aria-valuemin="0" aria-valuemax="100" aria-valuenow="{score}">'
             f'<div style="width:{score}%"></div></div>',
             unsafe_allow_html=True,
+        )
+        st.caption(
+            "Risk is a heuristic summary, not a probability. Model-reported confidence is not "
+            "independently calibrated. A low score or missing signal does not guarantee safety."
         )
 
         if confidence < 50:
@@ -504,18 +509,23 @@ def render_result(result):
             for item in recommendation_values
         ) or '<div class="action-item">Review the content manually before acting.</div>'
 
+        # Show the observable evidence before model interpretation. This is the
+        # defining SATARK workflow: evidence first, generated explanation second.
+        render_investigation_timeline(result)
+        render_evidence_ledger(result.get("deterministic_evidence", []), result.get("analysis_mode", ""))
+        render_evidence_review(result)
+
         left, right = st.columns(2)
         with left:
             st.markdown(
-                f'<div class="evidence"><strong>🧩 Evidence detected</strong>{evidence_items}</div>',
+                f'<div class="evidence"><strong>AI interpretation</strong>{evidence_items}</div>',
                 unsafe_allow_html=True,
             )
         with right:
             st.markdown(
-                f'<div class="evidence"><strong>🧭 What to do now</strong>{action_items}</div>',
+                f'<div class="evidence"><strong>Recommended next steps</strong>{action_items}</div>',
                 unsafe_allow_html=True,
             )
-
         render_threat_analysis(result, THREAT_CHECKS)
         render_verification_sources(result, OFFICIAL_VERIFICATION_SOURCES)
 
@@ -575,7 +585,7 @@ api_key, role = render_sidebar(
     VISION_MODEL_PREFERENCES,
 )
 # ---------------------------- Hero -----------------------------
-st.markdown('<section class="hero"><div class="pill">AI SECURITY • EXPLAIN • LEARN • PROTECT</div><h1><span class="hero-primary">Think it’s a scam?</span><br><span class="hero-secondary">Let <span class="hero-brand">SATARK</span> check it.</span></h1><p><strong>Paste a message, inspect a link, upload a screenshot, video, or analyze a PDF.</strong><br>SATARK explains the risk in simple language and shows the evidence behind its assessment.</p></section>',unsafe_allow_html=True)
+# The Home page has its own editorial hero. Keep Analyze/History focused on the active task.
 
 # --------------------------- Pages -----------------------------
 # --------------------------- Pages -----------------------------
@@ -677,7 +687,8 @@ elif st.session_state.page == "Analyze":
                 if st.button(
                     f"Select {name}",
                     key=f"scanner_{name}",
-                    use_container_width=True
+                    use_container_width=True,
+                    type="primary" if active else "secondary",
                 ):
                     st.session_state.mode = name
                     st.session_state.result = None
@@ -781,9 +792,28 @@ elif st.session_state.page == "Analyze":
     # SECURITY ANALYSIS INPUT
     # ==========================================================
 
+    mode_details = {
+        "Text": ("💬", "Messages & text", "Inspect urgency, credential requests, impersonation cues and embedded indicators."),
+        "URL": ("↗", "Links & websites", "Review URL structure and inspect eligible public-page text using bounded fetching."),
+        "Image": ("▧", "Images & screenshots", "Review visible claims, instructions and image context without treating appearance as proof."),
+        "PDF": ("▤", "PDF documents", "Extract supported document text for review. Scanned or image-only pages may provide limited evidence."),
+        "QR": ("▦", "QR code images", "Inspect QR-related images and visible context. Do not open an unknown destination just to verify it."),
+        "Video": ("▷", "Video & clips", "Review sampled frames and, when available, a transcript. This is not exhaustive frame-by-frame forensics."),
+    }
+    mode_icon, mode_title, mode_description = mode_details.get(
+        mode, ("◈", "Investigation", "Choose a supported input to begin.")
+    )
     st.markdown(
-        f'<div class="section-title">🔎 Security Analysis</div>'
-        f'<div class="section-copy">Selected: <strong>{mode}</strong></div>',
+        '<div class="section-title">Security Analysis</div>'
+        '<div class="selected-workflow">'
+        '<div class="selected-workflow-icon">' + mode_icon + '</div>'
+        '<div class="selected-workflow-copy">'
+        '<div class="selected-workflow-kicker">SELECTED WORKFLOW · ' + html.escape(mode.upper()) + '</div>'
+        '<div class="selected-workflow-title">' + html.escape(mode_title) + '</div>'
+        '<p>' + html.escape(mode_description) + '</p>'
+        '</div>'
+        '<div class="selected-workflow-state"><span></span> Ready for input</div>'
+        '</div>',
         unsafe_allow_html=True
     )
 
@@ -1221,13 +1251,47 @@ elif st.session_state.page == "Analyze":
 
 
                 # ==================================================
+                # COLLECT INDEPENDENT EVIDENCE BEFORE AI INTERPRETATION
+                # ==================================================
+
+                # These local observations are extracted before the model call.
+                # They are supplied as context, then retained separately so the
+                # report can distinguish observed signals from generated claims.
+                if mode in {"Text", "URL", "PDF", "Video"}:
+                    evidence_source = (
+                        f"Submitted URL: {content}\n\nFetched page text:\n{prepared}"
+                        if mode == "URL"
+                        else prepared
+                    )
+                    deterministic_evidence = extract_deterministic_evidence(
+                        evidence_source
+                    )
+                else:
+                    # Image/QR workflows use vision analysis; do not imply that
+                    # text-only local rules independently verified visual claims.
+                    deterministic_evidence = []
+
+                evidence_context = json.dumps(
+                    deterministic_evidence,
+                    ensure_ascii=False,
+                    separators=(",", ":"),
+                )
+
+                # ==================================================
                 # BUILD PROMPT
                 # ==================================================
 
                 prompt = (
                     f"User profile: {role}\n"
                     f"Scanner mode: {mode}\n\n"
-                    f"{prepared}"
+                    f"Submitted content and extracted content:\n{prepared}\n\n"
+                    "Independent local rule observations (JSON; observations, not verdicts):\n"
+                    f"{evidence_context}\n\n"
+                    "Use these observations as a separate evidence source. Do not claim that "
+                    "an observation proves fraud. Do not invent corroboration when the list is "
+                    "empty. Clearly distinguish direct observations, inference, and unknowns. "
+                    "For visual scans, reason only from the supplied image(s) and state what "
+                    "cannot be verified from the image alone."
                 )
 
 
@@ -1243,6 +1307,10 @@ elif st.session_state.page == "Analyze":
                     image_data_urls,
                     available
                 )
+
+                # Preserve the independent evidence and scanner type in the report.
+                result["analysis_mode"] = mode
+                result["deterministic_evidence"] = deterministic_evidence
 
 
             # ======================================================
@@ -1286,13 +1354,12 @@ elif st.session_state.page == "Analyze":
                 "input and model access."
             )
 
-            with st.expander(
-                "Technical details"
-            ):
-
-                st.code(
-                    str(exc)
-                )
+            # Do not echo raw provider/network exception strings into the UI:
+            # SDK errors can contain request metadata or other sensitive details.
+            st.caption(
+                "Technical details were withheld to avoid exposing provider metadata. "
+                "Check the server-side logs for the exception type and request context."
+            )
 
 
     # ==========================================================
@@ -1306,7 +1373,7 @@ elif st.session_state.page == "Analyze":
         )
 
         st.download_button(
-            "📄 Download PDF report",
+            "Download PDF report",
             make_pdf_report(
                 st.session_state.result,
                 mode

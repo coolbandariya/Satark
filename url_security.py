@@ -46,7 +46,7 @@ class VisibleTextParser(HTMLParser):
             self.parts.append(data.strip())
 
     def text(self):
-        return "\\n".join(self.parts)
+        return "\n".join(self.parts)
 
 
 def _resolved_global_addresses(host, port):
@@ -114,21 +114,35 @@ def fetch_url_text(url):
     with opener.open(request, timeout=URL_FETCH_TIMEOUT_SECONDS) as response:
         content_type = response.headers.get("Content-Type", "").lower()
         declared_length = response.headers.get("Content-Length")
-        try:
-            if declared_length is not None and int(declared_length) > URL_MAX_BYTES:
+        if declared_length is not None:
+            try:
+                declared_size = int(declared_length)
+            except (TypeError, ValueError, OverflowError) as exc:
+                raise ValueError("The remote server returned an invalid content length.") from exc
+            if declared_size < 0:
+                raise ValueError("The remote server returned an invalid content length.")
+            if declared_size > URL_MAX_BYTES:
                 raise ValueError("The remote response is larger than SATARK's safety limit.")
-        except ValueError as exc:
-            if "larger than" in str(exc):
-                raise
         raw = response.read(URL_MAX_BYTES + 1)
         if len(raw) > URL_MAX_BYTES:
             raise ValueError("The remote response is larger than SATARK's safety limit.")
         final_url = response.geturl()
     if not is_public_url(final_url):
         raise ValueError("The final URL is not a public address and was blocked.")
-    if "text" not in content_type and "html" not in content_type and "xml" not in content_type:
-        return raw.decode("utf-8", errors="ignore")[:12_000]
+    # Never decode arbitrary binary payloads as text. SATARK's URL workflow is
+    # for visible web/text content, not file downloads or content sniffing.
+    accepted_types = ("text/html", "application/xhtml+xml", "text/plain", "application/xml", "text/xml")
+    media_type = content_type.split(";", 1)[0].strip()
+    if media_type not in accepted_types:
+        raise ValueError(
+            "SATARK only reads public HTML, XML, or plain-text pages. "
+            "This URL returned an unsupported content type."
+        )
+    decoded = raw.decode("utf-8", errors="replace")
+    if media_type == "text/plain":
+        return decoded[:URL_MAX_TEXT_CHARS]
     parser = VisibleTextParser()
-    parser.feed(raw.decode("utf-8", errors="ignore"))
-    text = parser.text() or raw.decode("utf-8", errors="ignore")
+    parser.feed(decoded)
+    parser.close()
+    text = parser.text() or decoded
     return text[:URL_MAX_TEXT_CHARS]

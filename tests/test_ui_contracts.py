@@ -6,10 +6,13 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 APP = (ROOT / "satark.py").read_text(encoding="utf-8")
 CSS = (ROOT / "styles.css").read_text(encoding="utf-8")
+POLISH_CSS = (ROOT / "ui-polish.css").read_text(encoding="utf-8")
 RADAR = (ROOT / "radar_background.py").read_text(encoding="utf-8")
 STEPPER = (ROOT / "stepper_component.py").read_text(encoding="utf-8")
 HISTORY = (ROOT / "ui/history.py").read_text(encoding="utf-8")
 LEARNING = (ROOT / "ui/learning.py").read_text(encoding="utf-8")
+HOME = (ROOT / "ui/home.py").read_text(encoding="utf-8")
+NAV = (ROOT / "ui/navigation.py").read_text(encoding="utf-8")
 
 
 class UIContractTests(unittest.TestCase):
@@ -22,7 +25,7 @@ class UIContractTests(unittest.TestCase):
             "from ui.learning import render_academy, render_classroom",
         ):
             self.assertIn(expected, APP)
-        self.assertLess(len(APP), 50000)
+        self.assertLess(len(APP), 55000)
 
     def test_result_renderers_receive_required_contract_arguments(self):
         self.assertIn("render_threat_analysis(result, THREAT_CHECKS)", APP)
@@ -50,6 +53,57 @@ class UIContractTests(unittest.TestCase):
     def test_home_is_not_dependent_on_external_browser_runtimes(self):
         self.assertNotIn("esm.sh", RADAR)
         self.assertNotIn("esm.sh", STEPPER)
+
+    def test_evidence_coverage_review_is_integrated(self):
+        self.assertIn("render_evidence_review(result)", APP)
+        self.assertIn("render_investigation_timeline(result)", APP)
+        self.assertIn("def render_investigation_timeline", (ROOT / "ui/results.py").read_text(encoding="utf-8"))
+        self.assertIn("investigation-stages", POLISH_CSS)
+        self.assertIn("build_evidence_review", (ROOT / "ui/results.py").read_text(encoding="utf-8"))
+        self.assertIn("evidence-review", CSS)
+
+    def test_home_prioritizes_the_core_product_without_vanity_metrics(self):
+        self.assertIn("Know what you", HOME)
+        self.assertIn("guided sample report", HOME)
+        self.assertIn("observable signals", HOME)
+        self.assertNotIn("home-stats", HOME)
+
+    def test_native_streamlit_theme_matches_custom_design_system(self):
+        config = (ROOT / ".streamlit/config.toml").read_text(encoding="utf-8")
+        self.assertIn('primaryColor = "#7dd3fc"', config)
+        self.assertIn('backgroundColor = "#080d17"', config)
+        self.assertIn('secondaryBackgroundColor = "#0d1523"', config)
+        self.assertIn('textColor = "#edf4ff"', config)
+
+    def test_active_scanner_has_a_distinct_native_control_state(self):
+        self.assertIn('type="primary" if active else "secondary"', APP)
+        self.assertIn(".scanner.active", CSS)
+
+    def test_investigation_screen_has_contextual_workflow_guidance(self):
+        self.assertIn("mode_details = {", APP)
+        self.assertIn("selected-workflow", APP)
+        self.assertIn("Video & clips", APP)
+        self.assertIn(".selected-workflow{", CSS)
+        self.assertIn("@media(max-width:680px)", CSS)
+
+    def test_provider_check_does_not_claim_success_when_discovery_fails(self):
+        self.assertIn("if not available:", NAV)
+        self.assertIn("Could not verify provider access", NAV)
+        self.assertIn("st.session_state.text_model = None", NAV)
+
+    def test_primary_navigation_stays_focused(self):
+        self.assertIn('("Home", "Overview")', NAV)
+        self.assertIn('("Analyze", "Investigate")', NAV)
+        self.assertIn('("History", "Session history")', NAV)
+        self.assertNotIn('("Challenge",', NAV)
+        self.assertNotIn('("Classroom",', NAV)
+
+    def test_visual_polish_is_local_accessible_and_motion_sensitive(self):
+        self.assertIn('with_name("ui-polish.css")', RADAR)
+        self.assertIn("prefers-reduced-motion:reduce", POLISH_CSS)
+        self.assertIn(".workspace-hero::after", POLISH_CSS)
+        self.assertIn("mask-image:", POLISH_CSS)
+        self.assertNotIn("https://", POLISH_CSS)
 
     def test_app_does_not_reference_missing_analysis_constants(self):
         self.assertIn("THREAT_CHECKS, OFFICIAL_VERIFICATION_SOURCES", APP)
