@@ -64,6 +64,13 @@ class UIContractTests(unittest.TestCase):
         self.assertIn("observable signals", HOME)
         self.assertNotIn("home-stats", HOME)
 
+    def test_native_streamlit_theme_matches_custom_design_system(self):
+        config = (ROOT / ".streamlit/config.toml").read_text(encoding="utf-8")
+        self.assertIn('primaryColor = "#7dd3fc"', config)
+        self.assertIn('backgroundColor = "#080d17"', config)
+        self.assertIn('secondaryBackgroundColor = "#0d1523"', config)
+        self.assertIn('textColor = "#edf4ff"', config)
+
     def test_investigation_screen_has_contextual_workflow_guidance(self):
         self.assertIn("mode_details = {", APP)
         self.assertIn("selected-workflow", APP)
