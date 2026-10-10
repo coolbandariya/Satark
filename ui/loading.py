@@ -10,12 +10,13 @@ def render_intro_loader() -> None:
         return
     st.session_state["_satark_intro_seen"] = True
 
-    st.html(
-        r"""
+    st.iframe(
+        r"""<!doctype html><html><head><meta charset="utf-8"></head><body><script>
         <script>
         (() => {
           try {
-            const doc = window.document;
+            const hostWindow = window.parent;
+            const doc = hostWindow.document;
             if (doc.getElementById("satark-intro-overlay")) return;
 
             const style = doc.createElement("style");
@@ -170,7 +171,7 @@ def render_intro_loader() -> None:
               dismissed = true;
               doc.removeEventListener("keydown", onKeydown);
               overlay.classList.add("satark-intro-leaving");
-              window.setTimeout(() => {
+              hostWindow.setTimeout(() => {
                 overlay.remove();
                 const css = doc.getElementById("satark-intro-style");
                 if (css) css.remove();
@@ -182,13 +183,14 @@ def render_intro_loader() -> None:
             skipButton.addEventListener("click", dismiss);
             doc.addEventListener("keydown", onKeydown);
             skipButton.focus({preventScroll: true});
-            const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-            window.setTimeout(dismiss, reduceMotion ? 650 : 1300);
+            const reduceMotion = hostWindow.matchMedia && hostWindow.matchMedia("(prefers-reduced-motion: reduce)").matches;
+            hostWindow.setTimeout(dismiss, reduceMotion ? 650 : 1300);
           } catch (error) {
             // The intro is decorative: a blocked embed must never prevent use of SATARK.
           }
         })();
-        </script>
-        """,
-        unsafe_allow_javascript=True,
+        </script></body></html>""",
+        height=1,
+        width=1,
+        tab_index=-1,
     )
