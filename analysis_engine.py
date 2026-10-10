@@ -110,7 +110,7 @@ def risk_label(score, category=""):
     if safe_text(category).lower() == "scam":
         return "SCAM", "critical"
     if score < 35:
-        return "SAFE", "safe"
+        return "LOWER SIGNAL", "safe"
     if score < 70:
         return "CAUTION", "caution"
     return "CRITICAL THREAT", "critical"
