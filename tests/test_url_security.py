@@ -44,6 +44,14 @@ class URLSecurityTests(unittest.TestCase):
             with self.subTest(url=url):
                 self.assertFalse(is_public_url(url))
 
+    def test_zero_and_out_of_range_ports_are_rejected(self):
+        for url in (
+            "http://example.com:0/",
+            "https://example.com:65536/",
+        ):
+            with self.subTest(url=url):
+                self.assertFalse(is_public_url(url))
+
     def test_mixed_public_and_private_dns_answers_fail_closed(self):
         answers = [
             (None, None, None, None, ("93.184.216.34", 443)),
