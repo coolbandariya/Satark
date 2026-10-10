@@ -26,6 +26,14 @@ class URLSecurityTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "redirect safety limit"):
                 handler.redirect_request(req, Mock(), 302, "Found", {}, "https://example.com/two")
 
+    def test_redirect_to_private_address_is_rejected(self):
+        handler = SafeRedirectHandler()
+        with patch("url_security.is_public_url", return_value=False):
+            with self.assertRaisesRegex(ValueError, "private or unsafe"):
+                handler.redirect_request(
+                    Mock(), Mock(), 302, "Found", {}, "http://127.0.0.1/admin"
+                )
+
     def test_non_http_schemes_and_credentials_fail_closed(self):
         self.assertFalse(is_public_url("file:///etc/passwd"))
         self.assertFalse(is_public_url("ftp://example.com/file"))
