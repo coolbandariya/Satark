@@ -10,6 +10,7 @@ from PIL import Image
 from groq import Groq
 
 from satark_utils import safe_text
+from config import MAX_UPLOAD_BYTES
 
 # ------------------- Video: frame + audio extraction -------------------
 # Videos are not sent to the vision model directly. Instead SATARK pulls a
@@ -20,7 +21,7 @@ from satark_utils import safe_text
 # crashing the whole scan.
 MAX_VIDEO_FRAMES = 2  # kept minimal — every extra frame competes with the
 # transcript and system prompt for the same tight tokens-per-minute budget
-MAX_VIDEO_BYTES = 200 * 1024 * 1024  # 200 MB safety cap for in-memory handling
+MAX_VIDEO_BYTES = MAX_UPLOAD_BYTES  # Keep video reads aligned with Streamlit server.maxUploadSize (50 MB).
 
 
 def _video_dependencies_available():
@@ -59,7 +60,7 @@ def extract_video_frames(uploaded_file, max_frames=MAX_VIDEO_FRAMES):
         pass
     data = uploaded_file.read(MAX_VIDEO_BYTES + 1)
     if len(data) > MAX_VIDEO_BYTES:
-        raise ValueError("This video is larger than the 200 MB limit SATARK can safely process in-session.")
+        raise ValueError("This video is larger than the 50 MB upload limit SATARK can safely process in-session.")
     if not data:
         raise ValueError("The uploaded video appears to be empty or unreadable.")
 
