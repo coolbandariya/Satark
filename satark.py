@@ -439,7 +439,7 @@ def render_result(result):
             )
         with b:
             st.markdown(
-                f'<div class="metric"><div class="metric-label">Risk score</div>'
+                f'<div class="metric"><div class="metric-label">Risk score · heuristic</div>'
                 f'<div class="metric-value">{score}/100</div></div>',
                 unsafe_allow_html=True,
             )
@@ -451,7 +451,7 @@ def render_result(result):
             )
         with d:
             st.markdown(
-                f'<div class="metric"><div class="metric-label">AI confidence</div>'
+                f'<div class="metric"><div class="metric-label">Model confidence</div>'
                 f'<div class="metric-value {conf_css}">{confidence:.2f}%</div></div>',
                 unsafe_allow_html=True,
             )
@@ -577,7 +577,7 @@ api_key, role = render_sidebar(
     VISION_MODEL_PREFERENCES,
 )
 # ---------------------------- Hero -----------------------------
-st.markdown('<section class="hero"><div class="pill">AI SECURITY • EXPLAIN • LEARN • PROTECT</div><h1><span class="hero-primary">Think it’s a scam?</span><br><span class="hero-secondary">Let <span class="hero-brand">SATARK</span> check it.</span></h1><p><strong>Paste a message, inspect a link, upload a screenshot, video, or analyze a PDF.</strong><br>SATARK explains the risk in simple language and shows the evidence behind its assessment.</p></section>',unsafe_allow_html=True)
+# The Home page has its own editorial hero. Keep Analyze/History focused on the active task.
 
 # --------------------------- Pages -----------------------------
 # --------------------------- Pages -----------------------------
