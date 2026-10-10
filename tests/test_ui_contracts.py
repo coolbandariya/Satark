@@ -85,6 +85,8 @@ class UIContractTests(unittest.TestCase):
         self.assertIn("MAX_UPLOAD_SIZE_MB = 50", config)
         self.assertIn("MAX_UPLOAD_BYTES = MAX_UPLOAD_SIZE_MB * 1024 * 1024", config)
         self.assertIn("MAX_VIDEO_BYTES = MAX_UPLOAD_BYTES", video)
+        self.assertIn("max_upload_size=50", APP)
+        self.assertNotIn("max_upload_size=200", APP)
 
     def test_active_scanner_has_a_distinct_native_control_state(self):
         self.assertIn('type="primary" if active else "secondary"', APP)
