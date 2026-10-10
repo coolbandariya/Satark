@@ -32,6 +32,7 @@ python -m unittest discover -s tests -v
 
 - [ ] All commands exit successfully.
 - [ ] Browser smoke tests complete at desktop and mobile viewport sizes.
+- [ ] Intro loader appears on a fresh session, auto-dismisses, supports skip, and does not persist after dismissal.
 - [ ] The offline/sample workflow works without provider credentials.
 - [ ] PDF and JSON exports are parseable and contain no secrets.
 - [ ] The event-import tests cover malformed JSON/CSV, duplicate IDs, oversized artifacts, excessive rows, invalid timestamps, and rejected-row reporting.
@@ -47,7 +48,7 @@ Test in a fresh browser session and capture screenshots for the release record.
 - [ ] Long event tables and timelines are only rendered when requested; verify there is no accidental horizontal overflow.
 - [ ] The synthetic demo, evidence integrity check, tamper challenge, timeline, evidence gaps, approval/rejection controls, audit trail, and report export work end-to-end.
 - [ ] Imported event data is clearly distinguished from the fictional demo.
-- [ ] Keyboard navigation has visible focus; form controls have understandable labels; reduced-motion preference is respected.
+- [ ] Keyboard navigation has visible focus; form controls have understandable labels; reduced-motion preference is respected, including on the intro loader.
 - [ ] At narrow widths, primary controls remain reachable and do not overlap.
 - [ ] Errors are actionable but do not reveal raw provider exceptions, stack traces, or sensitive uploaded content.
 
