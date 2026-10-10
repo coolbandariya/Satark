@@ -1190,3 +1190,26 @@ input:focus-visible,textarea:focus-visible{
   .ih-orbit{animation:none!important}
   .ih-capability{transition:none!important}
 }
+
+
+/* Editorial workspace motion: subtle, bounded, and disabled for reduced-motion users. */
+@media (prefers-reduced-motion: no-preference) {
+  .ih-capability {
+    animation: ih-enter .48s cubic-bezier(.2,.7,.2,1) both;
+  }
+  .ih-capability:nth-child(2) { animation-delay: .05s; }
+  .ih-capability:nth-child(3) { animation-delay: .1s; }
+  .ih-capability:nth-child(4) { animation-delay: .15s; }
+  .ih-method-step {
+    transition: transform .18s ease, border-color .18s ease, background .18s ease;
+  }
+  .ih-method-step:hover {
+    transform: translateY(-2px);
+    border-color: rgba(183,167,255,.22);
+    background: rgba(183,167,255,.035);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ih-capability { animation: none !important; }
+  .ih-method-step { transition: none !important; }
+}

@@ -1,0 +1,40 @@
+name: Feature request
+description: Suggest a focused improvement to SATARK or FIRSTLIGHT.
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: Who is affected and what task is currently difficult?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Describe the smallest useful version of the improvement.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: List observable outcomes that would demonstrate the feature works.
+    validations:
+      required: false
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - FIRSTLIGHT incident workflow
+        - Scanner / analysis
+        - Evidence and reports
+        - UI / accessibility
+        - Documentation / developer experience
+        - Security / privacy
+        - Other
+    validations:
+      required: true

@@ -87,11 +87,35 @@ jobs:
 
       - name: Validate UI stylesheet
         run: |
-          python -c "from pathlib import Path; css=Path('styles.css').read_text(encoding='utf-8'); assert css.count('{') == css.count('}'), 'Unbalanced CSS braces'; required=['.hero{','.scanner{','.home-grid{','.home-actions{','.sr-only{','.st-key-result_report','@media(max-width:768px)','prefers-reduced-motion:reduce','overflow-x:hidden']; missing=[x for x in required if x not in css]; assert not missing, f'Missing UI selectors: {missing}'"
+          python -c "from pathlib import Path; css=Path('styles.css').read_text(encoding='utf-8'); assert css.count('{') == css.count('}'), 'Unbalanced CSS braces'; required=['.hero{','.scanner{','.home-grid{','.home-actions{','.sr-only{','.st-key-result_report','.ih-hero{','.ih-capability-grid{','.ih-method{','.ih-method-step{','.st-key-home-actions','@media(max-width:768px)','prefers-reduced-motion:reduce','overflow-x:hidden']; missing=[x for x in required if x not in css]; assert not missing, f'Missing UI selectors: {missing}'"
 
       - name: Validate required project assets
         run: |
-          python -c "from pathlib import Path; files=[Path('requirements.txt'),Path('styles.css'),Path('satark.py'),Path('config.py'),Path('analysis_engine.py'),Path('findings.py'),Path('input_processing.py'),Path('radar_background.py'),Path('stepper_component.py'),Path('ai_provider.py'),Path('scam_challenge.py'),Path('video_processing.py'),Path('reports.py'),Path('satark_utils.py'),Path('url_security.py'),Path('evidence_engine.py'),Path('ui/__init__.py'),Path('ui/home.py'),Path('ui/navigation.py'),Path('ui/results.py'),Path('ui/history.py'),Path('ui/learning.py'),Path('ui/demo.py')]; missing=[str(p) for p in files if not p.is_file() or p.stat().st_size == 0]; assert not missing, f'Missing or empty files: {missing}'"
+          python - <<'PY'
+          from pathlib import Path
+
+          files = [
+              "requirements.txt", "README.md", "CONTRIBUTING.md", "SECURITY.md",
+              "styles.css", "satark.py", "config.py", "analysis_engine.py",
+              "findings.py", "input_processing.py", "radar_background.py",
+              "stepper_component.py", "ai_provider.py", "scam_challenge.py",
+              "video_processing.py", "reports.py", "satark_utils.py",
+              "url_security.py", "evidence_engine.py", "firstlight_engine.py",
+              "firstlight_ingest.py", "docs/ARCHITECTURE.md", "docs/FIRSTLIGHT.md",
+              "docs/UI_DESIGN.md", "docs/RELEASE_READINESS.md",
+              "ui/__init__.py", "ui/home.py", "ui/navigation.py", "ui/results.py",
+              "ui/history.py", "ui/learning.py", "ui/demo.py", "ui/firstlight.py",
+              "tests/test_firstlight_engine.py", "tests/test_firstlight_ingest.py",
+              "tests/test_url_security.py", "tests/test_input_processing.py",
+              "tests/e2e_smoke.py",
+          ]
+          missing = [
+              path for path in files
+              if not Path(path).is_file() or Path(path).stat().st_size == 0
+          ]
+          if missing:
+              raise SystemExit(f"Missing or empty project assets: {missing}")
+          PY
 
       - name: Check source whitespace and accidental empty lines
         run: |

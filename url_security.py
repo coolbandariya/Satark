@@ -79,7 +79,7 @@ def _validated_destination(url):
         raise ValueError("The URL points to a local or unsafe network address.")
 
     try:
-        port = parsed.port or (443 if parsed.scheme == "https" else 80)
+        port = parsed.port if parsed.port is not None else (443 if parsed.scheme == "https" else 80)
     except ValueError as exc:
         raise ValueError("The URL contains an invalid port.") from exc
     if not (1 <= port <= 65535):
@@ -164,7 +164,7 @@ class _PinnedHTTPSConnection(http.client.HTTPSConnection):
 def _open_pinned_request(url, address):
     """Open one GET request without automatic redirects or environment proxies."""
     parsed = urlparse(url)
-    port = parsed.port or (443 if parsed.scheme == "https" else 80)
+    port = parsed.port if parsed.port is not None else (443 if parsed.scheme == "https" else 80)
     connection_type = _PinnedHTTPSConnection if parsed.scheme == "https" else _PinnedHTTPConnection
     connection = connection_type(
         host=parsed.hostname,

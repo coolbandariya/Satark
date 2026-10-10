@@ -36,6 +36,17 @@ class InputProcessingTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "too many pixels"):
                 image_to_data_url(upload)
 
+    def test_pdf_page_tree_failure_has_user_facing_error(self):
+        class BrokenReader:
+            @property
+            def pages(self):
+                raise RuntimeError("broken cross-reference table")
+
+        upload = BytesIO(b"%PDF-1.7")
+        with patch("input_processing.PdfReader", return_value=BrokenReader()):
+            with self.assertRaisesRegex(ValueError, "could not read this PDF"):
+                extract_pdf_text(upload)
+
     def test_oversized_pdf_is_rejected_before_parse(self):
         upload = SimpleNamespace(size=MAX_PDF_BYTES + 1, name="large.pdf")
         with self.assertRaisesRegex(ValueError, "25 MB processing limit"):

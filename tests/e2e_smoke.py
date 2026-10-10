@@ -18,7 +18,7 @@ def assert_layout(page, name):
     metrics=page.evaluate("""() => ({
         viewport: window.innerWidth,
         scrollWidth: document.documentElement.scrollWidth,
-        key: [...document.querySelectorAll('.workspace-hero,.workspace-capabilities,.st-key-home-actions,.workspace-method')].map(el => {
+        key: [...document.querySelectorAll('.ih-hero,.ih-capability-grid,.st-key-home-actions,.ih-method')].map(el => {
             const r=el.getBoundingClientRect();
             return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};
         }),
@@ -26,10 +26,13 @@ def assert_layout(page, name):
         scanners: document.querySelectorAll(".scanner").length
     })""")
     assert metrics["scrollWidth"] <= metrics["viewport"] + 2, f"{name}: horizontal overflow {metrics}"
+    assert len(metrics["key"]) >= 3, f"{name}: primary home layout selectors were not found: {metrics}"
+    assert metrics["workflowSteps"] == 4, f"{name}: onboarding workflow is incomplete"
+    assert page.locator(".ih-hero h1").count() == 1, f"{name}: hero heading missing"
+    assert page.locator(".ih-capability-grid article").count() >= 4, f"{name}: capability cards missing"
     for rect in metrics["key"]:
         assert rect["left"] >= -2, f"{name}: element extends left of viewport: {rect}"
         assert rect["right"] <= metrics["viewport"] + 2, f"{name}: element extends right of viewport: {rect}"
-    assert metrics["workflowSteps"] == 4, f"{name}: onboarding workflow is incomplete"
     if name == "desktop":
         assert metrics["scanners"] == 0, f"{name}: scanners unexpectedly rendered on home"
     page.screenshot(path=str(ARTIFACTS / f"{name}.png"),full_page=True)
@@ -96,6 +99,40 @@ def main():
                 ):
                     page.locator('[data-testid="stSidebar"] button').filter(has_text=label).click()
                     page.get_by_text(marker).wait_for(timeout=30_000)
+
+                # FIRSTLIGHT is the flagship workspace; exercise its main
+                # synthetic-only investigation path without provider credentials.
+                page.locator('[data-testid="stSidebar"] button').filter(has_text="FIRSTLIGHT").click()
+                page.get_by_role("button", name="Load / reset synthetic incident").click()
+                page.get_by_text("Synthetic case loaded").wait_for(timeout=30_000)
+                workspace = page.get_by_role("combobox", name="Investigation workspace")
+                workspace.click()
+                page.get_by_role("option", name="Investigation", exact=True).click()
+                page.get_by_role("button", name="Run investigation workflow").click()
+                page.get_by_text("Coordinated investigation").wait_for(timeout=30_000)
+                page.get_by_text("Findings", exact=True).wait_for(timeout=30_000)
+                page.get_by_text("Evidence gaps", exact=True).wait_for(timeout=30_000)
+                page.get_by_role("button", name="Export FIRSTLIGHT incident report (JSON)").wait_for(state="visible", timeout=30_000)
+                with page.expect_download(timeout=30_000) as firstlight_download:
+                    page.get_by_role("button", name="Export FIRSTLIGHT incident report (JSON)").click()
+                firstlight_json = Path(firstlight_download.value.path()).read_text(encoding="utf-8")
+                assert '"case_id": "FL-DEMO-2026-001"' in firstlight_json
+                assert '"audit_chain_valid": true' in firstlight_json
+                assert "Synthetic demonstration only" in firstlight_json
+
+                # Approval remains explicitly simulated; verify the action log
+                # and audit trail after one approval.
+                workspace = page.get_by_role("combobox", name="Investigation workspace")
+                workspace.click()
+                page.get_by_role("option", name="Response Center", exact=True).click()
+                page.get_by_role("button", name="Approve & simulate").first.click()
+                page.get_by_text("Response action log").wait_for(timeout=30_000)
+                workspace = page.get_by_role("combobox", name="Investigation workspace")
+                workspace.click()
+                page.get_by_role("option", name="Audit Trail", exact=True).click()
+                page.get_by_text("Hash-chained audit trail").wait_for(timeout=30_000)
+                page.get_by_text("Audit chain verifies against its first entry.").wait_for(timeout=30_000)
+                page.locator('[data-testid="stSidebar"] button').filter(has_text="Overview").click()
 
                 # The offline sample must open without a provider key and expose
                 # the evidence ledger plus the deterministic coverage check.

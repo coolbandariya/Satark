@@ -15,7 +15,7 @@ from typing import Any
 
 
 def _canonical(value: Any) -> bytes:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False).encode("utf-8")
 
 
 def sha256_record(record: dict[str, Any]) -> str:
@@ -71,16 +71,37 @@ def seal_evidence(event: dict[str, Any]) -> dict[str, Any]:
 
 
 def verify_evidence(item: dict[str, Any]) -> dict[str, Any]:
-    actual = sha256_record(item.get("record", {}))
+    record = item.get("record", {})
+    try:
+        actual = sha256_record(record)
+    except (TypeError, ValueError, RecursionError):
+        actual = ""
     expected = str(item.get("sha256", ""))
-    valid = bool(expected) and actual == expected
+    evidence_id = item.get("evidence_id", "unknown")
+    # The envelope ID is used to join findings and timeline entries. Bind it
+    # to the hashed record's event_id so an attacker cannot swap the displayed
+    # reference while keeping an otherwise valid record hash.
+    record_id = record.get("event_id") if isinstance(record, dict) else None
+    id_matches = bool(record_id) and evidence_id == record_id
+    valid = bool(expected) and bool(actual) and actual == expected and id_matches
     return {
-        "evidence_id": item.get("evidence_id", "unknown"),
+        "evidence_id": evidence_id,
         "expected_sha256": expected,
         "actual_sha256": actual,
         "valid": valid,
         "status": "VERIFIED" if valid else "HASH MISMATCH — POSSIBLE TAMPERING",
     }
+
+
+def _timeline_sort_key(value: Any) -> datetime:
+    """Sort ISO timestamps by instant, treating naive values as UTC."""
+    try:
+        parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except (TypeError, ValueError, OverflowError):
+        return datetime.max.replace(tzinfo=timezone.utc)
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
 
 
 def make_audit_entry(action: str, actor: str, payload: dict[str, Any], previous_hash: str) -> dict[str, Any]:
@@ -99,7 +120,7 @@ def make_audit_entry(action: str, actor: str, payload: dict[str, Any], previous_
 def verify_audit_chain(entries: list[dict[str, Any]]) -> bool:
     previous = "GENESIS"
     for entry in entries:
-        if entry.get("previous_hash") != previous:
+        if not isinstance(entry, dict) or entry.get("previous_hash") != previous:
             return False
         without_hash = {key: value for key, value in entry.items() if key != "entry_hash"}
         if sha256_record(without_hash) != entry.get("entry_hash"):
@@ -115,8 +136,17 @@ def append_audit(entries: list[dict[str, Any]], action: str, actor: str, payload
 
 def investigate_case(case: dict[str, Any], evidence: list[dict[str, Any]]) -> dict[str, Any]:
     """Deterministic agent workflow; every finding cites evidence IDs."""
-    by_id = {item["evidence_id"]: item for item in evidence}
-    valid_ids = [item["evidence_id"] for item in evidence if verify_evidence(item)["valid"]]
+    evidence = [item for item in evidence if isinstance(item, dict)]
+    by_id = {
+        str(item.get("evidence_id")): item
+        for item in evidence
+        if item.get("evidence_id") is not None
+    }
+    valid_ids = [
+        str(item.get("evidence_id"))
+        for item in evidence
+        if item.get("evidence_id") is not None and verify_evidence(item)["valid"]
+    ]
     findings = []
 
     def finding(fid: str, title: str, explanation: str, severity: str, refs: list[str], confidence: str) -> None:
@@ -142,6 +172,7 @@ def investigate_case(case: dict[str, Any], evidence: list[dict[str, Any]]) -> di
     for item in evidence:
         checked = verify_evidence(item)
         record = item.get("record", {})
+        record = record if isinstance(record, dict) else {}
         timeline.append({
             "timestamp": record.get("timestamp", ""),
             "event_id": item.get("evidence_id", ""),
@@ -150,7 +181,7 @@ def investigate_case(case: dict[str, Any], evidence: list[dict[str, Any]]) -> di
             "integrity": checked["status"],
             "evidence_ids": [item.get("evidence_id", "")] if checked["valid"] else [],
         })
-    timeline.sort(key=lambda event: event["timestamp"])
+    timeline.sort(key=lambda event: _timeline_sort_key(event["timestamp"]))
 
     return {
         "case_id": case["case_id"],
@@ -182,7 +213,9 @@ def apply_simulated_response(proposals: list[dict[str, Any]], action_id: str, ap
     target = next((item for item in updated if item["action_id"] == action_id), None)
     if target is None:
         raise ValueError("Unknown response action.")
-    if not approved:
+    # Require the actual boolean True. Truthy strings/integers from untrusted
+    # callers must never cross the simulated approval gate.
+    if approved is not True:
         target["status"] = "rejected"
         return updated, {"action_id": action_id, "status": "rejected", "approver": approver, "simulated": True}
     target["status"] = "approved_simulated"
