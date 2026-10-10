@@ -895,6 +895,8 @@ textarea:focus-visible,
 }
 .evidence-review--review{border-color:rgba(244,201,107,.24);background:linear-gradient(115deg,rgba(244,201,107,.055),rgba(14,25,40,.78))}
 .evidence-review--supported{border-color:rgba(94,224,176,.2);background:linear-gradient(115deg,rgba(94,224,176,.045),rgba(14,25,40,.78))}
+.evidence-review--info{border-color:rgba(125,211,252,.18);background:linear-gradient(115deg,rgba(125,211,252,.045),rgba(14,25,40,.78))}
+.evidence-review--info h3{color:#b9eaff!important}
 .evidence-review-head{display:flex;align-items:center;justify-content:space-between;gap:1rem}
 .evidence-review-kicker{color:#7f94ae;font-size:.57rem;font-weight:850;letter-spacing:.14em}
 .evidence-review h3{margin:.3rem 0 0!important;color:#e9f3ff!important;font-size:.95rem!important;letter-spacing:-.02em}
