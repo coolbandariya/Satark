@@ -103,6 +103,9 @@ def main():
                 for label, marker in (
                     ("Session history", "Analysis history"),
                     ("Investigate", "What do you want to check?"),
+                    ("Scam Challenge", "AI SECURITY"),
+                    ("SATARK Academy", "SATARK Academy"),
+                    ("Classroom Mode", "Classroom Mode"),
                     # Return to the home page last; the offline sample action
                     # is intentionally available there, not on the Analyze page.
                     ("Overview", "Pause the panic."),
