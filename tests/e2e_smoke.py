@@ -143,7 +143,7 @@ def main():
 
                 # The offline sample must open without a provider key and expose
                 # the evidence ledger plus the deterministic coverage check.
-                page.get_by_role("button",name="Try sample report").click()
+                page.get_by_role("button",name="Open guided sample report").click()
                 page.get_by_text("Investigation workflow").wait_for(timeout=30_000)
                 page.get_by_text("Evidence ledger").wait_for(timeout=30_000)
                 page.get_by_text("INDEPENDENT COVERAGE CHECK").wait_for(timeout=30_000)
