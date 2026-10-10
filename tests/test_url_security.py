@@ -56,6 +56,15 @@ class URLSecurityTests(unittest.TestCase):
         with patch("url_security.socket.getaddrinfo", side_effect=OSError("dns unavailable")):
             self.assertFalse(is_public_url("https://example.com/"))
 
+    def test_non_unicast_global_addresses_are_rejected(self):
+        # Multicast can report is_global=True in Python's ipaddress module,
+        # but is never an acceptable destination for user-submitted URL fetches.
+        for address in ("224.0.0.1", "239.255.255.250", "ff02::1"):
+            with self.subTest(address=address):
+                answer = [(None, None, None, None, (address, 443, 0, 0) if ":" in address else (address, 443))]
+                with patch("url_security.socket.getaddrinfo", return_value=answer):
+                    self.assertFalse(is_public_url("https://example.com/"))
+
     def test_https_connection_uses_pinned_ip_and_hostname_for_tls(self):
         raw_socket = Mock()
         tls_socket = Mock()
