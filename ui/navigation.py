@@ -8,7 +8,6 @@ def configured_groq_api_key():
     try:
         secret_key = st.secrets.get("GROQ_API_KEY", "")
     except Exception:
-        # Streamlit raises when no secrets configuration exists.
         secret_key = ""
     return str(secret_key or os.getenv("GROQ_API_KEY", "")).strip()
 
@@ -21,31 +20,28 @@ def render_sidebar(get_client, discover_models, choose_model, text_preferences, 
             '<div class="brand-tag">FIRSTLIGHT incident response · SATARK threat tools</div></div></div>',
             unsafe_allow_html=True,
         )
+
         st.markdown('<div class="side-label">Workspace</div>', unsafe_allow_html=True)
-        pages = [
+        _render_page_buttons([
             ("FIRSTLIGHT", "FIRSTLIGHT · Incident Command"),
             ("Home", "Overview"),
             ("Analyze", "Investigate"),
             ("History", "Session history"),
-        ]
-        for page, label in pages:
-            if st.button(
-                label,
-                key=f"nav_{page}",
-                use_container_width=True,
-                type="primary" if st.session_state.get("page") == page else "secondary",
-            ):
-                st.session_state.page = page
-                st.rerun()
+        ])
+
+        st.markdown('<div class="side-label">Learn & practice</div>', unsafe_allow_html=True)
+        _render_page_buttons([
+            ("Challenge", "Scam Challenge"),
+            ("Academy", "SATARK Academy"),
+            ("Classroom", "Classroom Mode"),
+        ])
 
         env_key = configured_groq_api_key()
         api_key = env_key
         with st.expander("AI provider", expanded=not bool(env_key)):
             st.caption("Connect a provider to run live analysis. The offline sample works without a key.")
             api_key = st.text_input(
-                "Groq API key",
-                value=env_key,
-                type="password",
+                "Groq API key", value=env_key, type="password",
                 placeholder="Paste your Groq API key",
                 help="Used for the current Streamlit session. Never commit keys to source control.",
                 key="groq_api_key_input",
@@ -56,10 +52,6 @@ def render_sidebar(get_client, discover_models, choose_model, text_preferences, 
                     available = discover_models(client)
                     st.session_state.available_models = available
                     if not available:
-                        # An empty model list can mean authentication, network,
-                        # permission or provider failure. Never report this as a
-                        # successful connection merely because fallback model
-                        # preferences exist.
                         st.session_state.text_model = None
                         st.session_state.vision_model = None
                         st.error(
@@ -84,14 +76,8 @@ def render_sidebar(get_client, discover_models, choose_model, text_preferences, 
         with st.expander("Analysis context", expanded=False):
             role = st.selectbox(
                 "Who is this for?",
-                [
-                    "Student",
-                    "Teacher",
-                    "Working professional",
-                    "Parent / Guardian",
-                    "Senior user",
-                    "Security learner",
-                ],
+                ["Student", "Teacher", "Working professional", "Parent / Guardian",
+                 "Senior user", "Security learner"],
                 index=0,
                 key="analysis_audience",
             )
@@ -102,3 +88,14 @@ def render_sidebar(get_client, discover_models, choose_model, text_preferences, 
             unsafe_allow_html=True,
         )
     return api_key, role
+
+
+def _render_page_buttons(pages):
+    """Render one navigation group and keep active-page feedback consistent."""
+    for page, label in pages:
+        if st.button(
+            label, key=f"nav_{page}", use_container_width=True,
+            type="primary" if st.session_state.get("page") == page else "secondary",
+        ):
+            st.session_state.page = page
+            st.rerun()
