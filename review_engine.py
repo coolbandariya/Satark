@@ -29,7 +29,18 @@ def build_evidence_review(result):
     result = result if isinstance(result, dict) else {}
     mode = str(result.get("analysis_mode", "")).strip().lower()
     evidence = result.get("deterministic_evidence", [])
-    evidence = [item for item in evidence if isinstance(item, dict)] if isinstance(evidence, list) else []
+    evidence = (
+        [
+            item for item in evidence
+            if isinstance(item, dict)
+            and any(
+                str(item.get(field, "")).strip()
+                for field in ("title", "observation", "evidence")
+            )
+        ]
+        if isinstance(evidence, list)
+        else []
+    )
     indicators = _items(result.get("key_indicators", []))
     score = _safe_score(result.get("risk_score", 50))
     category = str(result.get("threat_category", "")).strip().lower()
