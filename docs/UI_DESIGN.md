@@ -1,46 +1,40 @@
 # SATARK UI design notes
 
-SATARK is an evidence-first security workspace, not a marketing-only demo. Visual polish should help users understand the next action without making the analysis appear more certain than it is.
+SATARK is an evidence-first security workspace, not a marketing-only demo. Visual polish should reduce cognitive load and make the next action obvious.
 
-## Design principles
+## Information architecture
 
-- **Hierarchy before decoration:** FIRSTLIGHT is the primary incident workspace; individual scanners remain easy to reach but secondary.
-- **Evidence before verdict:** separate observable signals, AI interpretation, uncertainty and recommended actions.
-- **Quiet confidence:** dark, high-contrast surfaces, restrained lilac/cyan/mint accents, readable body copy and consistent borders.
-- **Useful motion only:** brief entrance transitions and small hover responses; no motion that blocks input, hides state or implies an analysis is running when it is not.
-- **Responsive by default:** layouts collapse from multi-column desktop views to a single-column mobile flow. Avoid fixed-width controls and horizontal overflow.
-- **No hidden work:** provider calls, file parsing and analysis begin only after the user explicitly starts the action.
+- **Overview:** one clear headline, a single featured FIRSTLIGHT spotlight, three real calls to action, and a compact scanner directory. It is not a full product manual.
+- **FIRSTLIGHT:** the flagship incident workspace. Select a focused work area (Incident, Evidence Integrity, Investigation, Response Center, Audit Trail) rather than rendering every panel at once.
+- **Investigate:** one artifact type at a time. Keep input, action, result, evidence ledger and report export in a predictable vertical order.
+- **Session history:** completed reports remain in the current session; avoid placing history controls on the home page.
+
+## Visual system
+
+- Use a near-black navy base, restrained periwinkle/lilac for product interaction, mint for verified/positive states, and amber for caution. Red is reserved for danger states.
+- Use layered radial gradients and a spotlight preview as visual anchors; avoid excessive gradients on every card.
+- Keep content widths bounded, use consistent radii/borders, and preserve whitespace between sections.
+- Capability cards are a compact directory, not another wall of copy. Detailed workflows belong on their own page.
+- Keep the visual hierarchy: FIRSTLIGHT primary, scanners secondary, learning/sample material tertiary.
 
 ## React Bits inspiration
 
-The project references [React Bits](https://github.com/DavidHDev/react-bits) for design inspiration—particularly layered backgrounds, subtle component motion, interaction feedback and adaptable component composition. SATARK does not copy/paste a React Bits runtime into Streamlit. The current implementation uses project-owned CSS and native Streamlit controls to avoid adding another client runtime, a CDN dependency or an unnecessary JavaScript bundle to the security-analysis path.
+The project references [React Bits](https://github.com/DavidHDev/react-bits) and its [SpotlightCard-style patterns](https://reactbits.dev/showcase) for layered light, hover feedback, restrained motion and composition. The implementation remains project-owned CSS and native Streamlit controls rather than importing a React runtime into the Streamlit app.
+
+The broader UX principles are inspired by current SaaS guidance: clear value proposition, one primary next action, product-led previews, accessible contrast and motion that clarifies state rather than distracting. Sources: [Unbounce SaaS landing-page guidance](https://unbounce.com/conversion-rate-optimization/the-state-of-saas-landing-pages/) and [The Good's SaaS design overview](https://thegood.com/insights/saas-website-design/).
 
 ## Motion and accessibility
 
-- Honor `prefers-reduced-motion: reduce`; all decorative entrance/hover animations must be disabled or reduced.
-- Keep keyboard focus visible. Never remove the browser outline without providing a stronger replacement.
+- Honor `prefers-reduced-motion: reduce`; disable decorative loops and hover transforms.
+- Keep keyboard focus visible. Never remove outlines without an equally visible replacement.
 - Use semantic headings and descriptive button labels for key actions.
-- Do not communicate risk through color alone; include text labels and explanatory context.
-- Do not use animation to suggest a provider connection, scan completion or live threat feed unless that state is real.
-- Prefer CSS-only effects over heavy canvas/WebGL effects for the default workspace.
+- Do not communicate risk through color alone; include labels and explanatory context.
+- Do not use animation to imply a provider connection, scan completion or live threat feed unless that state is real.
+- Prefer bounded CSS effects over heavy canvas/WebGL effects for the default workspace.
 
-## Performance
+## Performance and verification
 
-- Keep decorative effects bounded and pointer-events disabled.
-- Avoid loading third-party JavaScript/CDNs in the critical path.
-- Keep uploads and remote URL responses bounded before expensive processing.
-- Make the user trigger costly analysis explicitly; do not analyze on page load or merely because a widget rerendered.
-- Validate desktop and narrow mobile layouts with the browser smoke suite.
-
-## Verification
-
-Run the CI checks from the repository root:
-
-```bash
-python -m pip check
-python -m compileall -q .
-python -m unittest discover -s tests -v
-python tests/e2e_smoke.py
-```
-
-The browser suite starts a local Streamlit app in CI, checks the editorial home layout at desktop/mobile sizes, exercises scanner selection and navigation, and validates the sample PDF download. It does not replace a manual test of a deployed host or live provider-backed analysis.
+- No third-party JavaScript/CDNs in the critical path.
+- Expensive analysis runs only after explicit user action.
+- Run `python -m compileall -q .`, `python -m unittest discover -s tests -v`, and `python tests/e2e_smoke.py`.
+- Browser tests check desktop/mobile layout, spotlight presence, scanner selection, navigation, FIRSTLIGHT workflows, sample report and PDF download. They do not replace a manual test of deployed hosting or live provider-backed analysis.
