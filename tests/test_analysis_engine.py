@@ -38,8 +38,8 @@ class AnalysisEngineTests(unittest.TestCase):
         self.assertEqual(checks["Social Engineering"], "Detected")
 
     def test_risk_label_boundaries_are_stable(self):
-        self.assertEqual(risk_label(0)[0],"SAFE")
-        self.assertEqual(risk_label(34)[0],"SAFE")
+        self.assertEqual(risk_label(0)[0],"LOWER SIGNAL")
+        self.assertEqual(risk_label(34)[0],"LOWER SIGNAL")
         self.assertEqual(risk_label(35)[0],"CAUTION")
         self.assertEqual(risk_label(69)[0],"CAUTION")
         self.assertEqual(risk_label(70)[0],"CRITICAL THREAT")
