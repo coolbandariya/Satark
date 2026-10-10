@@ -6,6 +6,7 @@ from unittest.mock import patch, Mock
 
 from PIL import Image
 
+from config import MAX_UPLOAD_BYTES
 from video_processing import (
     MAX_VIDEO_BYTES,
     MAX_VIDEO_FRAMES,
@@ -19,6 +20,8 @@ class VideoProcessingTests(unittest.TestCase):
     def test_video_limits_are_positive(self):
         self.assertGreater(MAX_VIDEO_FRAMES, 0)
         self.assertGreater(MAX_VIDEO_BYTES, 0)
+        self.assertEqual(MAX_VIDEO_BYTES, MAX_UPLOAD_BYTES)
+        self.assertLessEqual(MAX_VIDEO_BYTES, 50 * 1024 * 1024)
 
     def test_invalid_max_frames_is_rejected_before_opencv_loading(self):
         upload = BytesIO(b"not a video")

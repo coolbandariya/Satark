@@ -13,7 +13,7 @@ ARTIFACTS.mkdir(parents=True,exist_ok=True)
 def assert_layout(page, name):
     page.wait_for_timeout(3300)
     body=page.locator("body").inner_text()
-    assert "Know what you're looking at." in body, f"{name}: home copy missing"
+    assert "Pause the panic." in body, f"{name}: home copy missing"
     assert page.locator("#satark-intro-overlay").count() == 0, f"{name}: intro overlay did not dismiss"
     metrics=page.evaluate("""() => ({
         viewport: window.innerWidth,
@@ -22,7 +22,7 @@ def assert_layout(page, name):
             const r=el.getBoundingClientRect();
             return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};
         }),
-        workflowSteps: document.querySelectorAll(".method-step").length,
+        workflowSteps: document.querySelectorAll(".ih-method-step").length,
         scanners: document.querySelectorAll(".scanner").length
     })""")
     assert metrics["scrollWidth"] <= metrics["viewport"] + 2, f"{name}: horizontal overflow {metrics}"
@@ -59,7 +59,7 @@ def main():
                 page.get_by_text("What do you want to check?").wait_for(timeout=30_000)
                 assert_no_overlap(page, ".scanner", f"{name}-scanner")
                 assert_no_overlap(page, ".capability-card", f"{name}-capability-card")
-                assert_no_overlap(page, ".method-step", f"{name}-method-step")
+                assert_no_overlap(page, ".ih-method-step", f"{name}-method-step")
                 assert page.get_by_role("button",name="Select Text").is_visible()
                 page.get_by_role("button",name="Select Text").click()
                 page.get_by_text("Security Analysis").wait_for(timeout=30_000)
@@ -92,7 +92,7 @@ def main():
                     ("Investigate", "What do you want to check?"),
                     # Return to the home page last; the offline sample action
                     # is intentionally available there, not on the Analyze page.
-                    ("Overview", "Know what you're looking at."),
+                    ("Overview", "Pause the panic."),
                 ):
                     page.locator('[data-testid="stSidebar"] button').filter(has_text=label).click()
                     page.get_by_text(marker).wait_for(timeout=30_000)

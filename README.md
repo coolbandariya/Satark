@@ -41,6 +41,7 @@ It is designed around a simple workflow: **bring the evidence → inspect the si
 - [Project structure](#project-structure)
 - [Tests and checks](#tests-and-checks)
 - [Security, privacy, and limitations](#security-privacy-and-limitations)
+- [Release readiness](docs/RELEASE_READINESS.md)
 - [Roadmap](#roadmap)
 - [Contributing](#contributing)
 
@@ -72,7 +73,7 @@ The app also includes **Scam Challenge**, **SATARK Academy**, and **Classroom Mo
 | Session history | Revisit results held in the current app session. |
 | Learning | Practice scam recognition and explore security-awareness content. |
 
-Some workflows depend on external provider access or optional system tools. Video frame analysis uses OpenCV; video audio transcription additionally requires FFmpeg to be installed on the host. A completed analysis does not mean that a file was executed in a sandbox or exhaustively scanned.
+Some workflows depend on external provider access or optional system tools. Video uploads are capped at 50 MB to match the Streamlit server upload budget. Video frame analysis uses OpenCV; video audio transcription additionally requires FFmpeg to be installed on the host. A completed analysis does not mean that a file was executed in a sandbox or exhaustively scanned.
 
 ## How it works
 
@@ -227,7 +228,7 @@ GitHub Actions also runs CodeQL. A passing unit-test run alone does not establis
 - **Do not treat session history as evidence storage.** It is not a secure, durable case-management system.
 - **Use deployment safeguards.** Restrict access where appropriate, keep secrets out of source control, set upload/request limits, and apply network egress controls.
 
-See [Analysis limitations](docs/ANALYSIS_LIMITATIONS.md) and the [Security policy](SECURITY.md) for additional guidance.
+See [Analysis limitations](docs/ANALYSIS_LIMITATIONS.md), the [Security policy](SECURITY.md), and the [Release readiness runbook](docs/RELEASE_READINESS.md) for deployment gates. The default Streamlit configuration hides exception details and caps uploads at 50 MB, but host-level concurrency, request, and network egress controls still need separate verification.
 
 ## Roadmap
 
@@ -248,6 +249,8 @@ See [Analysis limitations](docs/ANALYSIS_LIMITATIONS.md) and the [Security polic
 - [x] Document the deployment security checklist and URL-fetching threat model.
 - [x] Exercise all six scanner-selection states and contextual guidance in the browser smoke suite without requiring provider credentials.
 - [ ] Add deployment-specific live tests for provider-backed analysis and file-processing workflows; these require configured secrets and a target-host environment.
+- [x] Hide hosted exception details and align the video byte limit with the 50 MB Streamlit upload cap.
+- [x] Add a release-readiness runbook with explicit go/no-go criteria and deployment verification steps.
 
 ## Contributing
 
