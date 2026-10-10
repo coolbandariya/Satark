@@ -58,6 +58,15 @@ def choose_workspace(page, steps_down):
     workspace.press("Enter")
 
 
+def choose_workspace(page, steps_down):
+    """Select a FIRSTLIGHT workspace using keyboard input to avoid flaky popover clicks."""
+    workspace = page.get_by_role("combobox", name="Investigation workspace")
+    workspace.click()
+    for _ in range(steps_down):
+        workspace.press("ArrowDown")
+    workspace.press("Enter")
+
+
 def main():
     with sync_playwright() as p:
         browser=p.chromium.launch()
@@ -89,7 +98,7 @@ def main():
                     "Video": "Video & clips",
                 }
                 for mode, marker in workflow_markers.items():
-                    page.get_by_role("button", name=f"Select {mode}").click()
+                    page.get_by_role("button", name=f"Select {mode}").last.click()
                     page.get_by_text(f"SELECTED WORKFLOW · {mode.upper()}").wait_for(timeout=30_000)
                     page.get_by_text(marker).wait_for(timeout=30_000)
                 # Restore Text so the following navigation/sample checks start
