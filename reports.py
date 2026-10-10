@@ -124,6 +124,46 @@ def make_pdf_report(result, mode):
     story.append(Paragraph("What SATARK Found", h2))
     story.append(Paragraph(pdf_escape(result.get('summary','No summary was returned.')), body))
 
+    # Explain the workflow that actually ran. This is a static record of the
+    # successful report path, not a fabricated real-time progress indicator.
+    mode_normalized = _safe_text(result.get("analysis_mode", mode)).lower()
+    visual_only = mode_normalized in {"image", "qr"}
+    local_evidence = result.get("deterministic_evidence", [])
+    if not isinstance(local_evidence, (list, tuple)):
+        local_evidence = []
+    local_evidence = [
+        item for item in local_evidence
+        if isinstance(item, dict)
+        and any(_safe_text(item.get(field)) for field in ("title", "observation", "evidence"))
+    ]
+    workflow_rows = [
+        [Paragraph("<b>Stage</b>", body), Paragraph("<b>Recorded outcome</b>", body)],
+        [Paragraph("Input preparation", body), Paragraph("Completed — input passed preparation and an assessment was returned.", body)],
+        [
+            Paragraph("Local evidence rules", body),
+            Paragraph(
+                "Not run for this visual workflow; image findings are handled separately."
+                if visual_only else
+                f"Completed — {len(local_evidence)} local text observation(s) extracted. No signal is not a safety clearance.",
+                body,
+            ),
+        ],
+        [Paragraph("AI interpretation", body), Paragraph("Completed — the configured model returned an assessment.", body)],
+        [Paragraph("Evidence coverage review", body), Paragraph("Included below. It checks broad coverage, not every generated claim.", body)],
+    ]
+    workflow_table = Table(workflow_rows, colWidths=[48*mm, 127*mm], repeatRows=1)
+    workflow_table.setStyle(TableStyle([
+        ("BACKGROUND", (0,0), (-1,0), colors.HexColor("#dff3fa")),
+        ("GRID", (0,0), (-1,-1), 0.5, line),
+        ("VALIGN", (0,0), (-1,-1), "TOP"),
+        ("LEFTPADDING", (0,0), (-1,-1), 7),
+        ("RIGHTPADDING", (0,0), (-1,-1), 7),
+        ("TOPPADDING", (0,0), (-1,-1), 6),
+        ("BOTTOMPADDING", (0,0), (-1,-1), 6),
+    ]))
+    story.append(Paragraph("Investigation Workflow", h2))
+    story.append(workflow_table)
+
     story.append(Paragraph("Evidence Detected", h2))
     evidence = result.get("key_indicators", [])
     if not isinstance(evidence, (list, tuple)):
