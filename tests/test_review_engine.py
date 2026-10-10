@@ -28,6 +28,17 @@ class EvidenceReviewTests(unittest.TestCase):
         self.assertEqual(review["level"], "supported")
         self.assertIn("not proof of fraud", review["message"])
 
+    def test_empty_evidence_objects_do_not_count_as_corroboration(self):
+        review = build_evidence_review({
+            "analysis_mode": "Text",
+            "risk_score": 88,
+            "threat_category": "Phishing",
+            "deterministic_evidence": [{}],
+        })
+        self.assertEqual(review["evidence_count"], 0)
+        self.assertEqual(review["level"], "review")
+        self.assertIn("uncorroborated", review["message"])
+
     def test_visual_modes_do_not_claim_text_rules_failed(self):
         review = build_evidence_review({
             "analysis_mode": "Image",
