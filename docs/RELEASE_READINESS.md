@@ -6,7 +6,7 @@ This document separates a working hackathon demonstration from a service that is
 
 - **Hackathon demonstration with synthetic/non-sensitive inputs:** suitable only after the exact deployed revision passes the checks below.
 - **Small supervised pilot with non-sensitive content:** conditional on provider, deployment, abuse-control and recovery checks.
-- **Public anonymous service using a shared provider key:** **not ready by default**. Per-session checks are not a substitute for host-wide quotas, rate limiting, concurrency limits and cost controls.
+- **Public anonymous service using a shared provider key:** **not ready by default**. A shared per-process sliding-window limiter is defense in depth, not a distributed/global quota: multiple workers, replicas or restarts can bypass its aggregate ceiling. A public service still needs gateway/provider-side global quotas, rate limiting, concurrency limits and cost controls.
 - **Confidential, regulated or multi-tenant incident evidence:** **not ready** without authenticated access, authorization/tenant isolation, retention and deletion controls, approved provider data handling, durable case storage, and an independently reviewed operational design.
 - **Production / high availability:** requires a separate threat model, security review, monitoring, incident response, backup/restore and rollback exercises.
 
@@ -29,7 +29,7 @@ This document separates a working hackathon demonstration from a service that is
 
 - SATARK is a triage aid; scores are not calibrated probabilities, and results do not prove that content is safe or malicious.
 - FIRSTLIGHT response actions are simulated. Its in-session audit chain is not durable, independently anchored evidence storage or certified chain of custody.
-- Session state is not authenticated case storage and is not tenant isolation.
+- Session state is not authenticated case storage and is not tenant isolation. The analysis limiter is process-local; it is not a durable or distributed abuse-control boundary.
 - URL fetching uses validated public DNS results, pinned connections and redirect revalidation, but public URL retrieval still requires outbound network restrictions at the hosting layer.
 - Upload limits bound input size, but do not guarantee a fixed memory/CPU budget under concurrent workloads.
 - Content submitted for AI analysis may leave the host and be processed by the configured provider. Do not submit credentials, OTPs, private keys or sensitive incident data unless the provider and legal basis have been reviewed.
