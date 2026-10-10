@@ -59,13 +59,13 @@ def render_home():
     with st.container(key="home-actions"):
         col_primary, col_secondary = st.columns([1.15, 1], gap="small")
         with col_primary:
-            if st.button("Start an investigation  →", width="stretch", type="primary", key="goto_analyze"):
+            if st.button("Start an investigation →", width="stretch", type="primary", key="goto_analyze"):
                 st.session_state.page = "Analyze"
                 st.session_state.scroll_to_scanners = True
                 st.session_state.demo_mode = False
                 st.rerun()
         with col_secondary:
-            if st.button("Explore a guided sample report", width="stretch", key="demo_result"):
+            if st.button("Open the guided sample report", width="stretch", key="demo_result"):
                 st.session_state.result = get_demo_result()
                 st.session_state.mode = "Text"
                 st.session_state.demo_mode = True
