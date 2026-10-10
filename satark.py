@@ -45,6 +45,7 @@ from satark_utils import safe_text, clean_json_text, normalize_check_value, chec
 from radar_background import render_radar_background
 from stepper_component import render_stepper
 from config import MAX_HISTORY_ITEMS, MAX_TEXT_INPUT_CHARS, MAX_ANALYSES_PER_MINUTE
+from rate_limiter import consume_analysis_slot
 from analysis_engine import (
     clamp_score,
     is_scam_claim,
@@ -1037,18 +1038,14 @@ elif st.session_state.page == "Analyze":
             st.stop()
 
 
-        now_monotonic = time.monotonic()
-        recent_requests = [
-            timestamp
-            for timestamp in st.session_state.get("analysis_timestamps", [])
-            if now_monotonic - timestamp < 60
-        ]
-        if len(recent_requests) >= MAX_ANALYSES_PER_MINUTE:
-            st.session_state.analysis_timestamps = recent_requests
-            st.error("SATARK has reached the session analysis limit. Please wait about a minute before trying again.")
+        allowed, retry_after = consume_analysis_slot(MAX_ANALYSES_PER_MINUTE)
+        if not allowed:
+            wait_seconds = max(1, int(retry_after + 0.999))
+            st.error(
+                "SATARK has reached the shared per-process analysis limit. "
+                f"Please wait about {wait_seconds} seconds before trying again."
+            )
             st.stop()
-        recent_requests.append(now_monotonic)
-        st.session_state.analysis_timestamps = recent_requests
 
         try:
 
