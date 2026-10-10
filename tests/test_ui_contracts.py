@@ -113,6 +113,12 @@ class UIContractTests(unittest.TestCase):
         self.assertIn("firstlight_import_report_json", FIRSTLIGHT)
         self.assertIn("Download prepared import report (JSON)", FIRSTLIGHT)
 
+    def test_firstlight_renders_only_the_selected_workspace(self):
+        self.assertIn('active_workspace = st.selectbox(', FIRSTLIGHT)
+        for section in ("Incident", "Evidence Integrity", "Investigation", "Response Center", "Audit Trail"):
+            self.assertIn(section, FIRSTLIGHT)
+        self.assertNotIn("st.tabs(", FIRSTLIGHT)
+
     def test_app_does_not_reference_missing_analysis_constants(self):
         self.assertIn("THREAT_CHECKS, OFFICIAL_VERIFICATION_SOURCES", APP)
 
